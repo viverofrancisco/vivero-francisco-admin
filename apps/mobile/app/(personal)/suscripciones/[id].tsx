@@ -12,17 +12,17 @@ import {
   PERIODICIDAD_LABEL,
   fechaSola,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 import {
   CamposDelPlan,
   ResumenDelPlan,
   type ValoresDelPlan,
 } from "@/components/suscripciones/CamposDelPlan";
-import type { SuscripcionDetalle } from "@/lib/types";
-import { estadoVisual, tema } from "@/lib/tema";
+import type { SuscripcionDetalle } from "@vivero/app-ui/lib/types";
+import { estadoVisual, tema } from "@vivero/app-ui/lib/tema";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });

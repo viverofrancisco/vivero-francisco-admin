@@ -8,8 +8,8 @@ import {
   type HorarioDeDia,
   type HorarioSemanal,
 } from "@vivero/shared";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const legible = horaLegible;
 

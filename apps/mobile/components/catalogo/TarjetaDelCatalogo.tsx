@@ -5,7 +5,7 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { precioDelCatalogo, type ProductoDelCatalogo } from "@vivero/shared";
 import { lineaDeLaTarjeta, type LineaDelCarrito } from "@/lib/carrito";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { Cantidad, Disponibilidad } from "./partes";
 
 /**

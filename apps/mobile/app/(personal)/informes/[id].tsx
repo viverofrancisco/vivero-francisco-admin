@@ -5,11 +5,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades, textoPlanoDeHtml } from "@vivero/shared";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import { MiniaturaDePdf, VisorDePdf } from "@/components/informes/VisorDePdf";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Lo que devuelve `GET /api/mobile/informes/[id]`: la ficha del portal. */
 export interface InformeDetail {

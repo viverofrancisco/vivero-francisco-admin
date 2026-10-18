@@ -4,7 +4,7 @@ import { Button, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { textoDePrecio } from "@vivero/shared";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 type Tecla = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0" | "" | "borrar";
 

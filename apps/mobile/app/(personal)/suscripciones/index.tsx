@@ -8,15 +8,15 @@ import {
   PERIODICIDAD_LABEL,
   fechaSola,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   FILA_LISTA,
   PantallaLista,
   type GrupoDeFiltro,
-} from "@/components/ui/PantallaLista";
-import type { SuscripcionListItem } from "@/lib/types";
-import { tema } from "@/lib/tema";
+} from "@vivero/app-ui/components/ui/PantallaLista";
+import type { SuscripcionListItem } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });

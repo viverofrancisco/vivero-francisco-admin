@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { tema } from "@/lib/tema";
+import { tema } from "../../lib/tema";
 
 /**
  * El código de verificación: una casilla por dígito.

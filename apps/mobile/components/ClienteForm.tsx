@@ -12,8 +12,8 @@ import {
   CamposDePropiedad,
   useCamposDePropiedad,
 } from "@/components/PropiedadForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const PRIMARY = tema.verde;
 

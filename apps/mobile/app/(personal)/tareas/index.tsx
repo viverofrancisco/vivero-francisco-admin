@@ -4,15 +4,15 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ordenarTareas, type ModoOrdenTareas } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   BOTON_JUNTO_AL_BUSCADOR,
   FILA_LISTA,
   PantallaLista,
-} from "@/components/ui/PantallaLista";
+} from "@vivero/app-ui/components/ui/PantallaLista";
 import { OrdenarTareas } from "@/components/OrdenarTareas";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 interface Tarea {
   id: string;

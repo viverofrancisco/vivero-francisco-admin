@@ -5,7 +5,7 @@ import {
   encenderUbicacion,
   pedirPermisoDeUbicacion,
   permisoDeUbicacion,
-} from "@/lib/ubicacion";
+} from "@vivero/app-ui/lib/ubicacion";
 
 /**
  * Pide la ubicación **al abrir la app**, no recién al marcar.

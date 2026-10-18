@@ -17,11 +17,11 @@ import {
   nombresDeServicios,
   type SolicitudItem,
 } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
-import { fechaYHora12 } from "@/lib/hora";
-import { estadoLabel } from "@/lib/estado-visita";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { tema } from "@/lib/tema";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { fechaYHora12 } from "@vivero/app-ui/lib/hora";
+import { estadoLabel } from "@vivero/app-ui/lib/estado-visita";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** *Pendiente* o *Atendida*, la misma pastilla de la lista. */
 export function EstadoSolicitud({ atendida }: { atendida: boolean }) {

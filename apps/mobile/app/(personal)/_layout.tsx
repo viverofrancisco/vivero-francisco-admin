@@ -4,8 +4,8 @@ import { Tabs, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuthStore } from "@/lib/auth-store";
-import { tema } from "@/lib/tema";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { usePermisoDeUbicacion } from "@/lib/use-permiso-ubicacion";
 
 export default function PersonalTabsLayout() {

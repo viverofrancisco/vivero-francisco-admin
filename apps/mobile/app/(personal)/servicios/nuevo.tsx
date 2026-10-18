@@ -4,7 +4,7 @@ import {
   datosDeVariante,
   type ValoresDeProducto,
 } from "@/components/ServicioForm";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, ApiError } from "@vivero/app-ui/lib/api";
 
 /**
  * Dar de alta un producto, como en el portal: el producto primero, y con su

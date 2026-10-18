@@ -3,12 +3,12 @@ import { Modal, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { PressableScale } from "./PressableScale";
 import {
   MenuDeEncabezado,
   type OpcionDeMenu,
-} from "@/components/ui/MenuDeEncabezado";
-import { tema } from "@/lib/tema";
+} from "./MenuDeEncabezado";
+import { tema } from "../../lib/tema";
 
 export interface OpcionFiltro {
   clave: string;

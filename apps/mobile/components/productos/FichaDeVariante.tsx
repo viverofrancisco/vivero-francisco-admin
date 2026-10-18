@@ -4,19 +4,19 @@ import { Text } from "react-native-paper";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { gananciaDeVenta } from "@vivero/shared";
-import { CabeceraDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { Fila, Seccion, estilosDeFicha } from "@/components/ui/SeccionDeFicha";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { CabeceraDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { Fila, Seccion, estilosDeFicha } from "@vivero/app-ui/components/ui/SeccionDeFicha";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { HojaAjustarStock } from "./HojaAjustarStock";
 import { HojaInventarioDeVariante, HojaPrecioDeVariante } from "./HojasDeVariante";
 import { SelectorDeFotoDeVariante } from "./SelectorDeFotoDeVariante";
 import { VisorDeFotosDeProducto } from "./VisorDeFotosDeProducto";
 import { AccionDeHoja, TituloDeHoja } from "./AccionDeHoja";
-import { HojaInferior } from "@/components/ui/HojaInferior";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { dinero, pesoTexto, precioTexto } from "./formato";
-import type { ServicioDetail, VarianteDeProducto } from "@/lib/types";
-import { apiRequest } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import type { ServicioDetail, VarianteDeProducto } from "@vivero/app-ui/lib/types";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Lo que se vende, como lo muestra Shopify en la variante: el precio como un

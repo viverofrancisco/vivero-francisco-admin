@@ -17,10 +17,10 @@ import {
   type TipoProducto,
   type UnidadPeso,
 } from "@vivero/shared";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { Campo, Interruptor, Titulo } from "@/components/ui/Formulario";
-import { SelectorOpcion } from "@/components/ui/SelectorOpcion";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { Campo, Interruptor, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { SelectorOpcion } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Lo de la variante única de un bien: lo que la card del portal edita. */
 export interface ValoresDeVariante {

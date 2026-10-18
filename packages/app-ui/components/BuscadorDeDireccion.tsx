@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, ApiError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { apiRequest, ApiError } from "../lib/api";
+import { tema } from "../lib/tema";
 
 interface Sugerencia {
   id: string;

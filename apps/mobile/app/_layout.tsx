@@ -6,13 +6,13 @@ import { LocaleConfig } from "react-native-calendars";
 import "react-native-gesture-handler";
 import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useAuthStore } from "@/lib/auth-store";
-import { apiRequest, esApiError } from "@/lib/api";
-import { resolverServidor } from "@/lib/config";
-import { precargarBranding } from "@/lib/branding";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { apiRequest, esApiError } from "@vivero/app-ui/lib/api";
+import { resolverServidor } from "@vivero/app-ui/lib/config";
+import { precargarBranding } from "@vivero/app-ui/lib/branding";
 import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
 import type { MeResponse } from "@vivero/shared";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 LocaleConfig.locales.es = {
   monthNames: [

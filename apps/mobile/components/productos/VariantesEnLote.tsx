@@ -25,12 +25,12 @@ import {
   type CampoDeVarianteEnLote,
   type UnidadPeso,
 } from "@vivero/shared";
-import { CabeceraDeHoja, PastillaDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { SelectorOpcion } from "@/components/ui/SelectorOpcion";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { VarianteDeProducto } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { SelectorOpcion } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { VarianteDeProducto } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 interface RespuestaDelLote {
   editadas: number;

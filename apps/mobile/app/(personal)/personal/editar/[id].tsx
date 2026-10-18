@@ -3,10 +3,10 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { PersonalForm } from "@/components/PersonalForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { PersonalFicha } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { PersonalFicha } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Editar la ficha de alguien: el mismo formulario del alta, cargado. Se llega

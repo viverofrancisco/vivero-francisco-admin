@@ -9,20 +9,20 @@ import {
   type UbicacionBody,
 } from "@vivero/shared";
 import { EditorDeHorario } from "@/components/EditorDeHorario";
-import { BotonEliminar, Campo, Interruptor, Titulo } from "@/components/ui/Formulario";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { BuscadorDeDireccion } from "@/components/BuscadorDeDireccion";
+import { BotonEliminar, Campo, Interruptor, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { BuscadorDeDireccion } from "@vivero/app-ui/components/BuscadorDeDireccion";
 import {
   MapaDePropiedad,
   ZOOM_DE_BARRIO,
   zoomSegunPrecision,
   type Destino,
   type Punto,
-} from "@/components/MapaDePropiedad";
-import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
-import { mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
-import { SelectorDeCiudad } from "@/components/SelectorDeCiudad";
+} from "@vivero/app-ui/components/MapaDePropiedad";
+import { avisarFaltaUbicacion, ubicacionActual } from "@vivero/app-ui/lib/ubicacion";
+import { mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { SelectorDeCiudad } from "@vivero/app-ui/components/SelectorDeCiudad";
 
 /**
  * Una ubicación del vivero, como el *Add location* de Shopify: el nombre, la

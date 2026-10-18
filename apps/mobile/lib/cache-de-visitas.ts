@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
-import type { VisitaDetail } from "./types";
+import type { VisitaDetail } from "@vivero/app-ui/lib/types";
 
 /**
  * Una copia local de las visitas, para verlas **sin señal**.

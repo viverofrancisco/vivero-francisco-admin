@@ -9,11 +9,11 @@ import {
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import type { ProductoDelCatalogo } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
-import { PantallaLista } from "@/components/ui/PantallaLista";
-import type { OpcionDeMenu } from "@/components/ui/MenuDeEncabezado";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
+import type { OpcionDeMenu } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import type { LineaDelCarrito } from "@/lib/carrito";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { TarjetaDelCatalogo } from "./TarjetaDelCatalogo";
 import { HojaDeOpciones } from "./HojaDeOpciones";
 

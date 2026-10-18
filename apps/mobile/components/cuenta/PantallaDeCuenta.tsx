@@ -8,12 +8,12 @@ import Constants from "expo-constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { CampoDeCodigo } from "@/components/ui/CampoDeCodigo";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { useAuthStore } from "@/lib/auth-store";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { CampoDeCodigo } from "@vivero/app-ui/components/ui/CampoDeCodigo";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 import { pendientesSinEnviar } from "@/lib/datos-de-la-cuenta";
 

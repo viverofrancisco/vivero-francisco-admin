@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { PantallaLista } from "@/components/ui/PantallaLista";
+import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 
 /**
  * *Visitas* para el invitado: sin cuenta no hay visitas que listar —ni

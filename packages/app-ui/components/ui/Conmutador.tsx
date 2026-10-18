@@ -1,5 +1,5 @@
 import { Platform, Switch, StyleSheet } from "react-native";
-import { tema } from "@/lib/tema";
+import { tema } from "../../lib/tema";
 
 /**
  * El interruptor de la app, uno solo.

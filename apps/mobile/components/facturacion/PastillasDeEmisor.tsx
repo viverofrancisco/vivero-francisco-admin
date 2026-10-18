@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import type { EmisorConfig } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import type { EmisorConfig } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Predeterminado, el ambiente y si está inactivo: lo que distingue un RUC de otro. */
 export function PastillasDeEmisor({ emisor }: { emisor: EmisorConfig }) {

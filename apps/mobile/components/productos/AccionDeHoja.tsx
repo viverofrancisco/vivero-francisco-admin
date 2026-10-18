@@ -1,8 +1,8 @@
 import { StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Un renglón de una hoja de acciones, la de Shopify: el ícono y el nombre. */
 export function AccionDeHoja({

@@ -2,8 +2,8 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "./PressableScale";
+import { tema } from "../../lib/tema";
 
 /**
  * Las piezas de una ficha de la app: la sección con su rótulo en versalitas

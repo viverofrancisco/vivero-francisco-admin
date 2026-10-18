@@ -19,11 +19,11 @@ import {
   serviciosEnUnaLinea,
   type SolicitudItem,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PantallaLista } from "@/components/ui/PantallaLista";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { fechaYHora12 } from "@/lib/hora";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { fechaYHora12 } from "@vivero/app-ui/lib/hora";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 type Estado = "pendientes" | "atendidas" | "todas";
 

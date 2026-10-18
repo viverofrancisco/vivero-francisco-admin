@@ -3,9 +3,9 @@ import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator, Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 
 /**

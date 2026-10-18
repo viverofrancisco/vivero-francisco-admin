@@ -16,12 +16,12 @@ import {
   MOTIVO_NOVEDAD_LABEL,
   type MotivoNovedad,
 } from "@vivero/shared";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { Campo } from "@/components/ui/Formulario";
-import { SelectorDeGaleria } from "@/components/SelectorDeGaleria";
-import type { ArchivoDeGaleria } from "@/lib/galeria";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { Campo } from "@vivero/app-ui/components/ui/Formulario";
+import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
+import type { ArchivoDeGaleria } from "@vivero/app-ui/lib/galeria";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export interface FotoElegida {
   uri: string;

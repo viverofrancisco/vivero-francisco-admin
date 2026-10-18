@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "./HojaInferior";
+import { tema } from "../../lib/tema";
 
 export interface OpcionElegible {
   clave: string;

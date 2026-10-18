@@ -13,13 +13,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as MediaLibrary from "expo-media-library";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ARRIBA_DE_LA_HOJA } from "@/components/informes/SelectorDeFotos";
+import { ARRIBA_DE_LA_HOJA } from "./ui/CabeceraDeHoja";
 import {
   archivoDeAssetDeGaleria,
   duracionCorta,
   type ArchivoDeGaleria,
-} from "@/lib/galeria";
-import { tema } from "@/lib/tema";
+} from "../lib/galeria";
+import { tema } from "../lib/tema";
 
 /** Cuántas por fila y qué separa una de otra: la grilla del selector de fotos. */
 const COLUMNAS = 4;

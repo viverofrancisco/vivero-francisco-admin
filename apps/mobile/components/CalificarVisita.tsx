@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   Image,
   KeyboardAvoidingView,
@@ -12,8 +12,8 @@ import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
-import { apiRequest, ApiError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { apiRequest, ApiError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Lo que ya dejó, si dejó algo. */
 export interface Calificacion {

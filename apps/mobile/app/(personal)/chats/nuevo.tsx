@@ -20,12 +20,12 @@ import {
 } from "expo-image-manipulator";
 import { RecortarFoto, type EdicionDeFoto } from "@/components/informes/RecortarFoto";
 
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { Campo, Titulo } from "@/components/ui/Formulario";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
 import type { ChatDetalle } from "@/lib/chats";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Lo que se sube: la foto ya recortada, o la que vino de la galería. */
 interface FotoLista {

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Searchbar, Text } from "react-native-paper";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Una tarea hecha en las visitas elegidas. Origen de cada sección. */
 export interface TareaParaSeccion {

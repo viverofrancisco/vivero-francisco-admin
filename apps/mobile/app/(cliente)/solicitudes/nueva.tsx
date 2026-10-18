@@ -11,8 +11,8 @@ import {
 import { HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { SERVICIO_OTRO } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { ClienteProfileResponse, PropiedadResumen } from "@/lib/types";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { ClienteProfileResponse, PropiedadResumen } from "@vivero/app-ui/lib/types";
 import {
   ElegirDireccion,
   camposDeOtra,
@@ -20,12 +20,12 @@ import {
   direccionLista,
   type Direccion,
 } from "@/components/pedidos/LugarDeTrabajo";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 import { ElegirServicios } from "@/components/solicitudes/ElegirServicios";
 import { AdjuntarArchivos } from "@/components/solicitudes/AdjuntarArchivos";
-import type { ArchivoLocal } from "@/lib/galeria";
-import { subirArchivoLocal } from "@/lib/subida";
-import { tema } from "@/lib/tema";
+import type { ArchivoLocal } from "@vivero/app-ui/lib/galeria";
+import { subirArchivoLocal } from "@vivero/app-ui/lib/subida";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Pedirle una visita al vivero: primero **los servicios que necesita** (al

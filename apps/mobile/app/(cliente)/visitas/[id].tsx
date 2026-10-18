@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { estadoColor, estadoLabel } from "@/lib/estado-visita";
+import { estadoColor, estadoLabel } from "@vivero/app-ui/lib/estado-visita";
 import {
   Image,
   Pressable,
@@ -10,11 +10,11 @@ import {
 import { ActivityIndicator, Button, HelperText, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { VisitaDetail, VisitaMedia } from "@/lib/types";
-import { listaTareas } from "@/lib/types";
-import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { VisitaDetail, VisitaMedia } from "@vivero/app-ui/lib/types";
+import { listaTareas } from "@vivero/app-ui/lib/types";
+import { MediaViewer, type MediaViewerSource } from "@vivero/app-ui/components/MediaViewer";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { MOTIVO_NOVEDAD_LABEL, fechaSola, type MotivoNovedad } from "@vivero/shared";
 
 export default function ClienteVisitaScreen() {

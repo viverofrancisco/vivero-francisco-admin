@@ -1,8 +1,8 @@
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Text } from "react-native-paper";
-import { useAuthStore } from "@/lib/auth-store";
-import { apiRequest } from "@/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 
 export default function AdminRedirectScreen() {
   const clear = useAuthStore((s) => s.clear);

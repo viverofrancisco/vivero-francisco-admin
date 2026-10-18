@@ -4,10 +4,10 @@ import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { CreatePropiedadBody } from "@vivero/shared";
 import { PropiedadForm } from "@/components/PropiedadForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { ApiError, apiRequest, mensajeDeError } from "@/lib/api";
-import type { ClienteStaffDetail, PropiedadResumen } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { ApiError, apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { ClienteStaffDetail, PropiedadResumen } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export default function PropiedadEditarScreen() {
   const { clienteId, propiedadId } = useLocalSearchParams<{

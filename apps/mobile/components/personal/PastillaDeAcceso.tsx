@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import type { EstadoAcceso } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import type { EstadoAcceso } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export const ACCESO_LABEL: Record<EstadoAcceso, string> = {
   ACTIVO: "Activo",

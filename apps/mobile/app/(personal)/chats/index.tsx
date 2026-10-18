@@ -4,12 +4,12 @@ import { Image } from "expo-image";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { Conectando } from "@/components/ui/Conectando";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { Conectando } from "@vivero/app-ui/components/ui/Conectando";
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
-import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
-import { useAuthStore } from "@/lib/auth-store";
+import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import { useColaDeEnvio } from "@/lib/cola-de-envio";
 import { guardarLista, leerLista } from "@/lib/cache-de-chats";
 import {
@@ -19,7 +19,7 @@ import {
   type ChatEnLista,
   type MensajeEncontrado,
 } from "@/lib/chats";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Los chats del equipo.

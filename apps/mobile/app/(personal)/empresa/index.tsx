@@ -11,12 +11,12 @@ import { HelperText, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { Campo, Titulo } from "@/components/ui/Formulario";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { subirArchivoLocal } from "@/lib/subida";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { subirArchivoLocal } from "@vivero/app-ui/lib/subida";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 interface Empresa {
   nombre: string | null;

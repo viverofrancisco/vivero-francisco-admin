@@ -4,11 +4,11 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { Burbuja } from "@/components/chats/Burbuja";
 import { cuandoLeyo, tituloDelDia, type InfoDeMensaje } from "@/lib/chats";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Quién leyó un mensaje propio, y cuándo. La pantalla de WhatsApp: el mensaje

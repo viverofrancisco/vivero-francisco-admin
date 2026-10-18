@@ -7,8 +7,8 @@ import MapView, {
   type MarkerDragStartEndEvent,
 } from "react-native-maps";
 import { ActivityIndicator, Text } from "react-native-paper";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "./ui/PressableScale";
+import { tema } from "../lib/tema";
 
 /**
  * El punto exacto de una propiedad, elegido en un mapa nativo.

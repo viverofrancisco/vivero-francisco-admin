@@ -4,12 +4,12 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { CabeceraDeHoja, PastillaDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { CategoriaListItem } from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { useAltoDelTeclado } from "@/lib/use-teclado";
+import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { CategoriaListItem } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
 
 /**
  * En qué categorías está el producto: la pantalla *Collections* de Shopify.

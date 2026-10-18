@@ -3,10 +3,10 @@ import { Alert, Keyboard, KeyboardAvoidingView, ScrollView, StyleSheet, View } f
 import { HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { SERVICIO_OTRO } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 import { ElegirServicios } from "@/components/solicitudes/ElegirServicios";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Pedir una visita **sin cuenta**: los servicios que necesita (al menos
@@ -131,7 +131,7 @@ export default function SolicitarInvitadoScreen() {
             <Text style={styles.rotulo}>TUS DATOS</Text>
             <TextInput
               mode="outlined"
-              label="Nombre"
+              label="Nombre *"
               value={nombre}
               onChangeText={setNombre}
               autoComplete="name"
@@ -145,7 +145,7 @@ export default function SolicitarInvitadoScreen() {
             ) : null}
             <TextInput
               mode="outlined"
-              label="Teléfono"
+              label="Teléfono *"
               value={telefono}
               onChangeText={setTelefono}
               keyboardType="phone-pad"

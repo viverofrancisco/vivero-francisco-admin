@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { tema } from "@/lib/tema";
-import { HojaInferior } from "@/components/ui/HojaInferior";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { TecladoDeCantidad } from "./TecladoDeCantidad";
 
 /** Desde cuántas se avisa *N en stock*: más que eso no le cambia nada a nadie. */

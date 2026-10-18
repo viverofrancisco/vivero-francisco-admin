@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { UsuarioForm } from "@/components/UsuarioForm";
 import { HojaDeEnlace } from "@/components/personal/HojaDeEnlace";
-import { apiRequest } from "@/lib/api";
-import type { EnlaceGenerado, UsuarioDelEquipo } from "@/lib/types";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import type { EnlaceGenerado, UsuarioDelEquipo } from "@vivero/app-ui/lib/types";
 
 /**
  * Crear una cuenta del equipo. Nada sale solo: al crearla aparece su enlace

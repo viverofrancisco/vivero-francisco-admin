@@ -1,6 +1,6 @@
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import type { TrabajoEnCola } from "./cola-de-visitas";
-import type { VisitaDetail } from "./types";
+import type { VisitaDetail } from "@vivero/app-ui/lib/types";
 
 export type ArchivosEnCola = Extract<TrabajoEnCola, { tipo: "ARCHIVOS" }>;
 

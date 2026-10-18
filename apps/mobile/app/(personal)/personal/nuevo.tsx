@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { PersonalForm } from "@/components/PersonalForm";
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 
 /**
  * Alta de una persona. La cuenta se crea con la ficha, del lado del servidor:

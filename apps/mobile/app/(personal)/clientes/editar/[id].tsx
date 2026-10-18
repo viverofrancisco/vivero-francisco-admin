@@ -3,9 +3,9 @@ import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { CreateClienteBody } from "@vivero/shared";
 import { ClienteForm } from "@/components/ClienteForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { apiRequest, ApiError } from "@/lib/api";
-import type { ClienteStaffDetail } from "@/lib/types";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { apiRequest, ApiError } from "@vivero/app-ui/lib/api";
+import type { ClienteStaffDetail } from "@vivero/app-ui/lib/types";
 
 export default function ClienteEditarScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

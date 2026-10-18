@@ -11,16 +11,16 @@ import {
   fechaSola,
   resumenDePropiedades,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { MenuDeEncabezado, type OpcionDeMenu } from "@/components/ui/MenuDeEncabezado";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { SelectorOpcion } from "@/components/ui/SelectorOpcion";
-import { Campo } from "@/components/ui/Formulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { MenuDeEncabezado, type OpcionDeMenu } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { SelectorOpcion } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { Campo } from "@vivero/app-ui/components/ui/Formulario";
 import { SelectorFecha } from "@/components/SelectorFecha";
-import type { FormaDePago, OrdenDetalle } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import type { FormaDePago, OrdenDetalle } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });

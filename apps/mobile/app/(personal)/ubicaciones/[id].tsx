@@ -4,9 +4,9 @@ import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Ubicacion } from "@vivero/shared";
 import { UbicacionForm } from "@/components/UbicacionForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export default function UbicacionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

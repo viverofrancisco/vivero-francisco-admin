@@ -6,10 +6,10 @@ import {
   View,
 } from "react-native";
 import { HelperText } from "react-native-paper";
-import { BotonEliminar, Campo, Titulo } from "@/components/ui/Formulario";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { BotonEliminar, Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Una tarea del catálogo: su nombre y en qué consiste.

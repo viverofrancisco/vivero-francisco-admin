@@ -2,15 +2,15 @@ import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { MenuDeEncabezado, type OpcionDeMenu } from "@/components/ui/MenuDeEncabezado";
-import { Fila, Seccion, estilosDeFicha } from "@/components/ui/SeccionDeFicha";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { MenuDeEncabezado, type OpcionDeMenu } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
+import { Fila, Seccion, estilosDeFicha } from "@vivero/app-ui/components/ui/SeccionDeFicha";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
 import { PastillasDeEmisor } from "@/components/facturacion/PastillasDeEmisor";
 import { HojaDeCertificado } from "@/components/facturacion/HojaDeCertificado";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { EmisorConfig } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { EmisorConfig } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 interface ResultadoPrueba {
   estado: string;

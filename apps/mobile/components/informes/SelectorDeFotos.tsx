@@ -3,7 +3,6 @@ import {
   FlatList,
   Image,
   Modal,
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -14,10 +13,11 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { fechaSola } from "@vivero/shared";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
-import { useAltoDelTeclado } from "@/lib/use-teclado";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
+import { ARRIBA_DE_LA_HOJA } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 
 /** Una foto de las visitas elegidas, de donde salen casi todas. */
 export interface MediaPoolItem {
@@ -134,9 +134,6 @@ interface FotoElegible {
   draft: SeccionFotoDraft;
 }
 
-/** Lo que va arriba del contenido de una hoja `pageSheet`. */
-export const ARRIBA_DE_LA_HOJA = (insetTop: number) =>
-  Platform.OS === "ios" ? 12 : insetTop + 8;
 
 /** Cuántas por fila y qué separa una de otra. */
 const COLUMNAS = 4;

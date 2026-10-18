@@ -3,9 +3,9 @@ import { StyleSheet, TextInput, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import type { DestinoDeOrden } from "@vivero/shared";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Mover las tareas marcadas de a varias, sin arrastrarlas.

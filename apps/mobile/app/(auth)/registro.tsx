@@ -11,14 +11,14 @@ import {
   errorDe,
   type AuthSuccessResponse,
 } from "@vivero/shared";
-import { apiRequest, esApiError, mensajeDeError } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
-import { registerForPushNotifications } from "@/lib/push";
+import { apiRequest, esApiError, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { registerForPushNotifications } from "@vivero/app-ui/lib/push";
 import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
-import { CampoDeCodigo } from "@/components/ui/CampoDeCodigo";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
+import { CampoDeCodigo } from "@vivero/app-ui/components/ui/CampoDeCodigo";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 
 /**
  * Crear una cuenta de cliente, en dos pasos: los datos, y el código de seis

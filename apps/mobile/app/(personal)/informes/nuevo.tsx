@@ -22,8 +22,8 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { EncabezadoDePasos } from "@/components/ui/EncabezadoDePasos";
-import { HojaInferior } from "@/components/ui/HojaInferior";
+import { EncabezadoDePasos } from "@vivero/app-ui/components/ui/EncabezadoDePasos";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { Ionicons } from "@expo/vector-icons";
 import {
   encabezadoPorDefecto,
@@ -32,19 +32,19 @@ import {
   primeraLineaPlana,
   textoPlanoDeHtml,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import type {
   ClienteListItem,
   ClientesListResponse,
-} from "@/lib/types";
-import { tema } from "@/lib/tema";
+} from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 import {
   SelectorDeSeccion,
   type TareaCatalogo,
   type TareaParaSeccion,
 } from "@/components/informes/SelectorDeSeccion";
+import { ARRIBA_DE_LA_HOJA } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import {
-  ARRIBA_DE_LA_HOJA,
   SelectorDeFotos,
   fotoDeBiblioteca,
   fotoDeVisita,

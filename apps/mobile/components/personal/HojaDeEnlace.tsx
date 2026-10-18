@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Share, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { EnlaceGenerado } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { EnlaceGenerado } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * El enlace recién emitido, la única vez que se puede ver: para copiarlo o

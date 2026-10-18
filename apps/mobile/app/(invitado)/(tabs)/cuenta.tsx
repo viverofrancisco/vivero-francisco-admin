@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { PantallaLista } from "@/components/ui/PantallaLista";
+import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 
 /**
  * *Cuenta* para el invitado: lo que gana creándola y las dos puertas —crearla

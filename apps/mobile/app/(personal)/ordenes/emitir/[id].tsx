@@ -8,18 +8,18 @@ import {
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fechaSola } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { Campo, Titulo } from "@/components/ui/Formulario";
-import { SelectorOpcion } from "@/components/ui/SelectorOpcion";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { SelectorOpcion } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import type {
   DatoFacturacionResumen,
   EmisorOpcion,
   OrdenDetalle,
-} from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { Conmutador } from "@/components/ui/Conmutador";
+} from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { Conmutador } from "@vivero/app-ui/components/ui/Conmutador";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });

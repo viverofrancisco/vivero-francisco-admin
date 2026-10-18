@@ -4,11 +4,11 @@ import { Text, TextInput } from "react-native-paper";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { Ionicons } from "@expo/vector-icons";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { EmisorConfig } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { EmisorConfig } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Carga el `.p12` de un emisor desde el teléfono: el archivo —del correo de

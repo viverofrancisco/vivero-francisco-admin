@@ -2,17 +2,17 @@ import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { MenuDeEncabezado, type OpcionDeMenu } from "@/components/ui/MenuDeEncabezado";
-import { Fila, Seccion, estilosDeFicha } from "@/components/ui/SeccionDeFicha";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
-import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { MenuDeEncabezado, type OpcionDeMenu } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
+import { Fila, Seccion, estilosDeFicha } from "@vivero/app-ui/components/ui/SeccionDeFicha";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
+import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
 import { HojaDeEnlace } from "@/components/personal/HojaDeEnlace";
 import { PastillaDeAcceso } from "@/components/personal/PastillaDeAcceso";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
-import type { EnlaceGenerado, UsuarioDelEquipo } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import type { EnlaceGenerado, UsuarioDelEquipo } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const ROL: Record<string, string> = { ADMIN: "Administrador", STAFF: "Staff" };
 

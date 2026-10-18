@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { unidadesEnElCarrito, useCarrito } from "@/lib/carrito";
 import { IconoDelCarrito } from "@/components/carrito/IconoDelCarrito";
 

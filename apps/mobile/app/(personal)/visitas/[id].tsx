@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { estadoLabel, estadoParaMi } from "@/lib/estado-visita";
+import { estadoLabel, estadoParaMi } from "@vivero/app-ui/lib/estado-visita";
 import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -18,7 +18,7 @@ import {
   type MotivoNovedad,
 } from "@vivero/shared";
 import { HojaNovedad, type DatosDeNovedad } from "@/components/HojaNovedad";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import {
   guardarTareas,
   guardarVisita,
@@ -30,24 +30,24 @@ import {
   useCambiosDeArchivos,
 } from "@/components/ArchivosVisita";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
-import type { VisitaDetail } from "@/lib/types";
-import { tareasHechas } from "@/lib/types";
-import { useAuthStore } from "@/lib/auth-store";
-import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
+import type { VisitaDetail } from "@vivero/app-ui/lib/types";
+import { tareasHechas } from "@vivero/app-ui/lib/types";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { MediaViewer, type MediaViewerSource } from "@vivero/app-ui/components/MediaViewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { Conectando } from "@/components/ui/Conectando";
-import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { Conectando } from "@vivero/app-ui/components/ui/Conectando";
+import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
 import { onHecho, trabajosDe, useColaDeVisitas } from "@/lib/cola-de-visitas";
 import { aplicarCola } from "@/lib/visita-con-cola";
 import { UbicacionPropiedad } from "@/components/UbicacionPropiedad";
-import { tema } from "@/lib/tema";
-import { diaEnEcuador, fechaYHora12, hoyEnEcuador } from "@/lib/hora";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
-import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
-import { dispositivoId } from "@/lib/dispositivo";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { diaEnEcuador, fechaYHora12, hoyEnEcuador } from "@vivero/app-ui/lib/hora";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
+import { avisarFaltaUbicacion, ubicacionActual } from "@vivero/app-ui/lib/ubicacion";
+import { dispositivoId } from "@vivero/app-ui/lib/dispositivo";
 import * as Haptics from "expo-haptics";
 
 /**

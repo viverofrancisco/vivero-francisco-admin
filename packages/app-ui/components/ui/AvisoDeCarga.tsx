@@ -2,8 +2,8 @@ import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { SIN_ACCESO_A, type TipoDeReferencia } from "@vivero/shared";
-import { esApiError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { esApiError } from "../../lib/api";
+import { tema } from "../../lib/tema";
 
 /**
  * Una ficha que no se pudo cargar, diciendo **por qué**: sin acceso (403),

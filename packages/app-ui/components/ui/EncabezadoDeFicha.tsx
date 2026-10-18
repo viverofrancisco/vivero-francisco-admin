@@ -2,8 +2,8 @@ import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { tema } from "@/lib/tema";
+import { BotonRedondoDeHoja } from "./CabeceraDeHoja";
+import { tema } from "../../lib/tema";
 
 /**
  * El encabezado de una ficha: la flecha de volver al lado del nombre, fijo

@@ -3,8 +3,8 @@ import { FlatList, Keyboard, Pressable, StyleSheet, View } from "react-native";
 import { HelperText, Searchbar, Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { CIUDADES_FRECUENTES, opcionesDeCiudad } from "@vivero/shared";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "./ui/HojaInferior";
+import { tema } from "../lib/tema";
 
 const sinTildes = (t: string) =>
   t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

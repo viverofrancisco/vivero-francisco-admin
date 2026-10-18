@@ -13,8 +13,8 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RecortarFoto, type EdicionDeFoto } from "@/components/informes/RecortarFoto";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export interface FotoDeProducto {
   id: string;

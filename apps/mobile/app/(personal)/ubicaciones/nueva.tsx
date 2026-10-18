@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { UbicacionForm } from "@/components/UbicacionForm";
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 
 export default function UbicacionNuevaScreen() {
   const router = useRouter();

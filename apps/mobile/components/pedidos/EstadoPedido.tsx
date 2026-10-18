@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { ETIQUETA_ESTADO_PEDIDO, type PedidoDelCliente } from "@vivero/shared";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** La pastilla del estado de un pedido: *Recibido*, *Confirmado* o *Anulado*. */
 export function EstadoPedido({

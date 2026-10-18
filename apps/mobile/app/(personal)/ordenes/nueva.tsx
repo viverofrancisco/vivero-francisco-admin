@@ -12,15 +12,15 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { SelectorCliente } from "@/components/clientes/SelectorCliente";
 import {
   SelectorProductos,
   type VarianteElegida,
 } from "@/components/ordenes/SelectorProductos";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { Campo } from "@/components/ui/Formulario";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { Campo } from "@vivero/app-ui/components/ui/Formulario";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   tareasHechas,
   type ClienteListItem,
@@ -28,8 +28,8 @@ import {
   type PeriodoPendiente,
   type ProductoVendible,
   type VisitaDetail,
-} from "@/lib/types";
-import { tema } from "@/lib/tema";
+} from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });

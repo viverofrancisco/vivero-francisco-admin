@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { textoDePrecio, type VarianteDelCatalogo } from "@vivero/shared";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 type Opcion = { nombre: string; valores: string[] };
 

@@ -5,20 +5,20 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ESTADO_PRODUCTO_LABEL } from "@vivero/shared";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
-import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { Fila, Seccion, estilosDeFicha } from "@/components/ui/SeccionDeFicha";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
+import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { Fila, Seccion, estilosDeFicha } from "@vivero/app-ui/components/ui/SeccionDeFicha";
 import { CuerpoDeVariante } from "@/components/productos/FichaDeVariante";
 import { FotosDeProducto } from "@/components/productos/FotosDeProducto";
 import { SelectorDeCategorias } from "@/components/productos/SelectorDeCategorias";
 import { EditorDeOpciones } from "@/components/productos/EditorDeOpciones";
 import { ListaDeVariantes } from "@/components/productos/ListaDeVariantes";
-import { apiRequest } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
-import type { ServicioDetail } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import type { ServicioDetail } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const TIPO_LABEL: Record<string, string> = {
   SERVICIO: "Servicio",

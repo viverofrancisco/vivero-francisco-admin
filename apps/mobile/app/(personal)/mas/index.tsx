@@ -3,12 +3,12 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
+import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { useAuthStore } from "@/lib/auth-store";
-import { tema } from "@/lib/tema";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 interface Item {
   label: string;

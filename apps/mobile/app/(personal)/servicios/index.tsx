@@ -3,28 +3,28 @@ import { FlatList, Image, RefreshControl, StyleSheet, View } from "react-native"
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   FILA_LISTA,
   PantallaLista,
   PieDeLista,
   type GrupoDeFiltro,
-} from "@/components/ui/PantallaLista";
+} from "@vivero/app-ui/components/ui/PantallaLista";
 import {
   ALTO_BARRA_SELECCION,
   BarraSeleccion,
-} from "@/components/ui/BarraSeleccion";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+} from "@vivero/app-ui/components/ui/BarraSeleccion";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
 import { avisoDeLote, eliminarEnLote } from "@/lib/lote";
-import { SelectorDeOrden } from "@/components/ui/SelectorDeOrden";
+import { SelectorDeOrden } from "@vivero/app-ui/components/ui/SelectorDeOrden";
 import {
   ORDEN_PRODUCTOS_POR_DEFECTO,
   codificarOrden,
   type OrdenProductos,
 } from "@vivero/shared";
-import type { ServicioListItem, ServiciosListResponse } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import type { ServicioListItem, ServiciosListResponse } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const TIPO_LABEL: Record<string, string> = {
   SERVICIO: "Servicio",

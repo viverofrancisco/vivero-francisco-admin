@@ -3,9 +3,9 @@ import { Alert, ActivityIndicator, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { TareaForm } from "@/components/TareaForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 interface Tarea {
   id: string;

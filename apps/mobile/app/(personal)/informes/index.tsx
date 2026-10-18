@@ -10,10 +10,10 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
-import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { useInformesFilters } from "@/lib/informes-filters-store";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 interface InformeItem {
   id: string;

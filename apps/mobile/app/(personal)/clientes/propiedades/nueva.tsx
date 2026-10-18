@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { CreatePropiedadBody } from "@vivero/shared";
 import { PropiedadForm } from "@/components/PropiedadForm";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, ApiError } from "@vivero/app-ui/lib/api";
 
 /**
  * Agregarle otra propiedad a un cliente.

@@ -4,7 +4,7 @@ import { Button, Text } from "react-native-paper";
 import { Stack, useRouter } from "expo-router";
 import { Calendar, type DateData } from "react-native-calendars";
 import { useInformesFilters } from "@/lib/informes-filters-store";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { fechaSola } from "@vivero/shared";
 
 const ACCENT = tema.verde;

@@ -10,11 +10,11 @@ import {
 import { Button, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { type PedidoDelCliente } from "@vivero/shared";
-import { fechaYHora12 } from "@/lib/hora";
-import { apiRequest } from "@/lib/api";
-import { PantallaLista } from "@/components/ui/PantallaLista";
+import { fechaYHora12 } from "@vivero/app-ui/lib/hora";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { EstadoPedido } from "@/components/pedidos/EstadoPedido";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const dinero = (n: number) => `$${n.toFixed(2)}`;
 

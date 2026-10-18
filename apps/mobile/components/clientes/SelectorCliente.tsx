@@ -3,9 +3,9 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Searchbar, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { nombreCliente } from "@vivero/shared";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import type { ClienteListItem } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import type { ClienteListItem } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Elegir el cliente entre cientos: una fila que abre una hoja con buscador,

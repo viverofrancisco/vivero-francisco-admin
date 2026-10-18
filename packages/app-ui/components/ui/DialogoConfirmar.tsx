@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
-import { hora12De } from "@/lib/hora";
+import { HojaInferior } from "./HojaInferior";
+import { PressableScale } from "./PressableScale";
+import { tema } from "../../lib/tema";
+import { hora12De } from "../../lib/hora";
 
 /**
  * Una confirmación en una hoja de abajo: una pregunta, dos botones.

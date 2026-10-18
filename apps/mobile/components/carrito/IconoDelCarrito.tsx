@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * El carrito con cuántas unidades lleva: una pastilla verde chica con borde

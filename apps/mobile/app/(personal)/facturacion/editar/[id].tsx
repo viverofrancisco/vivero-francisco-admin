@@ -9,12 +9,12 @@ import {
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { Campo, Titulo } from "@/components/ui/Formulario";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { EmisorConfig } from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { Conmutador } from "@/components/ui/Conmutador";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { EmisorConfig } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { Conmutador } from "@vivero/app-ui/components/ui/Conmutador";
 
 type Datos = Omit<EmisorConfig, "id" | "certificadoSujeto" | "certificadoVence" | "facturas">;
 

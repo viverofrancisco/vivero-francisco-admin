@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
-import { useConexion } from "@/lib/conexion";
-import { tema } from "@/lib/tema";
+import { useConexion } from "../../lib/conexion";
+import { tema } from "../../lib/tema";
 
 /**
  * El "Conectando…" de WhatsApp: una línea arriba del contenido mientras la

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 import {
   CalificarVisita,
   type Calificacion,

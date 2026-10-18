@@ -8,17 +8,17 @@ import {
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { diaISO } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { SelectorCliente } from "@/components/clientes/SelectorCliente";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { Titulo } from "@/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { Titulo } from "@vivero/app-ui/components/ui/Formulario";
 import {
   CamposDelPlan,
   ResumenDelPlan,
   type ValoresDelPlan,
 } from "@/components/suscripciones/CamposDelPlan";
-import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import type { ClienteListItem, ClientesListResponse } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Alta de un plan, la misma pantalla que el portal en móvil: cliente,

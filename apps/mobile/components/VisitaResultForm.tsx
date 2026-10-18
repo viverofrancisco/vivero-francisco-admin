@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   KeyboardAvoidingView,
   ScrollView,
@@ -14,16 +14,16 @@ import {
 } from "react-native-paper";
 import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { apiRequest, ApiError } from "@/lib/api";
-import { dispositivoId } from "@/lib/dispositivo";
+import { apiRequest, ApiError } from "@vivero/app-ui/lib/api";
+import { dispositivoId } from "@vivero/app-ui/lib/dispositivo";
 import { useColaDeVisitas } from "@/lib/cola-de-visitas";
-import { avisarFaltaUbicacion, type ResultadoUbicacion } from "@/lib/ubicacion";
+import { avisarFaltaUbicacion, type ResultadoUbicacion } from "@vivero/app-ui/lib/ubicacion";
 import * as Haptics from "expo-haptics";
 import type {
   VisitaDetail,
   VisitaMedia,
-} from "@/lib/types";
-import { tema } from "@/lib/tema";
+} from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * El parte de una persona: sus horas y las tareas que **ella** hizo.

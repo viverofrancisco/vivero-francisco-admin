@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { GrupoForm } from "@/components/GrupoForm";
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 
 export default function GrupoNuevoScreen() {
   const router = useRouter();

@@ -2,11 +2,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState } from "react-native";
 import { create } from "zustand";
 import { nuevoIdCliente } from "@vivero/shared";
-import type { VisitaDetail } from "./types";
-import type { UbicacionMarcada } from "./ubicacion";
-import { apiRequest } from "./api";
-import { useConexion } from "./conexion";
-import { ArchivoAusente, subirArchivoLocal } from "./subida";
+import type { VisitaDetail } from "@vivero/app-ui/lib/types";
+import type { UbicacionMarcada } from "@vivero/app-ui/lib/ubicacion";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { useConexion } from "@vivero/app-ui/lib/conexion";
+import { ArchivoAusente, subirArchivoLocal } from "@vivero/app-ui/lib/subida";
 
 /**
  * La cola de trabajo de las visitas: lo que se hizo en el jardín y todavía no

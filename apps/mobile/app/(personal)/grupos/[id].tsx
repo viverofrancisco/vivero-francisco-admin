@@ -3,10 +3,10 @@ import { Alert, ActivityIndicator, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { GrupoForm } from "@/components/GrupoForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { GrupoConMiembros } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { GrupoConMiembros } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export default function GrupoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

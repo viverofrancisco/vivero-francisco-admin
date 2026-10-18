@@ -10,14 +10,14 @@ import {
   type ReferenciaEnMensaje,
   type TipoDeReferencia,
 } from "@vivero/shared";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   etiquetaDeAdjuntos,
   horaDeMensaje,
   type EstadoDeMensaje,
   type MensajeDeChat,
 } from "@/lib/chats";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Los vistos de WhatsApp, en la esquina de cada mensaje propio: uno mientras

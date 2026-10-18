@@ -23,8 +23,8 @@ import {
   type EditorDeTextoRicoHandle,
 } from "@/components/informes/EditorDeTextoRico";
 import type { SeccionFotoDraft } from "@/components/informes/SelectorDeFotos";
-import { tema } from "@/lib/tema";
-import { Conmutador } from "@/components/ui/Conmutador";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { Conmutador } from "@vivero/app-ui/components/ui/Conmutador";
 
 export type FotosPorFila = 2 | 3 | 4 | 5 | 6;
 export type AlineacionDeFotos = "IZQUIERDA" | "CENTRO" | "DERECHA";

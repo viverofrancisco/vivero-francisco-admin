@@ -7,10 +7,10 @@ import {
   type ReferenciaEnMensaje,
   type VistaPreviaDeReferencia,
 } from "@vivero/shared";
-import { apiRequest, esApiError, mensajeDeError } from "@/lib/api";
-import { HojaInferior } from "@/components/ui/HojaInferior";
+import { apiRequest, esApiError, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { ICONO_REFERENCIA } from "@/components/chats/Burbuja";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * La ficha compartida, leída **sin salir del chat**: una hoja desde abajo

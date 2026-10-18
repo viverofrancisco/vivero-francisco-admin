@@ -12,13 +12,13 @@ import {
   ordenPorCampo,
   type OrdenProductos,
 } from "@vivero/shared";
-import { HojaInferior } from "@/components/ui/HojaInferior";
+import { HojaInferior } from "./HojaInferior";
 import {
   BOTON_JUNTO_AL_BUSCADOR,
   BOTON_JUNTO_AL_BUSCADOR_ACTIVO,
-} from "@/components/ui/PantallaLista";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+} from "./PantallaLista";
+import { PressableScale } from "./PressableScale";
+import { tema } from "../../lib/tema";
 
 /**
  * Ordenar la lista de productos, como Shopify: el ⇅ al lado del buscador abre

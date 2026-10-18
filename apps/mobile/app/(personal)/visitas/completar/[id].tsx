@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiRequest } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import { leerTareas, leerVisita } from "@/lib/cache-de-visitas";
 import { trabajosDe, useColaDeVisitas } from "@/lib/cola-de-visitas";
-import { ubicacionActual } from "@/lib/ubicacion";
-import type { VisitaDetail } from "@/lib/types";
+import { ubicacionActual } from "@vivero/app-ui/lib/ubicacion";
+import type { VisitaDetail } from "@vivero/app-ui/lib/types";
 import {
   VisitaResultForm,
   type TareaDeCatalogo,

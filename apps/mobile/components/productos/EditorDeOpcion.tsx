@@ -16,12 +16,12 @@ import {
   useReorderableDrag,
 } from "react-native-reorderable-list";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { BotonRedondoDeHoja, CabeceraDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
-import { CampoEnCaja } from "@/components/ui/Formulario";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { BotonRedondoDeHoja, CabeceraDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
+import { CampoEnCaja } from "@vivero/app-ui/components/ui/Formulario";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Un eje en edición: con id cuando ya existía, y sus valores igual. */
 export interface OpcionBorrador {

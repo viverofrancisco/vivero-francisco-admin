@@ -3,16 +3,16 @@ import { FlatList, Modal, StyleSheet, TextInput, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { CabeceraDeHoja, PastillaDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { BarraSeleccion } from "@/components/ui/BarraSeleccion";
+import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { BarraSeleccion } from "@vivero/app-ui/components/ui/BarraSeleccion";
 import type { CampoDeVarianteEnLote } from "@vivero/shared";
 import { AccionesDeVariantesEnLote, EditarVariantesEnLote } from "./VariantesEnLote";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { FichaDeVariante } from "./FichaDeVariante";
 import { resumenDeVariante } from "./formato";
-import type { ServicioDetail } from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { useAltoDelTeclado } from "@/lib/use-teclado";
+import type { ServicioDetail } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
 
 /**
  * Las variantes de un producto, la lista de Shopify: la miniatura, el nombre

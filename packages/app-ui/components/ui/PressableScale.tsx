@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
 import Animated, { useReducedMotion } from "react-native-reanimated";
-import { movimiento, transicion } from "@/lib/tema";
+import { movimiento, transicion } from "../../lib/tema";
 
 /**
  * Un `Pressable` que se hunde al tocarlo.

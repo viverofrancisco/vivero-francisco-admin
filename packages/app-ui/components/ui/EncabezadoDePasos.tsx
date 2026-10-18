@@ -2,9 +2,9 @@ import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, ProgressBar, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { MenuDeEncabezado, type OpcionDeMenu } from "@/components/ui/MenuDeEncabezado";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "./PressableScale";
+import { MenuDeEncabezado, type OpcionDeMenu } from "./MenuDeEncabezado";
+import { tema } from "../../lib/tema";
 
 /**
  * El encabezado de un asistente por pasos: la ✕ (o la flecha, desde el

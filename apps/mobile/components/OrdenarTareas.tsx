@@ -13,14 +13,14 @@ import {
   type DestinoDeOrden,
   type ModoOrdenTareas,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   ALTO_BARRA_SELECCION,
   BarraSeleccion,
-} from "@/components/ui/BarraSeleccion";
+} from "@vivero/app-ui/components/ui/BarraSeleccion";
 import { MoverTareas } from "@/components/MoverTareas";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export interface TareaOrdenable {
   id: string;

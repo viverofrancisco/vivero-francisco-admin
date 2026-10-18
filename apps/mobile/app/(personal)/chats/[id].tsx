@@ -26,15 +26,15 @@ import {
   type ReferenciaEnMensaje,
   type TipoDeReferencia,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import { onEnviado, useColaDeEnvio } from "@/lib/cola-de-envio";
 import { guardarChat, leerChat } from "@/lib/cache-de-chats";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { Conectando } from "@/components/ui/Conectando";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { MediaViewer } from "@/components/MediaViewer";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { Conectando } from "@vivero/app-ui/components/ui/Conectando";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { MediaViewer } from "@vivero/app-ui/components/MediaViewer";
 import {
   Burbuja,
   ETIQUETA_REFERENCIA,
@@ -44,8 +44,8 @@ import {
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
 import { PanelAdjuntar, type OpcionDeAdjuntar } from "@/components/chats/PanelAdjuntar";
-import { SelectorDeGaleria } from "@/components/SelectorDeGaleria";
-import type { ArchivoDeGaleria } from "@/lib/galeria";
+import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
+import type { ArchivoDeGaleria } from "@vivero/app-ui/lib/galeria";
 import { VistaPreviaDeFicha } from "@/components/chats/VistaPreviaDeFicha";
 import {
   etiquetaDeAdjuntos,
@@ -54,7 +54,7 @@ import {
   type ChatDetalle,
   type MensajeDeChat,
 } from "@/lib/chats";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Cada cuánto pregunta si llegó algo nuevo, con la pantalla abierta. */
 const CADA_MS = 5000;

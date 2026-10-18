@@ -3,10 +3,10 @@ import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 
 import { Button, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import type { PedidoDelCliente } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
-import { fechaYHora12 } from "@/lib/hora";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { tema } from "@/lib/tema";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { fechaYHora12 } from "@vivero/app-ui/lib/hora";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { EstadoPedido } from "@/components/pedidos/EstadoPedido";
 
 const dinero = (n: number) => `$${n.toFixed(2)}`;

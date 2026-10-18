@@ -8,10 +8,10 @@ import {
   zonaDePropiedad,
   type PropiedadMostrable,
 } from "@vivero/shared";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { API_BASE_URL } from "@/lib/config";
-import { useAuthStore } from "@/lib/auth-store";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { API_BASE_URL } from "@vivero/app-ui/lib/config";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Dónde queda la propiedad de esta visita, y cómo llegar.

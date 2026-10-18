@@ -1,4 +1,4 @@
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 
 /**
  * Lo que responde una acción en lote.

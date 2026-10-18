@@ -4,10 +4,10 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { direccionDeUbicacion, type Ubicacion } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Las ubicaciones del vivero, la *Locations* de Shopify y la misma pantalla

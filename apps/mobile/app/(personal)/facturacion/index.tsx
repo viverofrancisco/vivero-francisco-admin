@@ -3,12 +3,12 @@ import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { PastillasDeEmisor } from "@/components/facturacion/PastillasDeEmisor";
-import type { EmisorConfig } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import type { EmisorConfig } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Con qué RUC factura el portal ante el SRI: la pantalla *Facturación

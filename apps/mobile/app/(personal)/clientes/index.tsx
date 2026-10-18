@@ -4,25 +4,25 @@ import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { nombreCliente, resumenDeCliente } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import {
   FILA_LISTA,
   PantallaLista,
   PieDeLista,
   type GrupoDeFiltro,
-} from "@/components/ui/PantallaLista";
+} from "@vivero/app-ui/components/ui/PantallaLista";
 import {
   ALTO_BARRA_SELECCION,
   BarraSeleccion,
-} from "@/components/ui/BarraSeleccion";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+} from "@vivero/app-ui/components/ui/BarraSeleccion";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
 import { Ionicons } from "@expo/vector-icons";
 import { avisoDeLote, eliminarEnLote } from "@/lib/lote";
-import { useAuthStore } from "@/lib/auth-store";
-import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import type { ClienteListItem, ClientesListResponse } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const POR_PAGINA = 25;
 

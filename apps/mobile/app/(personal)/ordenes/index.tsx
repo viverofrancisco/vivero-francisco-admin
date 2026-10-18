@@ -10,16 +10,16 @@ import {
   resumenDePropiedades,
   type EstadoCobro,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   FILA_LISTA,
   PantallaLista,
   PieDeLista,
   type GrupoDeFiltro,
-} from "@/components/ui/PantallaLista";
-import type { OrdenListItem } from "@/lib/types";
-import { tema } from "@/lib/tema";
+} from "@vivero/app-ui/components/ui/PantallaLista";
+import type { OrdenListItem } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** El color de cada estado de cobro. El rojo se reserva para la anulada. */
 const COLOR_COBRO: Record<EstadoCobro, { texto: string; fondo: string }> = {

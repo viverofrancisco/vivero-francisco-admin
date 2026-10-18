@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { TareaForm } from "@/components/TareaForm";
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 
 export default function TareaNuevaScreen() {
   const router = useRouter();

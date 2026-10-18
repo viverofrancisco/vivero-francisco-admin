@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { Conectando } from "@/components/ui/Conectando";
-import { tema, tarjeta, transicion } from "@/lib/tema";
-import { hora12 } from "@/lib/hora";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { Conectando } from "@vivero/app-ui/components/ui/Conectando";
+import { tema, tarjeta, transicion } from "@vivero/app-ui/lib/tema";
+import { hora12 } from "@vivero/app-ui/lib/hora";
 import {
   FlatList,
   RefreshControl,
@@ -16,12 +16,12 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SelectorFecha } from "@/components/SelectorFecha";
 import { nombreCliente } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 import { guardarDia, leerDia } from "@/lib/cache-de-visitas";
-import { useAuthStore } from "@/lib/auth-store";
-import { estadoParaMi, estadoPildora, visitaTerminada } from "@/lib/estado-visita";
-import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
-import { resumenTareas } from "@/lib/types";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { estadoParaMi, estadoPildora, visitaTerminada } from "@vivero/app-ui/lib/estado-visita";
+import type { VisitaDetail, VisitasListResponse } from "@vivero/app-ui/lib/types";
+import { resumenTareas } from "@vivero/app-ui/lib/types";
 
 /**
  * Las visitas de **un día**, con hoy por defecto.

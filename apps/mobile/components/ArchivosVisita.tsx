@@ -4,22 +4,22 @@ import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { useColaDeVisitas } from "@/lib/cola-de-visitas";
-import { useConexion } from "@/lib/conexion";
+import { useConexion } from "@vivero/app-ui/lib/conexion";
 import type { ArchivosEnCola } from "@/lib/visita-con-cola";
-import type { VisitaMedia } from "@/lib/types";
+import type { VisitaMedia } from "@vivero/app-ui/lib/types";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
-import { SelectorDeGaleria } from "@/components/SelectorDeGaleria";
+import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
 import {
   archivoDeAssetDeCamara,
   type ArchivoDeGaleria,
   type ArchivoLocal,
-} from "@/lib/galeria";
+} from "@vivero/app-ui/lib/galeria";
 import { MAX_ARCHIVOS_POR_SUBIDA } from "@vivero/shared";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Las fotos de la visita: las **propias**, en cualquier momento.

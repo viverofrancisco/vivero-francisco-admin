@@ -8,11 +8,11 @@ import {
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { BotonEliminar, Campo, Titulo } from "@/components/ui/Formulario";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { PersonalFicha } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { BotonEliminar, Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { PersonalFicha } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export interface DatosGrupo {
   nombre: string;

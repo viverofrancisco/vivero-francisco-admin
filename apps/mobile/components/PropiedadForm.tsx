@@ -9,22 +9,22 @@ import {
 import { HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import type { CreatePropiedadBody } from "@vivero/shared";
-import { BuscadorDeDireccion } from "@/components/BuscadorDeDireccion";
+import { BuscadorDeDireccion } from "@vivero/app-ui/components/BuscadorDeDireccion";
 import {
   MapaDePropiedad,
   ZOOM_DE_BARRIO,
   zoomSegunPrecision,
   type Destino,
   type Punto,
-} from "@/components/MapaDePropiedad";
+} from "@vivero/app-ui/components/MapaDePropiedad";
 import { SelectorSector } from "@/components/SelectorSector";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
-import type { PropiedadResumen } from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { Conmutador } from "@/components/ui/Conmutador";
-import { SelectorDeCiudad } from "@/components/SelectorDeCiudad";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { avisarFaltaUbicacion, ubicacionActual } from "@vivero/app-ui/lib/ubicacion";
+import type { PropiedadResumen } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { Conmutador } from "@vivero/app-ui/components/ui/Conmutador";
+import { SelectorDeCiudad } from "@vivero/app-ui/components/SelectorDeCiudad";
 
 /**
  * Una propiedad: el lugar donde se trabaja.

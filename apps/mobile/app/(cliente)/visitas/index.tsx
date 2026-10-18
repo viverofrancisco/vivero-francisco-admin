@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { estadoColor, estadoLabel, visitaTerminada } from "@/lib/estado-visita";
+import { estadoColor, estadoLabel, visitaTerminada } from "@vivero/app-ui/lib/estado-visita";
 import {
   FlatList,
   Pressable,
@@ -9,11 +9,11 @@ import {
 } from "react-native";
 import { ActivityIndicator, Button, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
-import { apiRequest } from "@/lib/api";
-import { PantallaLista } from "@/components/ui/PantallaLista";
-import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
-import { resumenTareas } from "@/lib/types";
-import { diaEnEcuador, hoyEnEcuador } from "@/lib/hora";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
+import type { VisitaDetail, VisitasListResponse } from "@vivero/app-ui/lib/types";
+import { resumenTareas } from "@vivero/app-ui/lib/types";
+import { diaEnEcuador, hoyEnEcuador } from "@vivero/app-ui/lib/hora";
 import {
   diaISO,
   fechaSola,
@@ -22,7 +22,7 @@ import {
   type SolicitudItem,
 } from "@vivero/shared";
 import { EstadoSolicitud } from "@/components/solicitudes/FichaDeSolicitud";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 type Group = "Hoy" | "Mañana" | "Esta semana" | "Más adelante" | "Historial";
 

@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import type { CreateClienteBody } from "@vivero/shared";
 import { ClienteForm } from "@/components/ClienteForm";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, ApiError } from "@vivero/app-ui/lib/api";
 
 export default function ClienteNuevoScreen() {
   const router = useRouter();

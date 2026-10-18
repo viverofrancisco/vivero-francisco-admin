@@ -16,11 +16,11 @@ import {
   zonaDePropiedad,
 } from "@vivero/shared";
 import { SelectorFecha } from "@/components/SelectorFecha";
-import { SelectorOpcion } from "@/components/ui/SelectorOpcion";
-import { Campo, Titulo } from "@/components/ui/Formulario";
-import { PressableScale } from "@/components/ui/PressableScale";
-import type { PropiedadDelPlan } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { SelectorOpcion } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import type { PropiedadDelPlan } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** Lo que se edita de un plan, como texto: los importes no pelean con el input. */
 export interface ValoresDelPlan {

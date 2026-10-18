@@ -7,12 +7,12 @@ import {
   gananciaDeVenta,
   type UnidadPeso,
 } from "@vivero/shared";
-import { CabeceraDeHoja, PastillaDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { CampoEnCaja, Casilla, Titulo } from "@/components/ui/Formulario";
-import { SelectorOpcion } from "@/components/ui/SelectorOpcion";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { VarianteDeProducto } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { CampoEnCaja, Casilla, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { SelectorOpcion } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { VarianteDeProducto } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { dinero } from "./formato";
 
 /** Lo escrito, como número. Vacío o a medio escribir vale `null`. */

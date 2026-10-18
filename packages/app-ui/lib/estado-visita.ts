@@ -10,7 +10,7 @@
  * Los colores salen del sistema de diseño (`lib/tema.ts`): que el mismo estado
  * se vea de dos maneras según la pantalla es peor que no tener color.
  */
-import { estadoVisual, tema } from "@/lib/tema";
+import { estadoVisual, tema } from "./tema";
 
 export function estadoLabel(estado: string): string {
   return estadoVisual[estado]?.etiqueta ?? estado;

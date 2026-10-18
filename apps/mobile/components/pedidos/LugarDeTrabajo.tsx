@@ -15,18 +15,18 @@ import {
   horaLegible,
   type HorarioSemanal,
 } from "@vivero/shared";
-import type { PropiedadResumen } from "@/lib/types";
-import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
-import { BuscadorDeDireccion } from "@/components/BuscadorDeDireccion";
+import type { PropiedadResumen } from "@vivero/app-ui/lib/types";
+import { avisarFaltaUbicacion, ubicacionActual } from "@vivero/app-ui/lib/ubicacion";
+import { BuscadorDeDireccion } from "@vivero/app-ui/components/BuscadorDeDireccion";
 import {
   MapaDePropiedad,
   ZOOM_DE_BARRIO,
   zoomSegunPrecision,
   type Destino,
   type Punto,
-} from "@/components/MapaDePropiedad";
-import { tema } from "@/lib/tema";
-import { SelectorDeCiudad } from "@/components/SelectorDeCiudad";
+} from "@vivero/app-ui/components/MapaDePropiedad";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { SelectorDeCiudad } from "@vivero/app-ui/components/SelectorDeCiudad";
 
 /**
  * Dónde es algo del cliente —adónde se lleva un pedido, dónde es el trabajo de

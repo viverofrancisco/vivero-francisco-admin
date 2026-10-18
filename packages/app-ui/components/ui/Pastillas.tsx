@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "./PressableScale";
+import { tema } from "../../lib/tema";
 
 export interface OpcionPastilla {
   clave: string;

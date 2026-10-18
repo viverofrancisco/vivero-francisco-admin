@@ -4,9 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import type { AuthSuccessResponse } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
-import { registerForPushNotifications } from "@/lib/push";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { registerForPushNotifications } from "@vivero/app-ui/lib/push";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
 

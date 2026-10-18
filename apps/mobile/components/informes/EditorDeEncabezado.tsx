@@ -7,7 +7,7 @@ import {
   EditorDeTextoRico,
   type EditorDeTextoRicoHandle,
 } from "@/components/informes/EditorDeTextoRico";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * El encabezado del informe, con el mismo editor que las secciones y

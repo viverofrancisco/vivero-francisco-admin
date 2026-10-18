@@ -16,9 +16,9 @@ import {
 } from "react-native-paper";
 import { Calendar, type DateData } from "react-native-calendars";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
-import { EncabezadoDePasos } from "@/components/ui/EncabezadoDePasos";
+import { EncabezadoDePasos } from "@vivero/app-ui/components/ui/EncabezadoDePasos";
 import { describirPlan, nombreCliente, type SolicitudItem } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import type {
   ClienteListItem,
   ClientesListResponse,
@@ -28,10 +28,10 @@ import type {
   PersonalOption,
   PlanDelCliente,
   PropiedadResumen,
-} from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { Conmutador } from "@/components/ui/Conmutador";
-import { SelectorDeCiudad } from "@/components/SelectorDeCiudad";
+} from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { Conmutador } from "@vivero/app-ui/components/ui/Conmutador";
+import { SelectorDeCiudad } from "@vivero/app-ui/components/SelectorDeCiudad";
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5;
 

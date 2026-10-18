@@ -9,11 +9,11 @@ import {
   type ProductoDelCatalogoDetalle,
   type VarianteDelCatalogo,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { lineaDeLaFicha, type LineaDelCarrito } from "@/lib/carrito";
-import { HojaInferior } from "@/components/ui/HojaInferior";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { guardarProducto, productoEnCache } from "@/lib/cache-de-productos";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { Cantidad, Disponibilidad } from "./partes";
 import { TecladoDeCantidad } from "./TecladoDeCantidad";
 import { SelectorDeOpciones, seleccionInicial, varianteDe } from "./SelectorDeOpciones";

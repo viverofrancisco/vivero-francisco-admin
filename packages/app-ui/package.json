@@ -1,0 +1,9 @@
+{
+  "name": "@vivero/app-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Lo que comparten la app de clientes y la del equipo: componentes de pantalla, sesión, conexión con la API, tema, mapas y fotos.",
+  "dependencies": {
+    "@vivero/shared": "*"
+  }
+}

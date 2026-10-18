@@ -8,15 +8,15 @@ import {
 } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import { EstadoDelCliente } from "@/components/clientes/EstadoDelCliente";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
-import { useAuthStore } from "@/lib/auth-store";
-import type { ClienteStaffDetail } from "@/lib/types";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import type { ClienteStaffDetail } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 export default function ClienteDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

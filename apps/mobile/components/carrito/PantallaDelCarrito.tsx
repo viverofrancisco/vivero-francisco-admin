@@ -5,10 +5,10 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PantallaLista } from "@/components/ui/PantallaLista";
+import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { useCarrito, type LineaDelCarrito } from "@/lib/carrito";
-import { tema } from "@/lib/tema";
-import { HojaInferior } from "@/components/ui/HojaInferior";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { TecladoDeCantidad } from "@/components/catalogo/TecladoDeCantidad";
 
 const dinero = (n: number) => `$${n.toFixed(2)}`;

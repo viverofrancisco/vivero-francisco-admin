@@ -2,9 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState } from "react-native";
 import { create } from "zustand";
 import type { MensajeDeChat, MensajeEnCola } from "@vivero/shared";
-import { API_BASE_URL } from "./config";
-import { apiRequest } from "./api";
-import { useConexion } from "./conexion";
+import { API_BASE_URL } from "@vivero/app-ui/lib/config";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { useConexion } from "@vivero/app-ui/lib/conexion";
 
 /**
  * La cola de salida de los chats: lo que se escribió y todavía no llegó.

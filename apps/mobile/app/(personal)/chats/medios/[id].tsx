@@ -17,10 +17,10 @@ import {
   urlParaMiniatura,
   urlParaVerGrande,
 } from "@vivero/shared";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { MediaViewer, type MediaViewerSource } from "@vivero/app-ui/components/MediaViewer";
 import {
   guardarMedios,
   leerMedios,
@@ -28,7 +28,7 @@ import {
   type TipoDeMedios,
 } from "@/lib/cache-de-chats";
 import { cuandoFue, type ArchivoDelChat, type EnlaceDelChat } from "@/lib/chats";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Lo que se mandó en el chat, aparte de leerlo: las fotos y videos en una

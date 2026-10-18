@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Searchbar, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { PieDeLista } from "@/components/ui/PantallaLista";
-import type { ProductoVendible } from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { useAltoDelTeclado } from "@/lib/use-teclado";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { PieDeLista } from "@vivero/app-ui/components/ui/PantallaLista";
+import type { ProductoVendible } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });

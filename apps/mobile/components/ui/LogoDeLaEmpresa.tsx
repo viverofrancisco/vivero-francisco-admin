@@ -1,6 +1,6 @@
 import { Image, type ImageStyle } from "expo-image";
 import type { StyleProp } from "react-native";
-import { useBranding } from "@/lib/branding";
+import { useBranding } from "@vivero/app-ui/lib/branding";
 
 const EMPAQUETADO = require("@/assets/images/logo-empresa.png");
 

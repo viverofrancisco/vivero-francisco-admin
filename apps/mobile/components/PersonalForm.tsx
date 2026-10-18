@@ -7,12 +7,12 @@ import {
   View,
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
-import { BotonEliminar, Campo, Titulo } from "@/components/ui/Formulario";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { mensajeDeError } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
-import { tema } from "@/lib/tema";
-import { Conmutador } from "@/components/ui/Conmutador";
+import { BotonEliminar, Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { Conmutador } from "@vivero/app-ui/components/ui/Conmutador";
 
 export interface DatosPersonal {
   nombre: string;

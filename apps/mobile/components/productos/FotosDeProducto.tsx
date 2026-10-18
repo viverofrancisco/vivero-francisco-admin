@@ -3,15 +3,15 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { Text } from "react-native-paper";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { estilosDeFicha } from "@/components/ui/SeccionDeFicha";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { estilosDeFicha } from "@vivero/app-ui/components/ui/SeccionDeFicha";
 import { VisorDeFotosDeProducto } from "./VisorDeFotosDeProducto";
 import {
   SelectorDeFotos,
   fotoDeBiblioteca,
 } from "@/components/informes/SelectorDeFotos";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * Las fotos del producto, la sección *Media* de Shopify: las miniaturas

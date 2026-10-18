@@ -11,14 +11,14 @@ import {
 import { HelperText, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { CabeceraDeHoja, PastillaDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { EditorDeOpcion, type OpcionBorrador } from "./EditorDeOpcion";
-import { apiRequest, ApiError, mensajeDeError } from "@/lib/api";
-import type { OpcionDeProducto } from "@/lib/types";
-import { tema } from "@/lib/tema";
-import { useAltoDelTeclado } from "@/lib/use-teclado";
+import { apiRequest, ApiError, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { OpcionDeProducto } from "@vivero/app-ui/lib/types";
+import { tema } from "@vivero/app-ui/lib/tema";
+import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
 
 /** Cuántos ejes admite un producto, como en el servidor. */
 const MAX_OPCIONES = 3;

@@ -10,8 +10,8 @@ import {
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "./PressableScale";
+import { tema } from "../../lib/tema";
 
 export interface OpcionDeMenu {
   etiqueta: string;

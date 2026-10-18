@@ -5,15 +5,15 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
+import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import type { ChatDetalle, MiembroDeChat } from "@/lib/chats";
-import { tema } from "@/lib/tema";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 const ROL: Record<string, string> = ETIQUETA_DE_ROL;
 

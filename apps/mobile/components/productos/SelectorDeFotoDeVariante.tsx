@@ -4,8 +4,8 @@ import {
   SelectorDeFotos,
   fotoDeBiblioteca,
 } from "@/components/informes/SelectorDeFotos";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { VarianteDeProducto } from "@/lib/types";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import type { VarianteDeProducto } from "@vivero/app-ui/lib/types";
 
 /**
  * Cuál es la foto de una variante: la biblioteca entera, de a una, como en

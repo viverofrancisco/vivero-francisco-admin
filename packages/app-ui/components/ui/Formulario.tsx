@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, TextInput as TextInputNativo, View } from "react-native";
 import { Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "./PressableScale";
+import { tema } from "../../lib/tema";
 import { Conmutador } from "./Conmutador";
 
 /**

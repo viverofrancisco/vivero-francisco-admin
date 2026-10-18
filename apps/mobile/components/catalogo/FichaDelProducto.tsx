@@ -18,11 +18,11 @@ import {
   type ProductoDelCatalogoDetalle,
   type VarianteDelCatalogo,
 } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
+import { apiRequest } from "@vivero/app-ui/lib/api";
 import { guardarProducto, productoEnCache } from "@/lib/cache-de-productos";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
-import { tema } from "@/lib/tema";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
+import { tema } from "@vivero/app-ui/lib/tema";
 import { Cantidad } from "./partes";
 import { SelectorDeOpciones, seleccionInicial, varianteDe } from "./SelectorDeOpciones";
 

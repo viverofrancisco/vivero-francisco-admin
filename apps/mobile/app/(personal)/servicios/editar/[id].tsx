@@ -6,9 +6,9 @@ import {
   datosDeVariante,
   type ValoresDeProducto,
 } from "@/components/ServicioForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
-import { apiRequest, ApiError } from "@/lib/api";
-import type { ServicioDetail } from "@/lib/types";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { apiRequest, ApiError } from "@vivero/app-ui/lib/api";
+import type { ServicioDetail } from "@vivero/app-ui/lib/types";
 
 /**
  * Editar un producto: el mismo formulario del alta, cargado con la ficha.

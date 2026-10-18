@@ -5,14 +5,14 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { MAX_ADJUNTOS_SOLICITUD } from "@vivero/shared";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { SelectorDeGaleria } from "@/components/SelectorDeGaleria";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
 import {
   archivoDeAssetDeCamara,
   type ArchivoDeGaleria,
   type ArchivoLocal,
-} from "@/lib/galeria";
-import { tema } from "@/lib/tema";
+} from "@vivero/app-ui/lib/galeria";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * *Fotos o videos*, opcional: que el cliente muestre su jardín antes de que

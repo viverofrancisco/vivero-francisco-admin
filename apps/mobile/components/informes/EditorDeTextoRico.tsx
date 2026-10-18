@@ -45,8 +45,8 @@ import {
   type EstadoDeFormato,
   type InstanciaDeFormato,
 } from "@/components/informes/puentes";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { tema } from "@/lib/tema";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /** El editor y su estado, con lo que los puentes del informe le agregan. */
 type Editor = EditorBridge & InstanciaDeFormato;

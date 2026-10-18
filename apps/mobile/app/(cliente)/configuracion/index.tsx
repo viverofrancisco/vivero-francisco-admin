@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert, RefreshControl } from "react-native";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { useAuthStore } from "@/lib/auth-store";
-import type { ClienteProfileResponse } from "@/lib/types";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
+import type { ClienteProfileResponse } from "@vivero/app-ui/lib/types";
 import {
   PantallaDeCuenta,
   Row,

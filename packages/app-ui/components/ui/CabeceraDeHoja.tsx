@@ -2,7 +2,7 @@ import { Platform, Pressable, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { tema } from "@/lib/tema";
+import { tema } from "../../lib/tema";
 
 /**
  * Lo que va arriba del contenido de una hoja `pageSheet`: en iOS ya arranca
@@ -166,3 +166,11 @@ const styles = StyleSheet.create({
   pastillaTextoPrimaria: { color: "#fff" },
   apagada: { opacity: 0.4 },
 });
+
+/**
+ * Lo que va arriba del contenido de una hoja `pageSheet`: en iOS la hoja ya
+ * empieza debajo de la barra de estado, así que alcanza un margen fijo; en
+ * Android hay que sumar el recorte de la pantalla.
+ */
+export const ARRIBA_DE_LA_HOJA = (insetTop: number) =>
+  Platform.OS === "ios" ? 12 : insetTop + 8;

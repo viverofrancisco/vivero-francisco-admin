@@ -7,9 +7,9 @@ import {
   SERVICIO_OTRO,
   type ServicioParaSolicitar,
 } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { tema } from "@/lib/tema";
+import { apiRequest } from "@vivero/app-ui/lib/api";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
  * *¿Qué servicios necesitas?*, **obligatorio** (al menos uno, y va primero:

@@ -1,8 +1,8 @@
 import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { tema } from "@/lib/tema";
+import { PressableScale } from "./PressableScale";
+import { tema } from "../../lib/tema";
 
 /**
  * El encabezado de un formulario: *Cancelar* a la izquierda, la acción a la

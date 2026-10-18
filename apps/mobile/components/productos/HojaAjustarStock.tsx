@@ -10,12 +10,12 @@ import {
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { CabeceraDeHoja, PastillaDeHoja } from "@/components/ui/CabeceraDeHoja";
-import { CampoEnCaja } from "@/components/ui/Formulario";
-import { HojaInferior } from "@/components/ui/HojaInferior";
-import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, mensajeDeError } from "@/lib/api";
-import { tema } from "@/lib/tema";
+import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { CampoEnCaja } from "@vivero/app-ui/components/ui/Formulario";
+import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
+import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 type Motivo = "AJUSTE" | "CONTEO" | "INGRESO";
 

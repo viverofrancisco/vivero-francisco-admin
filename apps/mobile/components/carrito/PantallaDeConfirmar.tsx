@@ -21,9 +21,9 @@ import {
   type PedidoInvitadoBody,
   type UbicacionDeRetiro,
 } from "@vivero/shared";
-import { ApiError, apiRequest, mensajeDeError } from "@/lib/api";
+import { ApiError, apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { useCarrito } from "@/lib/carrito";
-import type { ClienteProfileResponse, PropiedadResumen } from "@/lib/types";
+import type { ClienteProfileResponse, PropiedadResumen } from "@vivero/app-ui/lib/types";
 import {
   BotonComoLlegar,
   ElegirDireccion,
@@ -36,8 +36,8 @@ import {
   lineaDeDireccion,
   type Direccion,
 } from "@/components/pedidos/LugarDeTrabajo";
-import { EncabezadoDePasos } from "@/components/ui/EncabezadoDePasos";
-import { tema } from "@/lib/tema";
+import { EncabezadoDePasos } from "@vivero/app-ui/components/ui/EncabezadoDePasos";
+import { tema } from "@vivero/app-ui/lib/tema";
 
 type Metodo = "RETIRO" | "ENVIO";
 
