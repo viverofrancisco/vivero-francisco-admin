@@ -11,7 +11,14 @@ import {
 } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
-import type { SolicitudItem } from "@vivero/shared";
+import { Image } from "expo-image";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  coincideSolicitud,
+  fechaSola,
+  serviciosEnUnaLinea,
+  type SolicitudItem,
+} from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PantallaLista } from "@/components/ui/PantallaLista";
 import { HojaInferior } from "@/components/ui/HojaInferior";
@@ -27,7 +34,8 @@ interface Respuesta {
 }
 
 /**
- * Lo que los clientes pidieron desde la app: visitas y cotizaciones. Llegan
+ * Lo que los clientes pidieron desde la app: visitas, con los servicios que
+ * marcaron. Llegan
  * como notificación en el momento y quedan acá hasta que alguien las marca
  * atendidas, que es lo único que se hace con ellas además de llamar.
  */
@@ -36,12 +44,13 @@ export default function SolicitudesScreen() {
   const [estado, setEstado] = useState<Estado>("pendientes");
   const [datos, setDatos] = useState<Respuesta | null>(null);
   const [refrescando, setRefrescando] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
   const [abierta, setAbierta] = useState<SolicitudItem | null>(null);
   const [guardando, setGuardando] = useState(false);
 
   const cargar = useCallback(async (e: Estado) => {
     try {
-      setDatos(await apiRequest<Respuesta>("/api/mobile/solicitudes", { query: { estado: e } }));
+      setDatos(await apiRequest<Respuesta>("/api/mobile/solicitudes", { query: { estado: e, limit: 100 } }));
     } catch {
       setDatos((prev) => prev ?? { items: [], total: 0, pendientes: 0 });
     } finally {
@@ -71,9 +80,35 @@ export default function SolicitudesScreen() {
     }
   }
 
+  /** La visita, desde la solicitud: cierra la hoja y abre el asistente con
+   *  su cliente y su propiedad puestos. La de un invitado llega sin cliente,
+   *  y el asistente arranca en *Cliente nuevo* con sus datos. */
+  function abrirAsistente(s: SolicitudItem) {
+    setAbierta(null);
+    // La hoja se cierra antes de navegar: un modal que se está yendo tapa
+    // la pantalla que se abre encima.
+    setTimeout(
+      () =>
+        router.push({
+          pathname: "/(personal)/visitas/nueva",
+          params: {
+            solicitud: s.id,
+            cliente: s.cliente?.id ?? "",
+            propiedad: s.propiedad?.id ?? "",
+          },
+        }),
+      250
+    );
+  }
+
   return (
     <PantallaLista
       titulo="Solicitudes"
+      // Como el portal: por quién la mandó o por lo que pide, palabra por
+      // palabra, sobre las que ya están cargadas.
+      busqueda={busqueda}
+      onBuscar={setBusqueda}
+      placeholder="Buscar por cliente o por lo que pide"
       grupos={[
         {
           id: "estado",
@@ -97,7 +132,7 @@ export default function SolicitudesScreen() {
         </View>
       ) : (
         <FlatList
-          data={datos.items}
+          data={datos.items.filter((s) => coincideSolicitud(s, busqueda))}
           keyExtractor={(s) => s.id}
           contentContainerStyle={styles.lista}
           refreshControl={
@@ -111,7 +146,9 @@ export default function SolicitudesScreen() {
           }
           ListEmptyComponent={
             <Text style={styles.vacio}>
-              {estado === "pendientes"
+              {busqueda.trim()
+                ? "Ninguna solicitud coincide con la búsqueda."
+                : estado === "pendientes"
                 ? "No hay solicitudes pendientes."
                 : "No hay solicitudes."}
             </Text>
@@ -129,7 +166,7 @@ export default function SolicitudesScreen() {
                 <Text style={styles.fecha}>{fechaYHora12(item.createdAt)}</Text>
               </View>
               <Text style={styles.tipo} numberOfLines={1}>
-                {item.producto ? `Cotización · ${item.producto.nombre}` : "Solicitud"}
+                {serviciosEnUnaLinea(item) ?? "Solicitud"}
                 {item.atendidaEl ? " · Atendida" : ""}
               </Text>
               <Text style={styles.mensaje} numberOfLines={2}>
@@ -151,12 +188,10 @@ export default function SolicitudesScreen() {
               <Text style={styles.hojaDato}>Sin cuenta: la mandó desde el modo invitado</Text>
             )}
             <Text style={styles.fecha}>{fechaYHora12(abierta.createdAt)}</Text>
-            {abierta.producto ? (
-              <Text style={styles.tipo}>Cotización · {abierta.producto.nombre}</Text>
-            ) : null}
-            <Text style={styles.hojaMensaje}>{abierta.mensaje}</Text>
-            {abierta.direccion ? (
-              <Text style={styles.hojaDato}>Dirección: {abierta.direccion}</Text>
+            {/* El orden del formulario del cliente: servicios, número,
+                detalles, archivos y dónde. */}
+            {abierta.servicios.length ? (
+              <Text style={styles.tipo}>{serviciosEnUnaLinea(abierta)}</Text>
             ) : null}
             {abierta.contacto.telefono ? (
               <Text
@@ -168,12 +203,69 @@ export default function SolicitudesScreen() {
             ) : null}
             {abierta.contacto.email ? (
               <Text
-                style={styles.enlace}
+                style={styles.hojaDato}
                 onPress={() => Linking.openURL(`mailto:${abierta.contacto.email}`)}
               >
                 {abierta.contacto.email}
               </Text>
             ) : null}
+            <Text style={styles.hojaMensaje}>{abierta.mensaje}</Text>
+            {abierta.adjuntos.length ? (
+              <View style={styles.adjuntos}>
+                {abierta.adjuntos.map((a) => (
+                  <Pressable
+                    key={a.id}
+                    onPress={() => Linking.openURL(a.url)}
+                    style={({ pressed }) => [styles.adjunto, pressed && styles.filaTocada]}
+                  >
+                    {a.tipo === "video" ? (
+                      <View style={[styles.adjuntoImagen, styles.video]}>
+                        <Ionicons name="play" size={18} color="#fff" />
+                      </View>
+                    ) : (
+                      <Image source={{ uri: a.url }} style={styles.adjuntoImagen} contentFit="cover" />
+                    )}
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+            {abierta.direccion || abierta.propiedad ? (
+              <Text style={styles.hojaDato}>
+                Dónde: {[abierta.propiedad?.nombre, abierta.direccion].filter(Boolean).join(" · ")}
+              </Text>
+            ) : null}
+            {abierta.lat !== null && abierta.lng !== null ? (
+              <Text
+                style={styles.enlace}
+                onPress={() =>
+                  Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${abierta.lat},${abierta.lng}`)
+                }
+              >
+                Ver en el mapa
+              </Text>
+            ) : null}
+            {abierta.visitas.length > 0 ? (
+              <Text style={styles.hojaDato}>
+                {abierta.visitas.length === 1 ? "Visita: " : "Visitas: "}
+                {abierta.visitas.map((v, i) => (
+                  <Text
+                    key={v.id}
+                    style={styles.enlace}
+                    onPress={() => {
+                      setAbierta(null);
+                      router.push(`/(personal)/visitas/${v.id}`);
+                    }}
+                  >
+                    {i > 0 ? ", " : ""}#{v.numero} · {fechaSola(v.fechaProgramada)}
+                  </Text>
+                ))}
+              </Text>
+            ) : null}
+            {abierta.cliente ? null : (
+              <Text style={styles.hojaDato}>
+                La mandó sin cuenta: al crear la visita se le crea su ficha con estos datos.
+              </Text>
+            )}
             {abierta.atendidaEl ? (
               <Text style={styles.hojaDato}>
                 Atendida {fechaYHora12(abierta.atendidaEl)}
@@ -189,6 +281,9 @@ export default function SolicitudesScreen() {
                 onPress={() => marcar(abierta, !abierta.atendidaEl)}
               >
                 {abierta.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
+              </Button>
+              <Button mode="outlined" onPress={() => abrirAsistente(abierta)}>
+                Crear visita
               </Button>
               {abierta.cliente ? (
                 <Button
@@ -235,4 +330,8 @@ const styles = StyleSheet.create({
   hojaDato: { color: tema.texto2 },
   enlace: { color: tema.verde700, fontWeight: "600", paddingVertical: 2 },
   botones: { gap: 8, marginTop: 14 },
+  adjuntos: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
+  adjunto: { width: 64, height: 64, borderRadius: 8, overflow: "hidden" },
+  adjuntoImagen: { width: "100%", height: "100%", backgroundColor: tema.lienzo },
+  video: { backgroundColor: "#222", alignItems: "center", justifyContent: "center" },
 });

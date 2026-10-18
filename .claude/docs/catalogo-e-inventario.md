@@ -187,10 +187,15 @@ El orden de la emisión importa y no es simétrico:
 1. **Antes de emitir**, `ensureStockParaVender()` mira si alcanza. Es el único
    momento en que se puede decir que no: después el comprobante ya está
    autorizado y no se deshace.
-2. **Después de que el SRI autorizó**, `descontarPorVenta()` anota la salida
-   con `forzar: true`. La venta ya es un hecho; negarse a registrarla no
-   evitaría nada, dejaría el stock mintiendo sobre mercadería que salió por la
-   puerta.
+2. **Después de que el SRI autorizó**, `alAutorizarLaFactura()`
+   (`reserva.service.ts`) anota la salida con `forzar: true` y confirma la
+   orden. La venta ya es un hecho; negarse a registrarla no evitaría nada,
+   dejaría el stock mintiendo sobre mercadería que salió por la puerta. **Es la
+   misma función para los tres caminos por los que se autoriza** —al emitir, con
+   *Consultar al SRI* y por el cron `/api/cron/facturas`—: hasta oct-2026 solo
+   el primero anotaba la salida, así que una factura autorizada tarde confirmaba
+   la orden y el stock no bajaba nunca. Se llama una vez por factura, cuando
+   pasa a `AUTORIZADO` (la consulta manual no la repite si ya lo estaba).
 3. Una emisión **rechazada no descuenta nada**: el movimiento va dentro del
    `if (estado === "AUTORIZADO")`.
 
@@ -401,6 +406,33 @@ La ficha es de **dos columnas**: a la izquierda lo que el producto *es* —qué 
 cómo se ve, cuánto hay—, a la derecha cómo se lo agrupa. Las categorías se
 guardan al elegirlas, sin pasar por *Editar*: reagrupar un producto no es
 editarlo, es una etiqueta que se pone y se saca mientras se ordena el catálogo.
+
+### Editar variantes en lote
+
+El *Bulk edit* de Shopify, con las acciones que aplican acá
+(`ACCIONES_DE_VARIANTES_EN_LOTE` en `@vivero/shared`, una sola lista para el
+portal y la app): editar **precios, costos, SKU, pesos y stock** —una caja por
+variante elegida, más *Aplicar a todas*—, y **Cobrar IVA, Llevar inventario,
+Vender sin stock** con sus contrarios, que se aplican en el acto. Quedaron
+fuera las de Shopify que no tienen equivalente: código de barras, paquete,
+país de origen, canales de venta, y *borrar variantes*, que acá es sacar el
+valor de su opción.
+
+- **El stock es un conteo**, no un movimiento a mano: en una tabla lo que se
+  edita es el número que se ve, así que viaja como `contado` y el libro anota
+  la diferencia (`CONTEO`, nota *Edición en lote*). Una variante que no lleva
+  inventario no tiene caja.
+- **En el escritorio no se guarda nada al aplicar**: lo editado entra a los
+  mismos cambios pendientes de la ficha (precios, SKU, `cambios`,
+  `movimientos`) y se guarda con la barra de arriba, como editar una fila.
+- **En el teléfono** (la app y el portal) se guarda en el acto por
+  `PATCH /api/servicios/[id]/variantes` y su gemela móvil →
+  `editarVariantesEnLote`, **una variante por vez**: la que falla —un SKU que
+  ya usa otra, apagar el conteo con stock— vuelve nombrada con su motivo y no
+  se lleva a las demás. Una variante de otro producto se rechaza.
+- `guardarOpciones` corre con **30 s** de transacción: regenerar 3 × 3
+  variantes pasaba de los 5 s por defecto de Prisma contra Neon desde fuera, y
+  se cancelaba entero.
 
 ## Biblioteca de medios
 
@@ -653,8 +685,53 @@ facturar hay un solo momento y un solo comprobante que lo respalda.
 
 El costo es que dos personas pueden armar órdenes por la misma mercadería y la
 segunda se entera recién al emitir. Es el precio de no reservar, y es el
-correcto para un vivero: entre armar la orden y cobrarla pasan minutos, no
-semanas.
+correcto para una orden que arma el vivero: entre armarla y cobrarla pasan
+minutos, no semanas.
+
+## Un pedido de la app sí aparta el stock
+
+**La excepción es el carrito del cliente** (`Orden.origen = APP`,
+`pedido-app.service.ts`): ahí entre pedir y facturar pasan días, y dos clientes
+pueden querer la misma última maceta. Así que el stock **se aparta al pedir**
+—un `RESERVA` en el libro, con el `ordenId`, y `Orden.stockReservado`— y los
+tres caminos donde olvidarse están cubiertos por una sola función,
+`sincronizarReserva()` (`reserva.service.ts`), que lleva lo apartado por el
+pedido a lo que **debería** tener y mueve solo la diferencia:
+
+- **Pedir:** lo de sus líneas, validando que alcance (las variantes que
+  permiten negativo pasan). Si no alcanza no se crea nada y el cliente lee qué
+  falta (*"No alcanza el stock: Rosa · Roja (2 en stock)"*).
+- **Editar el borrador** (`actualizarOrden`): lo de las líneas nuevas; si se
+  achicó vuelve lo que sobra (`LIBERACION`), si creció se aparta lo que falta.
+- **Anular** (`anularOrden`): nada, así que vuelve todo.
+- **Facturar** (`alAutorizarLaFactura`): se libera lo apartado y se anota la
+  `VENTA` de la factura. **El saldo no cambia** —lo que se liberó es lo que se
+  vende— y el libro sigue diciendo qué factura vendió qué. Antes de emitir,
+  `ensureStockParaVender()` cuenta lo apartado por ese pedido como suyo.
+
+Lo apartado no se guarda en una columna: es la suma de los `RESERVA` y
+`LIBERACION` del pedido (`apartadoDelPedido()`), lo único que no puede
+desfasarse del libro. El catálogo de la app dice lo mismo que va a aplicar la
+reserva: cada variante trae `disponible` (`null` sin límite —servicio, sin
+inventario o vendible sin stock—, un número lo que queda, 0 *Agotado*) y el
+producto `agotado` cuando no queda ninguna variante.
+
+### Dos clientes y la última unidad
+
+`crearPedidoDesdeLaApp` **bloquea las variantes al empezar** la transacción
+(`bloquearVariantes` en `reserva.service.ts`: `SELECT … FOR UPDATE` ordenado
+por id), y `sincronizarReserva` hace lo mismo antes de leer el stock. Sin eso,
+dos pedidos de la última unidad no vendían de más pero **se trababan**: cada
+uno creaba sus líneas —el FK deja una traba compartida sobre la variante— y
+después pedía el `FOR UPDATE` para descontar, y Postgres cortaba uno con
+*deadlock detected*, que era lo que el cliente leía. Bloqueadas primero, el
+segundo espera, lee lo que dejó el primero y recibe un 409 que dice qué se
+acabó (`StockInsuficienteError` → *"Mientras confirmabas, otra persona compró
+lo último de: …"*); la app le ofrece *Ir al carrito*. Probado con tres pedidos
+simultáneos de una variante con 1: uno pasa, dos se rechazan, el stock queda en
+0. La ubicación de retiro se revisa otra vez adentro de la transacción con
+`FOR SHARE`: desactivarla o apagarle el retiro mientras alguien está en el
+checkout le devuelve un 409, y la app recarga los locales y vuelve al paso 1.
 
 ## El orden del catálogo
 

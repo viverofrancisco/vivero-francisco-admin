@@ -41,8 +41,50 @@ function sha256(valor: string): string {
  * código. Pedirlo de nuevo reemplaza el anterior —y su contador de intentos—,
  * que es lo que espera quien no lo encontró y apretó *Reenviar*.
  */
+/**
+ * Si con este correo se puede crear una cuenta. **Un correo es de una sola
+ * persona** entre los clientes (`correo-unico.ts`): si ya tiene una cuenta de
+ * cliente no hay cuenta nueva que crear, hay que entrar
+ * (o recuperar la contraseña). El de una ficha **sin** cuenta sí sirve: es el
+ * cliente que el vivero ya tenía, y el código lo une a ella.
+ *
+ * La app lo pregunta mientras se escribe el correo (`POST
+ * /api/mobile/auth/registro/correo`) y `solicitarCodigoDeRegistro` lo vuelve a
+ * exigir: la pantalla es una sugerencia.
+ */
+export async function correoParaRegistro(
+  emailCrudo: string
+): Promise<{ disponible: true } | { disponible: false; motivo: string }> {
+  const email = emailCrudo.trim().toLowerCase();
+  const tomado = { disponible: false as const, motivo: "Este correo ya tiene una cuenta. Inicia sesión con él." };
+
+  // Solo las cuentas de clientes: una del equipo con este correo no estorba,
+  // son lados aparte (`correo-unico.ts`).
+  const cuenta = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" }, role: "CLIENTE" },
+    select: { id: true },
+  });
+  if (cuenta) return tomado;
+
+  const fichas = await prisma.cliente.findMany({
+    where: { deletedAt: null, email: { equals: email, mode: "insensitive" } },
+    select: { userId: true },
+  });
+  if (fichas.some((f) => f.userId)) return tomado;
+  if (fichas.length > 1) {
+    return {
+      disponible: false,
+      motivo: "Ya hay más de un cliente con este correo. Comunícate con el vivero para entrar.",
+    };
+  }
+  return { disponible: true };
+}
+
 export async function solicitarCodigoDeRegistro(datos: RegistroBody): Promise<void> {
   const email = datos.email.trim().toLowerCase();
+
+  const libre = await correoParaRegistro(email);
+  if (!libre.disponible) throw new ConflictError(libre.motivo);
   const codigo = String(randomInt(0, 1_000_000)).padStart(6, "0");
   const passwordHash = await bcrypt.hash(datos.password, 12);
 
@@ -63,6 +105,9 @@ export async function solicitarCodigoDeRegistro(datos: RegistroBody): Promise<vo
 
   const envio = await sendCodigoDeRegistroEmail(email, fila.nombre, codigo);
   if (!envio.success) {
+    // A la persona no le sirve el detalle, pero sin él no se sabe si falló su
+    // correo o el nuestro (un cliente OAuth borrado, un token vencido).
+    console.error("[registro] no se pudo enviar el código:", envio.error);
     throw new ServiceError(
       "No pudimos enviarte el código. Revisa el correo e intenta de nuevo.",
       "correo_no_enviado"
@@ -122,14 +167,14 @@ export async function confirmarRegistro(
         // enlace de restablecer, así que la contraseña nueva vale.
         const user = await tx.user.update({
           where: { id: cliente.user.id },
-          data: { password: pendiente.passwordHash },
+          data: { password: pendiente.passwordHash, email },
         });
         return { user, clienteId: cliente.id };
       }
       const user = await tx.user.create({
         data: {
           role: "CLIENTE",
-          email: `cliente+${cliente.id}@viverofrancisco.local`,
+          email,
           password: pendiente.passwordHash,
           name: cliente.nombre,
           apellido: cliente.apellido,
@@ -142,9 +187,8 @@ export async function confirmarRegistro(
       return { user, clienteId: cliente.id };
     }
 
-    // Nuevo: nace como cliente, sin propiedad. El `User` es la sombra de
-    // autenticación de siempre, con el correo de relleno (ver
-    // `establecerContrasena`): el login resuelve por la ficha.
+    // Nuevo: nace como cliente, sin propiedad. Su cuenta lleva el mismo correo
+    // que la ficha: un correo es de una sola persona (`correo-unico.ts`).
     const cliente = await tx.cliente.create({
       data: {
         nombre: pendiente.nombre,
@@ -156,7 +200,7 @@ export async function confirmarRegistro(
     const user = await tx.user.create({
       data: {
         role: "CLIENTE",
-        email: `cliente+${cliente.id}@viverofrancisco.local`,
+        email,
         password: pendiente.passwordHash,
         name: pendiente.nombre,
         apellido: pendiente.apellido,
@@ -170,6 +214,17 @@ export async function confirmarRegistro(
   });
 
   await prisma.registroPendiente.delete({ where: { email } }).catch(() => {});
+  // Lo que pidió como invitado con este correo pasa a su cuenta: el código
+  // acaba de probar que el correo es suyo, así que sus solicitudes también.
+  // Es lo que le ofrece el aviso de "Recibimos tu solicitud" —crear la
+  // cuenta para seguirla— y lo que hace que la vea en Visitas. Sus pedidos
+  // ya están en la ficha que nació con ellos, que la cuenta acaba de tomar.
+  await prisma.solicitudCliente
+    .updateMany({
+      where: { clienteId: null, contactoEmail: { equals: email, mode: "insensitive" } },
+      data: { clienteId: resultado.clienteId },
+    })
+    .catch((e) => console.error("[registro] no se pudieron pasar sus solicitudes", e));
   return resultado;
 }
 

@@ -96,6 +96,7 @@ export const ModelName = {
   InformeVisita: 'InformeVisita',
   InformeSeccion: 'InformeSeccion',
   InformeSeccionFoto: 'InformeSeccionFoto',
+  Ubicacion: 'Ubicacion',
   EmpresaConfig: 'EmpresaConfig',
   Emisor: 'Emisor',
   SecuencialSri: 'SecuencialSri',
@@ -113,7 +114,10 @@ export const ModelName = {
   ChatLectura: 'ChatLectura',
   ChatAdjunto: 'ChatAdjunto',
   RegistroPendiente: 'RegistroPendiente',
+  CambioDeCorreoPendiente: 'CambioDeCorreoPendiente',
   SolicitudCliente: 'SolicitudCliente',
+  SolicitudAdjunto: 'SolicitudAdjunto',
+  SolicitudServicio: 'SolicitudServicio',
   CuentaContable: 'CuentaContable',
   CentroCosto: 'CentroCosto',
   Obra: 'Obra'
@@ -207,6 +211,7 @@ export const ClienteScalarFieldEnum = {
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
   inactivoDesde: 'inactivoDesde',
+  fusionadoEnId: 'fusionadoEnId',
   createdById: 'createdById',
   updatedById: 'updatedById',
   userId: 'userId'
@@ -363,6 +368,7 @@ export const MovimientoInventarioScalarFieldEnum = {
   motivo: 'motivo',
   nota: 'nota',
   facturaId: 'facturaId',
+  ordenId: 'ordenId',
   createdAt: 'createdAt',
   createdById: 'createdById',
   createdByNombre: 'createdByNombre'
@@ -470,7 +476,8 @@ export const VisitaScalarFieldEnum = {
   deletedById: 'deletedById',
   deletedByNombre: 'deletedByNombre',
   motivoNoRealizada: 'motivoNoRealizada',
-  reprogramadaDeId: 'reprogramadaDeId'
+  reprogramadaDeId: 'reprogramadaDeId',
+  solicitudId: 'solicitudId'
 } as const
 
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]
@@ -839,6 +846,26 @@ export const InformeSeccionFotoScalarFieldEnum = {
 export type InformeSeccionFotoScalarFieldEnum = (typeof InformeSeccionFotoScalarFieldEnum)[keyof typeof InformeSeccionFotoScalarFieldEnum]
 
 
+export const UbicacionScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  direccion: 'direccion',
+  ciudad: 'ciudad',
+  referencia: 'referencia',
+  lat: 'lat',
+  lng: 'lng',
+  telefono: 'telefono',
+  horarios: 'horarios',
+  retiro: 'retiro',
+  activa: 'activa',
+  posicion: 'posicion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UbicacionScalarFieldEnum = (typeof UbicacionScalarFieldEnum)[keyof typeof UbicacionScalarFieldEnum]
+
+
 export const EmpresaConfigScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
@@ -911,11 +938,21 @@ export const OrdenScalarFieldEnum = {
   fecha: 'fecha',
   estado: 'estado',
   notas: 'notas',
+  origen: 'origen',
+  stockReservado: 'stockReservado',
+  entrega: 'entrega',
+  retiroUbicacionId: 'retiroUbicacionId',
+  entregaPropiedadId: 'entregaPropiedadId',
+  entregaDireccion: 'entregaDireccion',
+  entregaLat: 'entregaLat',
+  entregaLng: 'entregaLng',
   subtotal: 'subtotal',
   iva: 'iva',
   total: 'total',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  contactoNombre: 'contactoNombre',
+  contactoTelefono: 'contactoTelefono',
   createdById: 'createdById',
   updatedById: 'updatedById'
 } as const
@@ -1128,23 +1165,65 @@ export const RegistroPendienteScalarFieldEnum = {
 export type RegistroPendienteScalarFieldEnum = (typeof RegistroPendienteScalarFieldEnum)[keyof typeof RegistroPendienteScalarFieldEnum]
 
 
+export const CambioDeCorreoPendienteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  emailNuevo: 'emailNuevo',
+  codigoHash: 'codigoHash',
+  expiresAt: 'expiresAt',
+  intentos: 'intentos',
+  createdAt: 'createdAt'
+} as const
+
+export type CambioDeCorreoPendienteScalarFieldEnum = (typeof CambioDeCorreoPendienteScalarFieldEnum)[keyof typeof CambioDeCorreoPendienteScalarFieldEnum]
+
+
 export const SolicitudClienteScalarFieldEnum = {
   id: 'id',
   numero: 'numero',
   clienteId: 'clienteId',
-  productoId: 'productoId',
   mensaje: 'mensaje',
   direccion: 'direccion',
+  calle: 'calle',
+  numeroCasa: 'numeroCasa',
+  ciudad: 'ciudad',
+  referencia: 'referencia',
+  propiedadId: 'propiedadId',
+  lat: 'lat',
+  lng: 'lng',
   contactoNombre: 'contactoNombre',
   contactoTelefono: 'contactoTelefono',
   contactoEmail: 'contactoEmail',
   createdAt: 'createdAt',
   atendidaEl: 'atendidaEl',
   atendidaPorId: 'atendidaPorId',
-  atendidaPorNombre: 'atendidaPorNombre'
+  atendidaPorNombre: 'atendidaPorNombre',
+  otroServicio: 'otroServicio'
 } as const
 
 export type SolicitudClienteScalarFieldEnum = (typeof SolicitudClienteScalarFieldEnum)[keyof typeof SolicitudClienteScalarFieldEnum]
+
+
+export const SolicitudAdjuntoScalarFieldEnum = {
+  id: 'id',
+  solicitudId: 'solicitudId',
+  key: 'key',
+  url: 'url',
+  tipo: 'tipo',
+  contentType: 'contentType',
+  nombre: 'nombre',
+  createdAt: 'createdAt'
+} as const
+
+export type SolicitudAdjuntoScalarFieldEnum = (typeof SolicitudAdjuntoScalarFieldEnum)[keyof typeof SolicitudAdjuntoScalarFieldEnum]
+
+
+export const SolicitudServicioScalarFieldEnum = {
+  solicitudId: 'solicitudId',
+  productoId: 'productoId'
+} as const
+
+export type SolicitudServicioScalarFieldEnum = (typeof SolicitudServicioScalarFieldEnum)[keyof typeof SolicitudServicioScalarFieldEnum]
 
 
 export const CuentaContableScalarFieldEnum = {

@@ -24,6 +24,7 @@ import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
 import type { PropiedadResumen } from "@/lib/types";
 import { tema } from "@/lib/tema";
 import { Conmutador } from "@/components/ui/Conmutador";
+import { SelectorDeCiudad } from "@/components/SelectorDeCiudad";
 
 /**
  * Una propiedad: el lugar donde se trabaja.
@@ -332,7 +333,7 @@ export function CamposDePropiedad({
         value={c.numeroCasa}
         onChangeText={c.setNumeroCasa}
       />
-      <Campo label="Ciudad" value={c.ciudad} onChangeText={c.setCiudad} />
+      <SelectorDeCiudad valor={c.ciudad} onCambio={c.setCiudad} />
       <Campo
         label="Referencia"
         value={c.referencia}

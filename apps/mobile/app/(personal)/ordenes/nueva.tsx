@@ -191,10 +191,10 @@ export default function NuevaOrdenScreen() {
 
   const agregarPeriodo = (p: PeriodoPendiente) => {
     if (visitaIds.length > 0) {
-      return setError("Esta orden es por unas visitas. Los períodos de suscripción van en otra.");
+      return setError("Este pedido es por unas visitas. Los períodos de suscripción van en otro.");
     }
     if (lineas.some((l) => l.suscripcionId && l.suscripcionId !== p.suscripcionId)) {
-      return setError("Esta orden ya es de otra suscripción. Arma una orden por plan.");
+      return setError("Este pedido ya es de otra suscripción. Arma un pedido por plan.");
     }
     setError(null);
     setLineas((prev) => [
@@ -216,7 +216,7 @@ export default function NuevaOrdenScreen() {
 
   const alternarVisita = (id: string) => {
     if (tienePeriodo) {
-      return setError("Esta orden cubre un período de suscripción. Las visitas van en otra.");
+      return setError("Este pedido cubre un período de suscripción. Las visitas van en otro.");
     }
     setError(null);
     setVisitaIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -261,14 +261,14 @@ export default function NuevaOrdenScreen() {
       });
       router.replace(`/(personal)/ordenes/${creada.id}`);
     } catch (e) {
-      setError(mensajeDeError(e, "No pudimos crear la orden"));
+      setError(mensajeDeError(e, "No pudimos crear el pedido"));
       setGuardando(false);
     }
   }
 
   const encabezado = (
     <EncabezadoDeFormulario
-      titulo="Nueva orden"
+      titulo="Nuevo pedido"
       accion="Crear"
       onAccion={crear}
       onCancelar={() => router.back()}
@@ -429,13 +429,13 @@ export default function NuevaOrdenScreen() {
           <Seccion titulo="Visitas">
             {tienePeriodo ? (
               <Text style={styles.ayuda}>
-                Esta orden cubre un período de suscripción. Las visitas van en otra orden.
+                Este pedido cubre un período de suscripción. Las visitas van en otro pedido.
               </Text>
             ) : (
               <>
                 <Text style={styles.ayuda}>
-                  Deja dicho por qué existe esta orden y permite ir de una a la otra. No
-                  carga productos.
+                  Deja dicho por qué existe este pedido y permite ir de la visita al pedido y
+                  al revés. No carga productos.
                 </Text>
                 {visitas.map((v) => {
                   const marcada = visitaIds.includes(v.id);

@@ -58,17 +58,18 @@ export default function LoginScreen() {
         <View style={styles.content}>
           <LogoDeLaEmpresa style={styles.logo} />
           <Text variant="bodyLarge" style={styles.subtitle}>
-            Inicia sesión con tu usuario, tu correo o tu teléfono
+            Inicia sesión con tu usuario o tu correo
           </Text>
 
           {/* Un solo campo para los cuatro roles. La oficina entra con su
               correo, quien trabaja en el jardín con el usuario que le dictaron
-              —no tiene correo— y el cliente con su teléfono. Quién es cada uno
+              —no tiene correo— y el cliente con su correo (el teléfono vuelve
+              cuando haya cómo probar que es suyo). Quién es cada uno
               lo resuelve el servidor, que es el único que puede: preguntárselo
               a la persona es hacerle una pregunta nuestra. */}
           <TextInput
             mode="outlined"
-            label="Usuario, correo o teléfono"
+            label="Usuario o correo"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -113,17 +114,23 @@ export default function LoginScreen() {
           ) : null}
         </View>
       </KeyboardAvoidingView>
-      {/* Al pie: quien todavía no es cliente mira el catálogo y pide una
-          visita sin crear nada. Crear cuenta llega después, con el teléfono
-          y un código por WhatsApp (el registro por correo está hecho pero
-          sin botón: la mayoría de los clientes no usa correo). */}
+      {/* Al pie, como en cualquier app: quien no tiene cuenta se la crea con
+          su correo —si el correo ya estaba en la ficha de un cliente, queda
+          vinculada a ella— o mira el catálogo sin cuenta. */}
       <View style={styles.footer}>
         <Text variant="bodyMedium" style={styles.footerTexto}>
           ¿No tienes una cuenta?
         </Text>
         <Button
           mode="outlined"
-          onPress={() => router.push("/(invitado)")}
+          onPress={() => router.push("/(auth)/registro")}
+          disabled={loading}
+        >
+          Crear cuenta
+        </Button>
+        <Button
+          mode="text"
+          onPress={() => router.push("/(invitado)/(tabs)/catalogo")}
           disabled={loading}
         >
           Seguir como invitado

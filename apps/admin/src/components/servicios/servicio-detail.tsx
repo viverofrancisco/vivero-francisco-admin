@@ -483,7 +483,7 @@ export function ServicioDetail({
       {servicio.archivadoEl && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <span>
-            Este producto está archivado: no se ofrece en órdenes ni
+            Este producto está archivado: no se ofrece en pedidos ni
             facturas. Lo que ya lo nombra sigue igual.
           </span>
           <Button
@@ -599,7 +599,7 @@ export function ServicioDetail({
                   {
                     value: "BORRADOR",
                     label: "Borrador",
-                    hint: "No aparece al armar una orden",
+                    hint: "No aparece al armar un pedido",
                   },
                 ]}
               />

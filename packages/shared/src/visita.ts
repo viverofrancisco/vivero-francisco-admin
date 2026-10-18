@@ -298,10 +298,42 @@ export type RequestUploadUrlsBody = z.infer<typeof requestUploadUrlsSchema>;
  * en una visita son tareas, y las carga cada jardinero al terminar. Lo único
  * que se decide al agendar es si alguna es **obligatoria**.
  */
+/**
+ * Un cliente **creado en el mismo alta de la visita**, como en Shopify: en vez
+ * de ir a otra pantalla a darlo de alta y volver, se escriben sus datos ahí.
+ * Nace con la visita, en la misma transacción.
+ */
+export const clienteNuevoDeVisitaSchema = z.object({
+  nombre: z.string().trim().min(1, "Escribe el nombre del cliente").max(120),
+  apellido: z.string().trim().max(120).optional(),
+  telefono: z.string().trim().max(30).optional(),
+  email: z.string().trim().toLowerCase().max(120).optional(),
+});
+export type ClienteNuevoDeVisita = z.infer<typeof clienteNuevoDeVisitaSchema>;
+
+/** Una propiedad creada en el mismo alta, para un cliente nuevo o uno que ya está. */
+export const propiedadNuevaDeVisitaSchema = z.object({
+  /** Vacío: "Principal" para un cliente nuevo, la calle para uno que ya está. */
+  nombre: z.string().trim().max(60).optional(),
+  direccion: z.string().trim().max(300).optional(),
+  numeroCasa: z.string().trim().max(40).optional(),
+  ciudad: z.string().trim().max(120).optional(),
+  referencia: z.string().trim().max(300).optional(),
+  lat: z.number().min(-90).max(90).nullable().optional(),
+  lng: z.number().min(-180).max(180).nullable().optional(),
+});
+export type PropiedadNuevaDeVisita = z.infer<typeof propiedadNuevaDeVisitaSchema>;
+
 export const createVisitasSchema = z.object({
-  clienteId: z.string().min(1),
-  /** Dónde. Una visita pasa en un lugar; con una sola, la pantalla la elige. */
-  propiedadId: z.string().min(1),
+  /** Un cliente que ya está, **o** `clienteNuevo`: uno de los dos. */
+  clienteId: z.string().min(1).optional(),
+  clienteNuevo: clienteNuevoDeVisitaSchema.optional(),
+  /**
+   * Dónde. Una de sus propiedades, **o** `propiedadNueva`. Un cliente nuevo
+   * solo puede llevar una nueva (o ninguna, y nace con la *Principal*).
+   */
+  propiedadId: z.string().min(1).optional(),
+  propiedadNueva: propiedadNuevaDeVisitaSchema.optional(),
   fechas: z.array(z.string().min(1)).min(1, "Selecciona al menos una fecha"),
   /** Lo que esta visita exige que se haga. Opcional. */
   tareasObligatoriasIds: z.array(z.string().min(1)).optional(),
@@ -310,6 +342,8 @@ export const createVisitasSchema = z.object({
   grupoId: z.string().optional().nullable(),
   notas: z.string().trim().max(1000).optional().nullable(),
   personalIds: z.array(z.string()).optional(),
+  /** La solicitud del cliente de donde sale, si se agenda desde ella. */
+  solicitudId: z.string().nullable().optional(),
 });
 export type CreateVisitasBody = z.infer<typeof createVisitasSchema>;
 

@@ -135,12 +135,30 @@ export const DestinatarioTipo = {
 export type DestinatarioTipo = (typeof DestinatarioTipo)[keyof typeof DestinatarioTipo]
 
 
+export const OrigenOrden = {
+  PORTAL: 'PORTAL',
+  APP: 'APP'
+} as const
+
+export type OrigenOrden = (typeof OrigenOrden)[keyof typeof OrigenOrden]
+
+
+export const TipoEntrega = {
+  RETIRO: 'RETIRO',
+  ENTREGA: 'ENTREGA'
+} as const
+
+export type TipoEntrega = (typeof TipoEntrega)[keyof typeof TipoEntrega]
+
+
 export const MotivoMovimiento = {
   INGRESO: 'INGRESO',
   AJUSTE: 'AJUSTE',
   CONTEO: 'CONTEO',
   VENTA: 'VENTA',
-  DEVOLUCION: 'DEVOLUCION'
+  DEVOLUCION: 'DEVOLUCION',
+  RESERVA: 'RESERVA',
+  LIBERACION: 'LIBERACION'
 } as const
 
 export type MotivoMovimiento = (typeof MotivoMovimiento)[keyof typeof MotivoMovimiento]

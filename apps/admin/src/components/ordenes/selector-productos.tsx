@@ -355,7 +355,7 @@ function Contenido({
           <DialogHeader>
             <DialogTitle>Tienes cambios sin guardar</DialogTitle>
             <DialogDescription>
-              Lo que marcaste no entra a la orden si sales ahora.
+              Lo que marcaste no entra al pedido si sales ahora.
             </DialogDescription>
           </DialogHeader>
           {/* Lado a lado, como el alerta del sistema en la app: apilados

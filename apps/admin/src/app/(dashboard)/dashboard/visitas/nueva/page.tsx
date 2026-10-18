@@ -5,12 +5,39 @@ import { NuevaVisitaPage } from "@/components/visitas/nueva-visita-page";
 export default async function NuevaVisitaRoute({
   searchParams,
 }: {
-  searchParams: Promise<{ suscripcion?: string }>;
+  searchParams: Promise<{ suscripcion?: string; solicitud?: string }>;
 }) {
   await requireAuth();
   // Llegar desde una suscripción deja el plan puesto: "nueva visita de este
-  // plan" es una sola acción, no elegir cliente y plan de nuevo.
-  const { suscripcion } = await searchParams;
+  // plan" es una sola acción, no elegir cliente y plan de nuevo. Llegar desde
+  // una solicitud deja puestos su cliente y, si eligió una, su propiedad; la
+  // de un invitado, o una con otra dirección, los trae escritos para crearlos
+  // ahí mismo.
+  const { suscripcion, solicitud: solicitudId } = await searchParams;
+  const solicitud = solicitudId
+    ? await prisma.solicitudCliente.findFirst({
+        where: { id: solicitudId },
+        select: {
+          id: true,
+          numero: true,
+          mensaje: true,
+          direccion: true,
+          calle: true,
+          numeroCasa: true,
+          ciudad: true,
+          referencia: true,
+          lat: true,
+          lng: true,
+          contactoNombre: true,
+          contactoTelefono: true,
+          contactoEmail: true,
+          clienteId: true,
+          propiedadId: true,
+          servicios: { select: { producto: { select: { nombre: true } } } },
+          otroServicio: true,
+        },
+      })
+    : null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clientesWhere: any = {};
@@ -98,6 +125,36 @@ export default async function NuevaVisitaRoute({
   return (
     <NuevaVisitaPage
       suscripcionInicial={suscripcion}
+      solicitud={
+        solicitud
+          ? {
+              id: solicitud.id,
+              numero: solicitud.numero,
+              mensaje: solicitud.mensaje,
+              direccion: solicitud.direccion,
+              clienteId: solicitud.clienteId,
+              propiedadId: solicitud.propiedadId,
+              contacto: {
+                nombre: solicitud.contactoNombre,
+                telefono: solicitud.contactoTelefono,
+                email: solicitud.contactoEmail,
+              },
+              // Las de antes guardaban la dirección en una línea: va a la calle.
+              lugar: {
+                direccion: solicitud.calle ?? solicitud.direccion ?? "",
+                numeroCasa: solicitud.numeroCasa ?? "",
+                ciudad: solicitud.ciudad ?? "",
+                referencia: solicitud.referencia ?? "",
+                lat: solicitud.lat,
+                lng: solicitud.lng,
+              },
+              servicios: [
+                ...solicitud.servicios.map((x) => x.producto.nombre),
+                ...(solicitud.otroServicio ? ["Otros"] : []),
+              ],
+            }
+          : undefined
+      }
       clientes={clientesSerialized}
       tareas={tareas}
       grupos={gruposSerialized}

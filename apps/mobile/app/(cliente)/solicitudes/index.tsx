@@ -2,32 +2,38 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
-import { Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
-import type { SolicitudItem } from "@vivero/shared";
+import { type PedidoDelCliente } from "@vivero/shared";
 import { fechaYHora12 } from "@/lib/hora";
 import { apiRequest } from "@/lib/api";
-import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
+import { PantallaLista } from "@/components/ui/PantallaLista";
+import { EstadoPedido } from "@/components/pedidos/EstadoPedido";
 import { tema } from "@/lib/tema";
 
+const dinero = (n: number) => `$${n.toFixed(2)}`;
+
 /**
- * Lo que el cliente le pidió al vivero, con si ya lo atendieron. Es la
- * respuesta a "¿me vieron el pedido?" sin tener que llamar.
+ * **Pedidos**: sus compras del carrito, de la más nueva a la más vieja, con
+ * su estado. Es la respuesta a "¿me vieron el pedido?" sin tener que llamar.
+ * Las solicitudes de visita —con los servicios que marcó— viven en *Visitas*.
  */
-export default function MisSolicitudesScreen() {
+export default function MisPedidosScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<SolicitudItem[] | null>(null);
+  const [items, setItems] = useState<PedidoDelCliente[] | null>(null);
   const [refrescando, setRefrescando] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
-      const res = await apiRequest<{ items: SolicitudItem[] }>("/api/mobile/solicitudes");
-      setItems(res.items);
+      const { items: pedidos } = await apiRequest<{ items: PedidoDelCliente[] }>(
+        "/api/mobile/pedidos"
+      );
+      setItems(pedidos);
     } catch {
       setItems((prev) => prev ?? []);
     } finally {
@@ -38,24 +44,19 @@ export default function MisSolicitudesScreen() {
   useFocusEffect(
     useCallback(() => {
       cargar();
-    }, [cargar])
+    }, [cargar]),
   );
 
   return (
-    <View style={styles.pantalla}>
-      <EncabezadoDeFicha
-        titulo="Mis solicitudes"
-        derecha={
-          <MenuDeEncabezado
-            opciones={[
-              {
-                etiqueta: "Nueva solicitud",
-                onPress: () => router.push("/(cliente)/solicitudes/nueva"),
-              },
-            ]}
-          />
-        }
-      />
+    // La raíz de una pestaña, como Mis visitas: título grande y el ⋯, sin
+    // flecha para volver (no hay a dónde).
+    <PantallaLista
+      titulo="Mis pedidos"
+      // Lo que lleva a un pedido es el catálogo. Solicitar una visita no crea
+      // un pedido —es una solicitud que el equipo atiende—: vive en Visitas, y
+      // la cotización en la ficha de cada servicio.
+      acciones={[{ etiqueta: "Ver catálogo", onPress: () => router.navigate("/(cliente)/catalogo") }]}
+    >
       {items === null ? (
         <View style={styles.centro}>
           <ActivityIndicator color={tema.verde} />
@@ -63,7 +64,7 @@ export default function MisSolicitudesScreen() {
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(s) => s.id}
+          keyExtractor={(p) => p.id}
           contentContainerStyle={styles.lista}
           refreshControl={
             <RefreshControl
@@ -76,39 +77,62 @@ export default function MisSolicitudesScreen() {
           }
           ListEmptyComponent={
             <View style={styles.vacio}>
+              <Text style={styles.vacioTitulo}>Todavía no tienes pedidos</Text>
               <Text style={styles.vacioTexto}>
-                Todavía no nos has pedido nada.
+                Elige plantas, macetas y más en el catálogo, y tus pedidos aparecen aquí.
               </Text>
+              <Button
+                mode="contained"
+                onPress={() => router.navigate("/(cliente)/catalogo")}
+                style={styles.vacioBoton}
+              >
+                Ver catálogo
+              </Button>
             </View>
           }
-          renderItem={({ item }) => (
-            <View style={styles.fila}>
-              <View style={styles.filaArriba}>
-                <Text style={styles.titulo} numberOfLines={1}>
-                  {item.producto ? `Cotización · ${item.producto.nombre}` : "Solicitud"}
-                </Text>
-                <View
-                  style={[styles.pastilla, item.atendidaEl ? styles.atendida : styles.pendiente]}
-                >
-                  <Text
-                    style={[
-                      styles.pastillaTexto,
-                      { color: item.atendidaEl ? tema.verde700 : "#8a5a00" },
-                    ]}
-                  >
-                    {item.atendidaEl ? "Atendida" : "Pendiente"}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.mensaje} numberOfLines={3}>
-                {item.mensaje}
-              </Text>
-              <Text style={styles.fecha}>{fechaYHora12(item.createdAt)}</Text>
-            </View>
+          renderItem={({ item: p }) => (
+            <FilaPedido
+              pedido={p}
+              onAbrir={() => router.push(`/(cliente)/solicitudes/pedido/${p.id}`)}
+            />
           )}
         />
       )}
-    </View>
+    </PantallaLista>
+  );
+}
+
+function FilaPedido({
+  pedido,
+  onAbrir,
+}: {
+  pedido: PedidoDelCliente;
+  onAbrir: () => void;
+}) {
+  const unidades = pedido.lineas.reduce((n, l) => n + l.cantidad, 0);
+  return (
+    <Pressable
+      onPress={onAbrir}
+      style={({ pressed }) => [styles.fila, pressed && styles.tocada]}
+    >
+      <View style={styles.filaArriba}>
+        <Text style={styles.titulo} numberOfLines={1}>
+          Pedido #{pedido.numero}
+        </Text>
+        <EstadoPedido estado={pedido.estado} />
+      </View>
+      <Text style={styles.mensaje} numberOfLines={2}>
+        {pedido.lineas.map((l) => l.descripcion).join(", ")}
+      </Text>
+      <Text style={styles.mensaje}>
+        {unidades === 1 ? "1 producto" : `${unidades} productos`} ·{" "}
+        {dinero(pedido.total)}
+        {pedido.porCotizar ? " + por cotizar" : ""}
+      </Text>
+      <Text style={styles.fecha}>
+        {pedido.entrega} · {fechaYHora12(pedido.createdAt)}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -122,9 +146,13 @@ const styles = StyleSheet.create({
   pastilla: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   pendiente: { backgroundColor: "#fff3d6" },
   atendida: { backgroundColor: tema.verde50 },
+  anulada: { backgroundColor: tema.lienzo },
+  tocada: { opacity: 0.7 },
   pastillaTexto: { fontSize: 12, fontWeight: "600" },
   mensaje: { color: tema.texto2 },
   fecha: { color: tema.texto3, fontSize: 12 },
-  vacio: { alignItems: "center", paddingTop: 80 },
-  vacioTexto: { color: tema.texto3 },
+  vacio: { alignItems: "center", paddingTop: 80, paddingHorizontal: 24, gap: 8 },
+  vacioTitulo: { color: tema.texto, fontSize: 16, fontWeight: "600" },
+  vacioTexto: { color: tema.texto3, textAlign: "center" },
+  vacioBoton: { marginTop: 8, borderRadius: 12 },
 });

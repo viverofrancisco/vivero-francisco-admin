@@ -17,7 +17,7 @@ import {
 import { Calendar, type DateData } from "react-native-calendars";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { EncabezadoDePasos } from "@/components/ui/EncabezadoDePasos";
-import { describirPlan, nombreCliente } from "@vivero/shared";
+import { describirPlan, nombreCliente, type SolicitudItem } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type {
   ClienteListItem,
@@ -31,6 +31,7 @@ import type {
 } from "@/lib/types";
 import { tema } from "@/lib/tema";
 import { Conmutador } from "@/components/ui/Conmutador";
+import { SelectorDeCiudad } from "@/components/SelectorDeCiudad";
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -44,13 +45,51 @@ interface TareaDelCatalogo {
 // cuarenta clientes quedaba fuera de la pantalla, donde nadie la veía.
 const STEP_LABELS = ["Cliente", "Propiedad", "Tareas", "Fechas", "Personal", "Revisar"];
 
+/** Lo que se escribe de un cliente nuevo, tal cual está en los campos. */
+interface DatosClienteNuevo {
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  email: string;
+}
+const CLIENTE_VACIO: DatosClienteNuevo = { nombre: "", apellido: "", telefono: "", email: "" };
+
+/** Lo que se escribe de una propiedad nueva; `direccion` es la calle. */
+interface DatosPropiedadNueva {
+  nombre: string;
+  direccion: string;
+  numeroCasa: string;
+  ciudad: string;
+  referencia: string;
+}
+const PROPIEDAD_VACIA: DatosPropiedadNueva = {
+  nombre: "",
+  direccion: "",
+  numeroCasa: "",
+  ciudad: "",
+  referencia: "",
+};
+
+/** Un campo escrito, recortado; vacío no viaja. */
+const limpio = (t: string) => t.trim() || undefined;
+
 export default function CrearVisitaScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   // Llegar desde una suscripción deja el plan puesto —y con él el cliente y
   // la propiedad—: "nueva visita de este plan" es una sola acción.
-  const { suscripcion: suscripcionInicial } = useLocalSearchParams<{
+  // Llegar desde una solicitud deja puestos su cliente y, si eligió una, su
+  // propiedad; la visita queda enlazada a ella y la solicitud, atendida.
+  const {
+    suscripcion: suscripcionInicial,
+    solicitud: solicitudId,
+    cliente: clienteDeLaSolicitud,
+    propiedad: propiedadDeLaSolicitud,
+  } = useLocalSearchParams<{
     suscripcion?: string;
+    solicitud?: string;
+    cliente?: string;
+    propiedad?: string;
   }>();
 
   // Hide the default Stack header — we render our own progress header.
@@ -99,6 +138,69 @@ export default function CrearVisitaScreen() {
   const [selectedPersonalIds, setSelectedPersonalIds] = useState<string[]>([]);
   const [notas, setNotas] = useState("");
 
+  /**
+   * **Un cliente que ya está, o uno nuevo escrito acá mismo**, como en
+   * Shopify: tener que ir a otra pantalla a darlo de alta y volver es lo que
+   * hacía que una visita para alguien nuevo no se agendara en el momento. El
+   * nuevo nace con la visita, en el servidor y en la misma transacción.
+   */
+  const [modoCliente, setModoCliente] = useState<"existente" | "nuevo">("existente");
+  const [clienteNuevo, setClienteNuevo] = useState<DatosClienteNuevo>(CLIENTE_VACIO);
+  /**
+   * Lo mismo con el lugar: una propiedad nueva, escrita acá. Con un cliente
+   * nuevo es la única opción —todavía no tiene ninguna—; con uno que ya está,
+   * una más al pie de su lista.
+   */
+  const [propiedadNuevaActiva, setPropiedadNuevaActiva] = useState(false);
+  const [propiedadNueva, setPropiedadNueva] = useState<DatosPropiedadNueva>(PROPIEDAD_VACIA);
+  /** El pin que dejó en la solicitud, si la propiedad nueva sale de ahí. */
+  const [puntoNuevo, setPuntoNuevo] = useState<{ lat: number; lng: number } | null>(null);
+  const clienteEsNuevo = modoCliente === "nuevo";
+  const propiedadEsNueva = clienteEsNuevo || propiedadNuevaActiva;
+
+  // La solicitud de origen, para precargar lo que dejó: la de un invitado
+  // arranca en *Cliente nuevo* con su nombre, teléfono y correo, y una con
+  // otra dirección, en *Propiedad nueva* con esa dirección. Lo que ya se
+  // escribió no se pisa. Se aplica en el `then`, cuando llega.
+  useEffect(() => {
+    if (!solicitudId) return;
+    apiRequest<SolicitudItem>(`/api/mobile/solicitudes/${solicitudId}`)
+      .then((sol) => {
+        if (!sol.cliente) {
+          setModoCliente("nuevo");
+          setClienteNuevo((c) =>
+            c.nombre || c.telefono || c.email
+              ? c
+              : {
+                  nombre: sol.contacto.nombre === "Sin nombre" ? "" : sol.contacto.nombre,
+                  apellido: "",
+                  telefono: sol.contacto.telefono ?? "",
+                  email: sol.contacto.email ?? "",
+                }
+          );
+        }
+        if (!sol.propiedad && sol.direccion) {
+          const partes = sol.direccionPorPartes;
+          setPropiedadNueva((p) =>
+            p.direccion || p.numeroCasa || p.ciudad || p.referencia || p.nombre
+              ? p
+              : {
+                  nombre: "",
+                  direccion: partes?.calle ?? sol.direccion ?? "",
+                  numeroCasa: partes?.numeroCasa ?? "",
+                  ciudad: partes?.ciudad ?? "",
+                  referencia: partes?.referencia ?? "",
+                }
+          );
+          if (sol.lat !== null && sol.lng !== null) setPuntoNuevo({ lat: sol.lat, lng: sol.lng });
+          // Con un cliente que ya está, la de la solicitud queda elegida: es
+          // donde pidió el trabajo.
+          setPropiedadNuevaActiva(true);
+        }
+      })
+      .catch(() => {});
+  }, [solicitudId]);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,6 +220,19 @@ export default function CrearVisitaScreen() {
           setSelectedPropiedadId(plan.propiedad.id);
           setSelectedSuscripcionId(plan.id);
         }
+        const deLaSolicitud = r.items.find((c) => c.id === clienteDeLaSolicitud);
+        if (deLaSolicitud) {
+          setSelectedClienteId(deLaSolicitud.id);
+          const suya = deLaSolicitud.propiedades.find(
+            (p) => p.id === propiedadDeLaSolicitud
+          );
+          setSelectedPropiedadId(
+            suya?.id ??
+              (deLaSolicitud.propiedades.length === 1
+                ? deLaSolicitud.propiedades[0].id
+                : null)
+          );
+        }
       }),
       apiRequest<GruposListResponse>("/api/mobile/grupos").then((r) =>
         setGrupos(r.items)
@@ -133,7 +248,7 @@ export default function CrearVisitaScreen() {
     ])
       .catch(() => {})
       .finally(() => setLoadingRefs(false));
-  }, [suscripcionInicial]);
+  }, [suscripcionInicial, clienteDeLaSolicitud, propiedadDeLaSolicitud]);
 
   const selectedCliente = clientes.find((c) => c.id === selectedClienteId);
 
@@ -154,8 +269,12 @@ export default function CrearVisitaScreen() {
   );
 
   function canContinue(): boolean {
-    if (step === 0) return !!selectedClienteId;
-    if (step === 1) return !!selectedPropiedadId;
+    if (step === 0) {
+      return clienteEsNuevo ? clienteNuevo.nombre.trim().length > 0 : !!selectedClienteId;
+    }
+    // Una propiedad nueva puede ir vacía: nace como *Principal* (cliente
+    // nuevo) o con la calle por nombre, y se completa después en su ficha.
+    if (step === 1) return propiedadEsNueva || !!selectedPropiedadId;
     // Las tareas obligatorias son opcionales, como en el portal: una visita
     // sin ninguna exigida es la de todos los días, y lo que se hizo lo anota
     // cada uno en su parte.
@@ -186,14 +305,38 @@ export default function CrearVisitaScreen() {
       await apiRequest("/api/mobile/visitas", {
         method: "POST",
         body: {
-          clienteId: selectedClienteId,
-          propiedadId: selectedPropiedadId,
-          suscripcionId: selectedSuscripcionId,
+          // Uno de los dos de cada par: el que ya está, o el escrito acá.
+          ...(clienteEsNuevo
+            ? {
+                clienteNuevo: {
+                  nombre: clienteNuevo.nombre.trim(),
+                  apellido: limpio(clienteNuevo.apellido),
+                  telefono: limpio(clienteNuevo.telefono),
+                  email: limpio(clienteNuevo.email),
+                },
+              }
+            : { clienteId: selectedClienteId }),
+          ...(propiedadEsNueva
+            ? {
+                propiedadNueva: {
+                  nombre: limpio(propiedadNueva.nombre),
+                  direccion: limpio(propiedadNueva.direccion),
+                  numeroCasa: limpio(propiedadNueva.numeroCasa),
+                  ciudad: limpio(propiedadNueva.ciudad),
+                  referencia: limpio(propiedadNueva.referencia),
+                  lat: puntoNuevo?.lat,
+                  lng: puntoNuevo?.lng,
+                },
+              }
+            : { propiedadId: selectedPropiedadId }),
+          // Un plan es de una propiedad que ya está.
+          suscripcionId: propiedadEsNueva ? null : selectedSuscripcionId,
           tareasObligatoriasIds: selectedProductoIds,
           fechas,
           grupoId: grupoId || null,
           personalIds: selectedPersonalIds,
           notas: notas.trim() || null,
+          solicitudId: solicitudId ?? null,
         },
       });
       router.back();
@@ -246,6 +389,13 @@ export default function CrearVisitaScreen() {
           {step === 0 && (
             <ClienteStep
               clientes={clientes}
+              modo={modoCliente}
+              onModo={(m) => {
+                setModoCliente(m);
+                setSelectedSuscripcionId(null);
+              }}
+              clienteNuevo={clienteNuevo}
+              onCambiarClienteNuevo={(c) => setClienteNuevo((x) => ({ ...x, ...c }))}
               selectedId={selectedClienteId}
               onSelect={(id) => {
                 setSelectedClienteId(id);
@@ -259,11 +409,20 @@ export default function CrearVisitaScreen() {
           )}
           {step === 1 && (
             <PropiedadStep
-              cliente={selectedCliente ?? null}
+              clienteNuevo={clienteEsNuevo ? clienteNuevo.nombre.trim() : null}
+              nuevaActiva={propiedadEsNueva}
+              onActivarNueva={() => {
+                setPropiedadNuevaActiva(true);
+                setSelectedSuscripcionId(null);
+              }}
+              propiedadNueva={propiedadNueva}
+              onCambiarPropiedadNueva={(p) => setPropiedadNueva((x) => ({ ...x, ...p }))}
+              cliente={clienteEsNuevo ? null : (selectedCliente ?? null)}
               propiedades={selectedCliente?.propiedades ?? []}
               selectedPropiedadId={selectedPropiedadId}
               onSelectPropiedad={(id) => {
                 setSelectedPropiedadId(id);
+                setPropiedadNuevaActiva(false);
                 const plan = selectedCliente?.suscripciones.find(
                   (s) => s.id === selectedSuscripcionId
                 );
@@ -274,7 +433,10 @@ export default function CrearVisitaScreen() {
               onSelectSuscripcion={(id) => {
                 setSelectedSuscripcionId(id);
                 const plan = selectedCliente?.suscripciones.find((s) => s.id === id);
-                if (plan) setSelectedPropiedadId(plan.propiedad.id);
+                if (plan) {
+                  setSelectedPropiedadId(plan.propiedad.id);
+                  setPropiedadNuevaActiva(false);
+                }
               }}
             />
           )}
@@ -324,11 +486,23 @@ export default function CrearVisitaScreen() {
           )}
           {step === 5 && (
             <RevisarStep
-              cliente={selectedCliente}
+              cliente={
+                clienteEsNuevo
+                  ? `Cliente nuevo: ${clienteNuevo.nombre.trim()}`
+                  : selectedCliente
+                    ? nombreCliente(selectedCliente)
+                    : null
+              }
               propiedad={
-                selectedCliente?.propiedades.find(
-                  (p) => p.id === selectedPropiedadId
-                )?.nombre ?? null
+                propiedadEsNueva
+                  ? `Propiedad nueva: ${
+                      propiedadNueva.nombre.trim() ||
+                      propiedadNueva.direccion.trim() ||
+                      "Principal"
+                    }`
+                  : (selectedCliente?.propiedades.find(
+                      (p) => p.id === selectedPropiedadId
+                    )?.nombre ?? null)
               }
               servicio={resumenTareasElegidos}
               fechas={fechas}
@@ -358,10 +532,19 @@ export default function CrearVisitaScreen() {
 
 function ClienteStep({
   clientes,
+  modo,
+  onModo,
+  clienteNuevo,
+  onCambiarClienteNuevo,
   selectedId,
   onSelect,
 }: {
   clientes: ClienteListItem[];
+  /** Elegir uno de la lista, o escribir uno nuevo acá mismo. */
+  modo: "existente" | "nuevo";
+  onModo: (m: "existente" | "nuevo") => void;
+  clienteNuevo: DatosClienteNuevo;
+  onCambiarClienteNuevo: (c: Partial<DatosClienteNuevo>) => void;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
 }) {
@@ -375,6 +558,54 @@ function ClienteStep({
       )
       .slice(0, 12);
   }, [query, clientes]);
+
+  if (modo === "nuevo") {
+    return (
+      <View>
+        <Text variant="headlineSmall" style={styles.title}>
+          Cliente nuevo
+        </Text>
+        <Text variant="bodyMedium" style={styles.subtitle}>
+          Se crea su ficha junto con la visita
+        </Text>
+        <View style={styles.campos}>
+          <TextInput
+            mode="outlined"
+            label="Nombre *"
+            value={clienteNuevo.nombre}
+            onChangeText={(t) => onCambiarClienteNuevo({ nombre: t })}
+            autoCapitalize="words"
+          />
+          <TextInput
+            mode="outlined"
+            label="Apellido"
+            value={clienteNuevo.apellido}
+            onChangeText={(t) => onCambiarClienteNuevo({ apellido: t })}
+            autoCapitalize="words"
+          />
+          <TextInput
+            mode="outlined"
+            label="Teléfono"
+            value={clienteNuevo.telefono}
+            onChangeText={(t) => onCambiarClienteNuevo({ telefono: t })}
+            keyboardType="phone-pad"
+          />
+          <TextInput
+            mode="outlined"
+            label="Correo"
+            value={clienteNuevo.email}
+            onChangeText={(t) => onCambiarClienteNuevo({ email: t })}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
+        <Button mode="text" onPress={() => onModo("existente")} style={styles.volverALista}>
+          Elegir un cliente
+        </Button>
+      </View>
+    );
+  }
 
   return (
     <View>
@@ -395,6 +626,14 @@ function ClienteStep({
       />
 
       <View style={styles.list}>
+        {/* Arriba de la lista: si no está, se escribe acá sin salir. */}
+        <Pressable onPress={() => onModo("nuevo")} style={[styles.row, styles.rowNueva]}>
+          <View style={styles.rowText}>
+            <Text variant="bodyLarge" style={styles.rowNuevaTexto}>
+              + Cliente nuevo
+            </Text>
+          </View>
+        </Pressable>
         {filtered.map((c) => {
           const selected = c.id === selectedId;
           // El inactivo se ve, atenuado y sin poder elegirse: saberlo ahí
@@ -454,7 +693,19 @@ function PropiedadStep({
   planes,
   selectedSuscripcionId,
   onSelectSuscripcion,
+  clienteNuevo,
+  nuevaActiva,
+  onActivarNueva,
+  propiedadNueva,
+  onCambiarPropiedadNueva,
 }: {
+  /** El nombre del cliente nuevo, si es uno nuevo: ahí solo hay propiedad nueva. */
+  clienteNuevo: string | null;
+  /** Si la visita va en una propiedad escrita acá. */
+  nuevaActiva: boolean;
+  onActivarNueva: () => void;
+  propiedadNueva: DatosPropiedadNueva;
+  onCambiarPropiedadNueva: (p: Partial<DatosPropiedadNueva>) => void;
   cliente: ClienteListItem | null;
   propiedades: PropiedadResumen[];
   selectedPropiedadId: string | null;
@@ -475,17 +726,31 @@ function PropiedadStep({
           : "Dónde va a ser la visita"}
       </Text>
 
+      {/* Un cliente nuevo todavía no tiene ninguna: la única es la nueva. */}
+      {clienteNuevo !== null ? (
+        <View style={styles.propiedades}>
+          <CamposPropiedadNueva
+            valor={propiedadNueva}
+            onCambio={onCambiarPropiedadNueva}
+            nombreSugerido="Principal"
+          />
+          <Text variant="bodySmall" style={styles.nota}>
+            Si la dejas vacía, nace como «Principal» y la completas después en su ficha.
+          </Text>
+        </View>
+      ) : null}
+
       {cliente ? (
         <View style={styles.propiedades}>
           {propiedades.length === 0 ? (
             <Text style={styles.empty}>
-              Este cliente no tiene propiedades. Agrégale una desde su ficha
-              para poder agendarle una visita.
+              Este cliente no tiene propiedades. Agrégale una nueva aquí abajo.
             </Text>
-          ) : (
+          ) : null}
+          {propiedades.length > 0 ? (
             <View style={styles.list}>
               {propiedades.map((p) => {
-                const elegida = p.id === selectedPropiedadId;
+                const elegida = !nuevaActiva && p.id === selectedPropiedadId;
                 const donde = [p.direccion, p.numeroCasa, p.sector?.nombre]
                   .filter(Boolean)
                   .join(" · ");
@@ -514,21 +779,50 @@ function PropiedadStep({
                 );
               })}
             </View>
-          )}
+          ) : null}
+          {/* Una más al pie: el trabajo es en un lugar que todavía no
+              está en su ficha. */}
+          <View style={[styles.list, styles.listaNueva]}>
+            <Pressable
+              onPress={onActivarNueva}
+              style={[styles.row, nuevaActiva ? styles.rowSelected : styles.rowNueva]}
+            >
+              <View style={styles.rowText}>
+                <Text variant="bodyLarge" style={styles.rowNuevaTexto}>
+                  + Propiedad nueva
+                </Text>
+              </View>
+              {nuevaActiva ? (
+                <View style={styles.checkmark}>
+                  <Text style={styles.checkmarkIcon}>✓</Text>
+                </View>
+              ) : null}
+            </Pressable>
+          </View>
+          {nuevaActiva ? (
+            <View style={styles.camposNueva}>
+              <CamposPropiedadNueva
+                valor={propiedadNueva}
+                onCambio={onCambiarPropiedadNueva}
+                nombreSugerido="La calle, si lo dejas vacío"
+              />
+            </View>
+          ) : null}
         </View>
       ) : null}
 
       {/* De qué plan es la visita: una decisión, de la visita entera. El plan
           es de un jardín, así que elegirlo pone la propiedad. "Sin
           suscripción" es trabajo aparte, que se cobra en una orden. */}
-      {cliente && planes.length > 0 ? (
+      {/* Un plan es de una propiedad que ya está: con una nueva no aplica. */}
+      {cliente && !nuevaActiva && planes.length > 0 ? (
         <View style={styles.propiedades}>
           <Text variant="labelMedium" style={styles.sectionLabel}>
             ¿DE QUÉ SUSCRIPCIÓN?
           </Text>
           <View style={styles.list}>
             {[
-              { id: null, titulo: "Sin suscripción", detalle: "Trabajo aparte, se cobra en una orden" },
+              { id: null, titulo: "Sin suscripción", detalle: "Trabajo aparte, se cobra en un pedido" },
               ...planes.map((p) => ({
                 id: p.id,
                 titulo: `Suscripción #${p.numero}`,
@@ -561,6 +855,48 @@ function PropiedadStep({
           </View>
         </View>
       ) : null}
+    </View>
+  );
+}
+
+/** Los campos de una propiedad nueva, todos opcionales, como en su ficha. */
+function CamposPropiedadNueva({
+  valor,
+  onCambio,
+  nombreSugerido,
+}: {
+  valor: DatosPropiedadNueva;
+  onCambio: (p: Partial<DatosPropiedadNueva>) => void;
+  nombreSugerido: string;
+}) {
+  return (
+    <View style={styles.campos}>
+      <TextInput
+        mode="outlined"
+        label="Nombre"
+        placeholder={nombreSugerido}
+        value={valor.nombre}
+        onChangeText={(t) => onCambio({ nombre: t })}
+      />
+      <TextInput
+        mode="outlined"
+        label="Calle"
+        value={valor.direccion}
+        onChangeText={(t) => onCambio({ direccion: t })}
+      />
+      <TextInput
+        mode="outlined"
+        label="Número de casa"
+        value={valor.numeroCasa}
+        onChangeText={(t) => onCambio({ numeroCasa: t })}
+      />
+      <SelectorDeCiudad valor={valor.ciudad} onCambio={(ciudad) => onCambio({ ciudad })} />
+      <TextInput
+        mode="outlined"
+        label="Referencia"
+        value={valor.referencia}
+        onChangeText={(t) => onCambio({ referencia: t })}
+      />
     </View>
   );
 }
@@ -932,7 +1268,8 @@ function RevisarStep({
   notas,
   onChangeNotas,
 }: {
-  cliente: ClienteListItem | undefined;
+  /** Ya resuelto: el del que se eligió, o "Cliente nuevo: …". */
+  cliente: string | null;
   propiedad: string | null;
   /** Líneas ya formateadas: "Nombre · $ 00.00". */
   servicio: string[];
@@ -953,7 +1290,7 @@ function RevisarStep({
       <View style={styles.summaryBox}>
         <SummaryRow
           label="Cliente"
-          value={cliente ? nombreCliente(cliente) : "—"}
+          value={cliente ?? "—"}
         />
         <SummaryRow label="Propiedad" value={propiedad ?? "—"} />
         <SummaryRow
@@ -1069,6 +1406,15 @@ const styles = StyleSheet.create({
   },
 
   propiedades: { marginTop: 24, gap: 6 },
+  /** *+ Cliente nuevo* / *+ Propiedad nueva*: punteadas, para que se lean
+   *  como "agregar" y no como una más de la lista. */
+  rowNueva: { borderWidth: 1, borderStyle: "dashed", borderColor: tema.verde },
+  rowNuevaTexto: { color: tema.verde700, fontWeight: "600" },
+  listaNueva: { marginTop: 6 },
+  camposNueva: { marginTop: 12 },
+  campos: { gap: 10, marginTop: 8 },
+  nota: { color: tema.texto3, marginTop: 10 },
+  volverALista: { alignSelf: "flex-start", marginTop: 12 },
 
   searchbar: {
     backgroundColor: "#f4f4f4",

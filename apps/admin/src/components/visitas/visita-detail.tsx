@@ -720,7 +720,7 @@ export function VisitaDetail({
             a la otra. */}
         {vePlata && (
         <TarjetaSeccion
-          titulo="Órdenes"
+          titulo="Pedidos"
           accion={
             canModify && facturable ? (
               <Link
@@ -734,7 +734,7 @@ export function VisitaDetail({
         >
           {ordenes.length === 0 ? (
             <EmptyState
-              message={facturable ? "Sin órdenes" : "La visita está cancelada"}
+              message={facturable ? "Sin pedidos" : "La visita está cancelada"}
             />
           ) : (
             <div className="space-y-1">
@@ -744,7 +744,7 @@ export function VisitaDetail({
                   href={`/dashboard/ordenes/${o.id}?from=/dashboard/visitas/${visita.id}`}
                   className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
                 >
-                  <p className="text-sm font-bold">Orden #{o.numero}</p>
+                  <p className="text-sm font-bold">Pedido #{o.numero}</p>
                   <Badge
                     variant={estadoOrdenVariant[o.estado] ?? "outline"}
                     className="flex-none"
@@ -776,7 +776,7 @@ export function VisitaDetail({
             <DialogTitle>Eliminar la visita #{visita.numero}</DialogTitle>
             <DialogDescription>
               Sale de las listas, del calendario y de lo que queda por facturar,
-              con sus fotos y su chat. Si su trabajo está en una orden en
+              con sus fotos y su chat. Si su trabajo está en un pedido en
               borrador, también sale de ahí. No se puede deshacer.
             </DialogDescription>
           </DialogHeader>

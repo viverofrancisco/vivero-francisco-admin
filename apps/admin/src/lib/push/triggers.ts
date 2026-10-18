@@ -357,7 +357,8 @@ export async function pushSolicitudDeCliente(solicitudId: string): Promise<void>
       numero: true,
       mensaje: true,
       contactoNombre: true,
-      producto: { select: { nombre: true } },
+      servicios: { select: { producto: { select: { nombre: true } } } },
+      otroServicio: true,
       cliente: { select: { nombre: true, apellido: true, empresa: true } },
     },
   });
@@ -370,11 +371,63 @@ export async function pushSolicitudDeCliente(solicitudId: string): Promise<void>
   const admins = await getAdminUserIds();
   if (admins.length === 0) return;
 
-  const que = s.producto ? `Cotización de ${s.producto.nombre}` : "Nueva solicitud";
-  const mensaje = s.mensaje.length > 120 ? `${s.mensaje.slice(0, 117)}…` : s.mensaje;
+  const que = "Nueva solicitud";
+  // Los servicios que marcó, adelante: es lo primero que dice qué trabajo es.
+  const servicios = [
+    ...s.servicios.map((x) => x.producto.nombre),
+    ...(s.otroServicio ? ["Otros"] : []),
+  ].join(", ");
+  const texto = servicios ? `${servicios} · ${s.mensaje}` : s.mensaje;
+  const mensaje = texto.length > 120 ? `${texto.slice(0, 117)}…` : texto;
   await sendPushToUsers(admins, {
     title: `${que} — ${quien}`,
     body: mensaje,
     data: { type: "solicitud_cliente", solicitudId },
   });
+}
+
+/**
+ * Un cliente confirmó su carrito: a administradores y staff en el momento,
+ * porque hay mercadería apartada esperando que alguien lo confirme.
+ */
+export async function pushNuevoPedido(
+  ordenId: string,
+  datos: { numero: number; quien: string; lineas: number }
+): Promise<void> {
+  const admins = await getAdminUserIds();
+  if (admins.length === 0) return;
+  await sendPushToUsers(admins, {
+    title: `Nuevo pedido #${datos.numero} — ${datos.quien}`,
+    body:
+      datos.lineas === 1 ? "1 producto desde la app" : `${datos.lineas} productos desde la app`,
+    data: { type: "pedido_app", ordenId },
+  });
+}
+
+/**
+ * Al cliente, cuando su pedido de la app se confirma (se facturó) o se anula.
+ * Solo los de la app: una orden del portal no la pidió él y no la está
+ * esperando. Nunca tira: el aviso no puede deshacer lo que ya pasó.
+ */
+export async function pushEstadoDePedido(ordenId: string): Promise<void> {
+  try {
+    const o = await prisma.orden.findUnique({
+      where: { id: ordenId },
+      select: { numero: true, estado: true, origen: true, cliente: { select: { userId: true } } },
+    });
+    if (!o || o.origen !== "APP" || !o.cliente.userId || o.estado === "BORRADOR") return;
+    await sendPushToUser(o.cliente.userId, {
+      title:
+        o.estado === "CONFIRMADA"
+          ? `Tu pedido #${o.numero} está confirmado`
+          : `Tu pedido #${o.numero} fue anulado`,
+      body:
+        o.estado === "CONFIRMADA"
+          ? "El vivero lo confirmó. Te contactaremos para coordinar la entrega."
+          : "Si tienes dudas, escríbenos o llámanos.",
+      data: { type: "pedido_cliente", ordenId },
+    });
+  } catch (e) {
+    console.error("[push] estado de pedido:", e);
+  }
 }

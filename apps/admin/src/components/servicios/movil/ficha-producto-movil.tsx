@@ -103,7 +103,7 @@ export function FichaProductoMovil({
       <div className="px-3 pb-8">
         {servicio.archivadoEl ? (
           <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-            Este producto está archivado: no se ofrece en órdenes ni facturas.
+            Este producto está archivado: no se ofrece en pedidos ni facturas.
           </div>
         ) : null}
 

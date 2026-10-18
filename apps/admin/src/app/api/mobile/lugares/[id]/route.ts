@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cantonOficial } from "@vivero/shared";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 
 /**
@@ -20,7 +21,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF", "CLIENTE");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const clave = process.env.GOOGLE_MAPS_SERVER_KEY;
@@ -74,9 +75,16 @@ export async function GET(
     direccion: [calle, numero].filter(Boolean).join(" ") || datos.formattedAddress || null,
     numeroCasa: numero,
     // `locality` es la ciudad; en algunas zonas de Ecuador viene solo el cantón.
-    ciudad: parte("locality") ?? parte("administrative_area_level_2"),
+    // Y se lleva al nombre del cantón tal como está en la lista oficial
+    // (`cantonOficial`), para que el selector de ciudad lo reconozca.
+    ciudad: ciudadDeGoogle(parte("locality"), parte("administrative_area_level_2")),
     completa: datos.formattedAddress ?? null,
     lat: datos.location?.latitude ?? null,
     lng: datos.location?.longitude ?? null,
   });
+}
+
+/** La ciudad de Google como cantón oficial: la *locality*, o el cantón si esa no es uno. */
+function ciudadDeGoogle(localidad: string | null, canton: string | null): string | null {
+  return cantonOficial(localidad) ?? cantonOficial(canton) ?? localidad ?? canton;
 }

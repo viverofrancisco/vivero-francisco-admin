@@ -70,6 +70,7 @@ export function MapaDePropiedad({
   ubicando,
   onCambio,
   onUsarMiUbicacion,
+  faltaPunto = false,
 }: {
   punto: Punto | null;
   /** Con cuántos metros de error llegó el punto, si lo trajo el GPS. */
@@ -78,6 +79,8 @@ export function MapaDePropiedad({
   ubicando: boolean;
   onCambio: (punto: Punto | null) => void;
   onUsarMiUbicacion: () => void;
+  /** Se intentó seguir sin pin: la ayuda en rojo, como un campo obligatorio. */
+  faltaPunto?: boolean;
 }) {
   const mapa = useRef<MapView>(null);
 
@@ -95,6 +98,50 @@ export function MapaDePropiedad({
 
   return (
     <View style={styles.caja}>
+      {/* El texto y los botones van **arriba** del mapa: debajo quedaban
+          fuera de la pantalla, y quien no bajaba no se enteraba de que
+          podía usar su ubicación. */}
+      {punto ? (
+        // Sin coordenadas: a nadie le dicen nada, y el pin ya se ve en el mapa.
+        <Text
+          style={[
+            styles.ayuda,
+            precision !== null && precision > 150 ? styles.ayudaAtencion : null,
+          ]}
+        >
+          {precision !== null && precision > 150
+            ? `Tu ubicación llegó con ±${Math.round(precision)} m: ajusta el pin tocando el mapa.`
+            : "Si no quedó en la entrada, arrástralo o toca el mapa para moverlo."}
+        </Text>
+      ) : (
+        <Text style={[styles.ayuda, faltaPunto && styles.ayudaFalta]}>
+          Toca el mapa para poner el pin en la entrada de la casa, o toma tu
+          ubicación si estás parado ahí.
+        </Text>
+      )}
+
+      <View style={styles.botones}>
+        <PressableScale
+          onPress={onUsarMiUbicacion}
+          disabled={ubicando}
+          estiloExterno={styles.crece}
+          style={styles.botonSuave}
+        >
+          {ubicando ? (
+            <ActivityIndicator size="small" color={tema.verde} />
+          ) : (
+            <Text style={styles.botonSuaveTexto}>
+              Usar mi ubicación
+            </Text>
+          )}
+        </PressableScale>
+        {punto ? (
+          <PressableScale onPress={() => onCambio(null)} style={styles.botonSuave}>
+            <Text style={styles.botonSuaveTexto}>Quitar</Text>
+          </PressableScale>
+        ) : null}
+      </View>
+
       {/* El responder es del mapa: si no, en Android la lista de arriba se
           queda con el arrastre vertical y el mapa no se mueve. */}
       <View style={styles.mapaCaja} onStartShouldSetResponder={() => true}>
@@ -135,48 +182,6 @@ export function MapaDePropiedad({
           ) : null}
         </MapView>
       </View>
-
-      {punto ? (
-        <>
-          <Text style={styles.coordenadas}>
-            {punto.lat.toFixed(6)}, {punto.lng.toFixed(6)}
-          </Text>
-          {precision !== null ? (
-            <Text style={[styles.ayuda, precision > 150 ? styles.ayudaAtencion : null]}>
-              {precision > 150
-                ? `Llegó con ±${Math.round(precision)} m: ajústalo tocando el mapa.`
-                : `±${Math.round(precision)} m`}
-            </Text>
-          ) : null}
-        </>
-      ) : (
-        <Text style={styles.ayuda}>
-          Toca el mapa para poner el pin en la entrada de la casa, o toma tu
-          ubicación si estás parado ahí.
-        </Text>
-      )}
-
-      <View style={styles.botones}>
-        <PressableScale
-          onPress={onUsarMiUbicacion}
-          disabled={ubicando}
-          estiloExterno={styles.crece}
-          style={styles.botonSuave}
-        >
-          {ubicando ? (
-            <ActivityIndicator size="small" color={tema.verde} />
-          ) : (
-            <Text style={styles.botonSuaveTexto}>
-              Usar mi ubicación
-            </Text>
-          )}
-        </PressableScale>
-        {punto ? (
-          <PressableScale onPress={() => onCambio(null)} style={styles.botonSuave}>
-            <Text style={styles.botonSuaveTexto}>Quitar</Text>
-          </PressableScale>
-        ) : null}
-      </View>
     </View>
   );
 }
@@ -195,14 +200,9 @@ const styles = StyleSheet.create({
     backgroundColor: tema.linea2,
   },
   mapa: { flex: 1 },
-  coordenadas: {
-    color: tema.texto,
-    fontVariant: ["tabular-nums"],
-    fontSize: 15,
-    paddingHorizontal: 4,
-  },
   ayuda: { color: tema.texto3, fontSize: 13, lineHeight: 19, paddingHorizontal: 4 },
   ayudaAtencion: { color: tema.ambarTexto },
+  ayudaFalta: { color: tema.rojo, fontWeight: "600" },
   botones: { flexDirection: "row", gap: 8 },
   crece: { flex: 1 },
   botonSuave: {

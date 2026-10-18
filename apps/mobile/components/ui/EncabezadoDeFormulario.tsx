@@ -19,14 +19,20 @@ export function EncabezadoDeFormulario({
   accion,
   onAccion,
   onCancelar,
+  textoCancelar = "Cancelar",
   cargando = false,
   deshabilitado = false,
 }: {
   titulo: string;
-  /** "Crear", "Emitir", "Guardar". */
-  accion: string;
-  onAccion: () => void;
+  /**
+   * "Crear", "Emitir", "Guardar". Sin acción queda solo la de la izquierda (un
+   * paso que se resuelve solo, como el código que valida al sexto dígito).
+   */
+  accion?: string;
+  onAccion?: () => void;
   onCancelar: () => void;
+  /** "Atrás" donde salir es volver al paso anterior, no descartar. */
+  textoCancelar?: string;
   cargando?: boolean;
   deshabilitado?: boolean;
 }) {
@@ -41,26 +47,37 @@ export function EncabezadoDeFormulario({
         style={styles.boton}
         estiloPresionado={styles.botonTocado}
       >
-        <Text style={styles.cancelar}>Cancelar</Text>
+        <Text style={styles.cancelar}>{textoCancelar}</Text>
       </PressableScale>
       <Text style={styles.titulo} numberOfLines={1}>
         {titulo}
       </Text>
-      <PressableScale
-        onPress={onAccion}
-        disabled={apagado}
-        hitSlop={8}
-        style={styles.boton}
-        estiloPresionado={styles.botonTocado}
-      >
-        {cargando ? (
-          <ActivityIndicator size="small" color={tema.verde} />
-        ) : (
-          <Text style={[styles.accion, deshabilitado && styles.accionApagada]}>
-            {accion}
-          </Text>
-        )}
-      </PressableScale>
+      {accion && onAccion ? (
+        <PressableScale
+          onPress={onAccion}
+          disabled={apagado}
+          hitSlop={8}
+          style={styles.boton}
+          estiloPresionado={styles.botonTocado}
+        >
+          {cargando ? (
+            <ActivityIndicator size="small" color={tema.verde} />
+          ) : (
+            <Text
+              style={[styles.accion, deshabilitado && styles.accionApagada]}
+            >
+              {accion}
+            </Text>
+          )}
+        </PressableScale>
+      ) : (
+        // Del mismo ancho que el botón, para que el título siga centrado.
+        <View style={styles.boton}>
+          {cargando ? (
+            <ActivityIndicator size="small" color={tema.verde} />
+          ) : null}
+        </View>
+      )}
     </View>
   );
 }
@@ -76,7 +93,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tema.linea,
   },
-  boton: { minWidth: 76, paddingHorizontal: 6, paddingVertical: 6, borderRadius: 8 },
+  boton: {
+    minWidth: 76,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
   botonTocado: { backgroundColor: "rgba(0,0,0,0.05)" },
   cancelar: { color: tema.texto2, fontSize: 16, fontWeight: "600" },
   titulo: {
@@ -86,6 +108,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: tema.texto,
   },
-  accion: { color: tema.verde, fontSize: 16, fontWeight: "700", textAlign: "right" },
+  accion: {
+    color: tema.verde,
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "right",
+  },
   accionApagada: { color: tema.texto3 },
 });

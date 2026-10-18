@@ -273,7 +273,7 @@ export type ProductoWhereInput = {
   opciones?: Prisma.OpcionProductoListRelationFilter
   variantes?: Prisma.VarianteListRelationFilter
   imagenes?: Prisma.ProductoImagenListRelationFilter
-  solicitudes?: Prisma.SolicitudClienteListRelationFilter
+  solicitudes?: Prisma.SolicitudServicioListRelationFilter
 }
 
 export type ProductoOrderByWithRelationInput = {
@@ -296,7 +296,7 @@ export type ProductoOrderByWithRelationInput = {
   opciones?: Prisma.OpcionProductoOrderByRelationAggregateInput
   variantes?: Prisma.VarianteOrderByRelationAggregateInput
   imagenes?: Prisma.ProductoImagenOrderByRelationAggregateInput
-  solicitudes?: Prisma.SolicitudClienteOrderByRelationAggregateInput
+  solicitudes?: Prisma.SolicitudServicioOrderByRelationAggregateInput
 }
 
 export type ProductoWhereUniqueInput = Prisma.AtLeast<{
@@ -322,7 +322,7 @@ export type ProductoWhereUniqueInput = Prisma.AtLeast<{
   opciones?: Prisma.OpcionProductoListRelationFilter
   variantes?: Prisma.VarianteListRelationFilter
   imagenes?: Prisma.ProductoImagenListRelationFilter
-  solicitudes?: Prisma.SolicitudClienteListRelationFilter
+  solicitudes?: Prisma.SolicitudServicioListRelationFilter
 }, "id">
 
 export type ProductoOrderByWithAggregationInput = {
@@ -379,7 +379,7 @@ export type ProductoCreateInput = {
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateInput = {
@@ -400,7 +400,7 @@ export type ProductoUncheckedCreateInput = {
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUpdateInput = {
@@ -421,7 +421,7 @@ export type ProductoUpdateInput = {
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateInput = {
@@ -442,7 +442,7 @@ export type ProductoUncheckedUpdateInput = {
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoCreateManyInput = {
@@ -749,12 +749,10 @@ export type ProductoCreateNestedOneWithoutSolicitudesInput = {
   connect?: Prisma.ProductoWhereUniqueInput
 }
 
-export type ProductoUpdateOneWithoutSolicitudesNestedInput = {
+export type ProductoUpdateOneRequiredWithoutSolicitudesNestedInput = {
   create?: Prisma.XOR<Prisma.ProductoCreateWithoutSolicitudesInput, Prisma.ProductoUncheckedCreateWithoutSolicitudesInput>
   connectOrCreate?: Prisma.ProductoCreateOrConnectWithoutSolicitudesInput
   upsert?: Prisma.ProductoUpsertWithoutSolicitudesInput
-  disconnect?: Prisma.ProductoWhereInput | boolean
-  delete?: Prisma.ProductoWhereInput | boolean
   connect?: Prisma.ProductoWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProductoUpdateToOneWithWhereWithoutSolicitudesInput, Prisma.ProductoUpdateWithoutSolicitudesInput>, Prisma.ProductoUncheckedUpdateWithoutSolicitudesInput>
 }
@@ -776,7 +774,7 @@ export type ProductoCreateWithoutCreatedByInput = {
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutCreatedByInput = {
@@ -796,7 +794,7 @@ export type ProductoUncheckedCreateWithoutCreatedByInput = {
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutCreatedByInput = {
@@ -826,7 +824,7 @@ export type ProductoCreateWithoutUpdatedByInput = {
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutUpdatedByInput = {
@@ -846,7 +844,7 @@ export type ProductoUncheckedCreateWithoutUpdatedByInput = {
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutUpdatedByInput = {
@@ -925,7 +923,7 @@ export type ProductoCreateWithoutCategoriasInput = {
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutCategoriasInput = {
@@ -945,7 +943,7 @@ export type ProductoUncheckedCreateWithoutCategoriasInput = {
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutCategoriasInput = {
@@ -981,7 +979,7 @@ export type ProductoUpdateWithoutCategoriasInput = {
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutCategoriasInput = {
@@ -1001,7 +999,7 @@ export type ProductoUncheckedUpdateWithoutCategoriasInput = {
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoCreateWithoutOpcionesInput = {
@@ -1021,7 +1019,7 @@ export type ProductoCreateWithoutOpcionesInput = {
   categorias?: Prisma.ProductoCategoriaCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutOpcionesInput = {
@@ -1041,7 +1039,7 @@ export type ProductoUncheckedCreateWithoutOpcionesInput = {
   categorias?: Prisma.ProductoCategoriaUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutOpcionesInput = {
@@ -1077,7 +1075,7 @@ export type ProductoUpdateWithoutOpcionesInput = {
   categorias?: Prisma.ProductoCategoriaUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutOpcionesInput = {
@@ -1097,7 +1095,7 @@ export type ProductoUncheckedUpdateWithoutOpcionesInput = {
   categorias?: Prisma.ProductoCategoriaUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoCreateWithoutVariantesInput = {
@@ -1117,7 +1115,7 @@ export type ProductoCreateWithoutVariantesInput = {
   categorias?: Prisma.ProductoCategoriaCreateNestedManyWithoutProductoInput
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutVariantesInput = {
@@ -1137,7 +1135,7 @@ export type ProductoUncheckedCreateWithoutVariantesInput = {
   categorias?: Prisma.ProductoCategoriaUncheckedCreateNestedManyWithoutProductoInput
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutVariantesInput = {
@@ -1173,7 +1171,7 @@ export type ProductoUpdateWithoutVariantesInput = {
   categorias?: Prisma.ProductoCategoriaUpdateManyWithoutProductoNestedInput
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutVariantesInput = {
@@ -1193,7 +1191,7 @@ export type ProductoUncheckedUpdateWithoutVariantesInput = {
   categorias?: Prisma.ProductoCategoriaUncheckedUpdateManyWithoutProductoNestedInput
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoCreateWithoutImagenesInput = {
@@ -1213,7 +1211,7 @@ export type ProductoCreateWithoutImagenesInput = {
   categorias?: Prisma.ProductoCategoriaCreateNestedManyWithoutProductoInput
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutImagenesInput = {
@@ -1233,7 +1231,7 @@ export type ProductoUncheckedCreateWithoutImagenesInput = {
   categorias?: Prisma.ProductoCategoriaUncheckedCreateNestedManyWithoutProductoInput
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutImagenesInput = {
@@ -1269,7 +1267,7 @@ export type ProductoUpdateWithoutImagenesInput = {
   categorias?: Prisma.ProductoCategoriaUpdateManyWithoutProductoNestedInput
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutImagenesInput = {
@@ -1289,7 +1287,7 @@ export type ProductoUncheckedUpdateWithoutImagenesInput = {
   categorias?: Prisma.ProductoCategoriaUncheckedUpdateManyWithoutProductoNestedInput
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoCreateWithoutOrdenLineasInput = {
@@ -1309,7 +1307,7 @@ export type ProductoCreateWithoutOrdenLineasInput = {
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutOrdenLineasInput = {
@@ -1329,7 +1327,7 @@ export type ProductoUncheckedCreateWithoutOrdenLineasInput = {
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutOrdenLineasInput = {
@@ -1365,7 +1363,7 @@ export type ProductoUpdateWithoutOrdenLineasInput = {
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutOrdenLineasInput = {
@@ -1385,7 +1383,7 @@ export type ProductoUncheckedUpdateWithoutOrdenLineasInput = {
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoCreateWithoutFacturaLineasInput = {
@@ -1405,7 +1403,7 @@ export type ProductoCreateWithoutFacturaLineasInput = {
   opciones?: Prisma.OpcionProductoCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoUncheckedCreateWithoutFacturaLineasInput = {
@@ -1425,7 +1423,7 @@ export type ProductoUncheckedCreateWithoutFacturaLineasInput = {
   opciones?: Prisma.OpcionProductoUncheckedCreateNestedManyWithoutProductoInput
   variantes?: Prisma.VarianteUncheckedCreateNestedManyWithoutProductoInput
   imagenes?: Prisma.ProductoImagenUncheckedCreateNestedManyWithoutProductoInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutProductoInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedCreateNestedManyWithoutProductoInput
 }
 
 export type ProductoCreateOrConnectWithoutFacturaLineasInput = {
@@ -1461,7 +1459,7 @@ export type ProductoUpdateWithoutFacturaLineasInput = {
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutFacturaLineasInput = {
@@ -1481,7 +1479,7 @@ export type ProductoUncheckedUpdateWithoutFacturaLineasInput = {
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoCreateWithoutSolicitudesInput = {
@@ -1623,7 +1621,7 @@ export type ProductoUpdateWithoutCreatedByInput = {
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutCreatedByInput = {
@@ -1643,7 +1641,7 @@ export type ProductoUncheckedUpdateWithoutCreatedByInput = {
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1676,7 +1674,7 @@ export type ProductoUpdateWithoutUpdatedByInput = {
   opciones?: Prisma.OpcionProductoUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateWithoutUpdatedByInput = {
@@ -1696,7 +1694,7 @@ export type ProductoUncheckedUpdateWithoutUpdatedByInput = {
   opciones?: Prisma.OpcionProductoUncheckedUpdateManyWithoutProductoNestedInput
   variantes?: Prisma.VarianteUncheckedUpdateManyWithoutProductoNestedInput
   imagenes?: Prisma.ProductoImagenUncheckedUpdateManyWithoutProductoNestedInput
-  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutProductoNestedInput
+  solicitudes?: Prisma.SolicitudServicioUncheckedUpdateManyWithoutProductoNestedInput
 }
 
 export type ProductoUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -1793,7 +1791,7 @@ export type ProductoCountOutputTypeCountImagenesArgs<ExtArgs extends runtime.Typ
  * ProductoCountOutputType without action
  */
 export type ProductoCountOutputTypeCountSolicitudesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.SolicitudClienteWhereInput
+  where?: Prisma.SolicitudServicioWhereInput
 }
 
 
@@ -1903,7 +1901,10 @@ export type $ProductoPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     opciones: Prisma.$OpcionProductoPayload<ExtArgs>[]
     variantes: Prisma.$VariantePayload<ExtArgs>[]
     imagenes: Prisma.$ProductoImagenPayload<ExtArgs>[]
-    solicitudes: Prisma.$SolicitudClientePayload<ExtArgs>[]
+    /**
+     * Las solicitudes que lo piden (solo servicios).
+     */
+    solicitudes: Prisma.$SolicitudServicioPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2331,7 +2332,7 @@ export interface Prisma__ProductoClient<T, Null = never, ExtArgs extends runtime
   opciones<T extends Prisma.Producto$opcionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Producto$opcionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpcionProductoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   variantes<T extends Prisma.Producto$variantesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Producto$variantesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VariantePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   imagenes<T extends Prisma.Producto$imagenesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Producto$imagenesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductoImagenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  solicitudes<T extends Prisma.Producto$solicitudesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Producto$solicitudesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SolicitudClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  solicitudes<T extends Prisma.Producto$solicitudesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Producto$solicitudesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SolicitudServicioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2959,23 +2960,23 @@ export type Producto$imagenesArgs<ExtArgs extends runtime.Types.Extensions.Inter
  */
 export type Producto$solicitudesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the SolicitudCliente
+   * Select specific fields to fetch from the SolicitudServicio
    */
-  select?: Prisma.SolicitudClienteSelect<ExtArgs> | null
+  select?: Prisma.SolicitudServicioSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the SolicitudCliente
+   * Omit specific fields from the SolicitudServicio
    */
-  omit?: Prisma.SolicitudClienteOmit<ExtArgs> | null
+  omit?: Prisma.SolicitudServicioOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.SolicitudClienteInclude<ExtArgs> | null
-  where?: Prisma.SolicitudClienteWhereInput
-  orderBy?: Prisma.SolicitudClienteOrderByWithRelationInput | Prisma.SolicitudClienteOrderByWithRelationInput[]
-  cursor?: Prisma.SolicitudClienteWhereUniqueInput
+  include?: Prisma.SolicitudServicioInclude<ExtArgs> | null
+  where?: Prisma.SolicitudServicioWhereInput
+  orderBy?: Prisma.SolicitudServicioOrderByWithRelationInput | Prisma.SolicitudServicioOrderByWithRelationInput[]
+  cursor?: Prisma.SolicitudServicioWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.SolicitudClienteScalarFieldEnum | Prisma.SolicitudClienteScalarFieldEnum[]
+  distinct?: Prisma.SolicitudServicioScalarFieldEnum | Prisma.SolicitudServicioScalarFieldEnum[]
 }
 
 /**

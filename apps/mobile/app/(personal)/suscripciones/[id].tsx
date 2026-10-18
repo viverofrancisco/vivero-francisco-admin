@@ -140,11 +140,11 @@ export default function SuscripcionScreen() {
       setError(
         r.creadas === 0
           ? "No había períodos por generar."
-          : `${r.creadas} ${r.creadas === 1 ? "orden creada" : "órdenes creadas"} en borrador.`
+          : `${r.creadas} ${r.creadas === 1 ? "pedido creado" : "pedidos creados"} en borrador.`
       );
       await cargar();
     } catch (e) {
-      setError(mensajeDeError(e, "No pudimos generar las órdenes"));
+      setError(mensajeDeError(e, "No pudimos generar los pedidos"));
     } finally {
       setGenerando(false);
     }
@@ -276,13 +276,13 @@ export default function SuscripcionScreen() {
         </Seccion>
 
         <Seccion
-          titulo="Órdenes"
-          accion={generando ? "Generando…" : "Generar órdenes"}
+          titulo="Pedidos"
+          accion={generando ? "Generando…" : "Generar pedidos"}
           onAccion={generando ? undefined : generarOrdenes}
         >
           {plan.ordenes.length === 0 ? (
             <Text style={[styles.apagado, styles.vacio]}>
-              Todavía no se generó ninguna orden de este plan.
+              Todavía no se generó ningún pedido de este plan.
             </Text>
           ) : (
             plan.ordenes.map((o) => (
@@ -293,7 +293,7 @@ export default function SuscripcionScreen() {
               >
                 <View style={styles.filaTexto}>
                   <Text variant="bodyMedium" style={styles.filaNombre}>
-                    Orden #{o.numero}
+                    Pedido #{o.numero}
                     {o.factura ? (
                       <Text style={styles.apagado}>{"  "}{o.factura.numero}</Text>
                     ) : null}
@@ -313,9 +313,9 @@ export default function SuscripcionScreen() {
                     {o.estado === "BORRADOR"
                       ? "Borrador"
                       : o.estado === "ANULADA"
-                        ? "Anulada"
+                        ? "Anulado"
                         : !o.factura || o.factura.saldo === null
-                          ? "Facturada"
+                          ? "Facturado"
                           : o.factura.saldo <= 0.001
                             ? "Cobrado"
                             : "Por cobrar"}

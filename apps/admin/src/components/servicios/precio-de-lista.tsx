@@ -53,8 +53,8 @@ export function PrecioDeLista({
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        Se propone al agregarlo a una orden, y ahí se puede cambiar. Lo que se
-        cobró queda guardado en la orden. En cero, se ofrece gratis.
+        Se propone al agregarlo a un pedido, y ahí se puede cambiar. Lo que se
+        cobró queda guardado en el pedido. En cero, se ofrece gratis.
       </p>
     </div>
   );

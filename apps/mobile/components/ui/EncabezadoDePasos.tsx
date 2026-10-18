@@ -31,9 +31,13 @@ export function EncabezadoDePasos({
   total: number;
   /** En el primer paso es cerrar; después, volver un paso. */
   onAtras: () => void;
-  /** "Continuar" en los pasos del medio; "Generar", "Crear" en el último. */
-  accion: string;
-  onAccion: () => void;
+  /**
+   * "Continuar" en los pasos del medio; "Generar", "Crear" en el último. Sin
+   * acción no hay botón —el paso tiene el suyo al pie, como el checkout—, y
+   * queda un hueco de su ancho para que el contador siga centrado.
+   */
+  accion?: string;
+  onAccion?: () => void;
   deshabilitado?: boolean;
   cargando?: boolean;
   /**
@@ -64,21 +68,25 @@ export function EncabezadoDePasos({
           Paso {paso + 1} de {total}
         </Text>
         {opciones.length > 0 ? <MenuDeEncabezado opciones={opciones} /> : null}
-        <PressableScale
-          onPress={onAccion}
-          disabled={apagado}
-          hitSlop={8}
-          style={styles.boton}
-          estiloPresionado={styles.botonTocado}
-        >
-          {cargando ? (
-            <ActivityIndicator size="small" color={tema.verde} />
-          ) : (
-            <Text style={[styles.accion, deshabilitado && styles.accionApagada]}>
-              {accion}
-            </Text>
-          )}
-        </PressableScale>
+        {accion && onAccion ? (
+          <PressableScale
+            onPress={onAccion}
+            disabled={apagado}
+            hitSlop={8}
+            style={styles.boton}
+            estiloPresionado={styles.botonTocado}
+          >
+            {cargando ? (
+              <ActivityIndicator size="small" color={tema.verde} />
+            ) : (
+              <Text style={[styles.accion, deshabilitado && styles.accionApagada]}>
+                {accion}
+              </Text>
+            )}
+          </PressableScale>
+        ) : (
+          <View style={styles.boton} />
+        )}
       </View>
       <ProgressBar
         progress={(paso + 1) / total}

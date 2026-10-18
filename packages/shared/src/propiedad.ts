@@ -121,3 +121,23 @@ export function medidasDePropiedad(
 export function enlaceParaLlegar(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 }
+
+/**
+ * Una dirección en una línea, con los campos de una propiedad: "Urb. Isla
+ * Mocolí, Villa 12, Samborondón (Ref.: junto a la garita)". Es lo que se
+ * **copia** en un pedido o una solicitud, así que lleva todo lo que quien va
+ * necesita leer. `null` si no hay nada.
+ */
+export function direccionEnUnaLinea(d: {
+  direccion?: string | null;
+  numeroCasa?: string | null;
+  ciudad?: string | null;
+  referencia?: string | null;
+}): string | null {
+  const base = [d.direccion, d.numeroCasa, d.ciudad]
+    .map((x) => x?.trim())
+    .filter(Boolean)
+    .join(", ");
+  const ref = d.referencia?.trim();
+  return [base, ref ? `(Ref.: ${ref})` : ""].filter(Boolean).join(" ") || null;
+}

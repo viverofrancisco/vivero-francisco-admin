@@ -19,6 +19,9 @@ function ensureAdmin(viewer: Viewer): void {
   if (!isAdminRole(viewer.role)) throw new ForbiddenError();
 }
 
+/** Quién anota un movimiento: un `Viewer`, o el cron (sin id). */
+export type Autor = { id: string | null; nombre?: string | null };
+
 export interface MovimientoInput {
   /** Positivo entra, negativo sale. Nunca cero: eso no es un movimiento. */
   cantidad: number;
@@ -26,6 +29,8 @@ export interface MovimientoInput {
   nota?: string | null;
   /** Contra qué factura, en una venta o una devolución. */
   facturaId?: string | null;
+  /** Qué pedido lo apartó o lo liberó, en una reserva o una liberación. */
+  ordenId?: string | null;
   /**
    * Anota aunque deje el stock en negativo.
    *
@@ -52,6 +57,25 @@ export async function moverStock(
   tx?: Prisma.TransactionClient
 ) {
   ensureAdmin(viewer);
+  return registrarMovimiento(
+    { id: viewer.id, nombre: viewer.nombre ?? null },
+    varianteId,
+    entrada,
+    tx
+  );
+}
+
+/**
+ * El núcleo de `moverStock`, **sin preguntar quién**: lo usa también la
+ * reserva de un pedido de la app, que hace el cliente y no un administrador.
+ * Quien lo llama decide si puede.
+ */
+export async function registrarMovimiento(
+  autor: Autor,
+  varianteId: string,
+  entrada: MovimientoInput,
+  tx?: Prisma.TransactionClient
+) {
   const cantidad = Math.trunc(entrada.cantidad);
   if (cantidad === 0) {
     throw new ValidationError("El movimiento tiene que ser distinto de cero.");
@@ -69,7 +93,7 @@ export async function moverStock(
 
     if (!variante.manejaInventario) {
       throw new ValidationError(
-        "Esta variante no lleva inventario. Prendé el conteo antes de moverle stock."
+        "Esta variante no lleva inventario. Activa el conteo antes de moverle stock."
       );
     }
 
@@ -88,8 +112,9 @@ export async function moverStock(
         motivo: entrada.motivo,
         nota: entrada.nota?.trim() || null,
         facturaId: entrada.facturaId ?? null,
-        createdById: viewer.id,
-        createdByNombre: viewer.nombre ?? null,
+        ordenId: entrada.ordenId ?? null,
+        createdById: autor.id,
+        createdByNombre: autor.nombre ?? null,
       },
       select: { id: true, cantidad: true, saldo: true, motivo: true, createdAt: true },
     });
@@ -127,7 +152,7 @@ export async function contarStock(
     if (!variante) throw new NotFoundError("Variante no encontrada");
     if (!variante.manejaInventario) {
       throw new ValidationError(
-        "Esta variante no lleva inventario. Prendé el conteo antes de contarla."
+        "Esta variante no lleva inventario. Activa el conteo antes de contarla."
       );
     }
     const diferencia = entero - variante.stock;
@@ -205,7 +230,9 @@ export async function sinStock(viewer: Viewer, limite = 50) {
  * contra pedido es una decisión ya tomada en la variante.
  */
 export async function ensureStockParaVender(
-  lineas: { varianteId: string | null; cantidad: number; descripcion: string }[]
+  lineas: { varianteId: string | null; cantidad: number; descripcion: string }[],
+  /** Lo que el pedido ya tiene apartado, por variante: cuenta como suyo. */
+  apartado?: Map<string, number>
 ): Promise<void> {
   const necesita = new Map<string, number>();
   for (const l of lineas) {
@@ -229,7 +256,7 @@ export async function ensureStockParaVender(
 
   const faltantes = variantes
     .filter((v) => v.manejaInventario && !v.permiteNegativo)
-    .filter((v) => v.stock < (necesita.get(v.id) ?? 0));
+    .filter((v) => v.stock + (apartado?.get(v.id) ?? 0) < (necesita.get(v.id) ?? 0));
 
   if (faltantes.length === 0) return;
 
@@ -251,7 +278,7 @@ export async function ensureStockParaVender(
  * podía vender ya se tomó en `ensureStockParaVender()`, antes de emitir.
  */
 export async function descontarPorVenta(
-  viewer: Viewer,
+  viewer: Autor,
   facturaId: string,
   numero: string,
   lineas: { varianteId: string | null; cantidad: number }[],
@@ -262,7 +289,7 @@ export async function descontarPorVenta(
 
 /** Lo devuelve al estante cuando una nota de crédito anula la factura. */
 export async function devolverPorNotaDeCredito(
-  viewer: Viewer,
+  viewer: Autor,
   facturaId: string,
   numero: string,
   lineas: { varianteId: string | null; cantidad: number }[],
@@ -272,7 +299,7 @@ export async function devolverPorNotaDeCredito(
 }
 
 async function moverPorFactura(
-  viewer: Viewer,
+  viewer: Autor,
   facturaId: string,
   numero: string,
   lineas: { varianteId: string | null; cantidad: number }[],
@@ -297,9 +324,11 @@ async function moverPorFactura(
     select: { id: true },
   });
 
+  // Sin `moverStock`: lo que sale por una factura autorizada se anota pase lo
+  // que pase y lo anota también el cron, que no es un administrador.
   for (const { id } of cuentan) {
-    await moverStock(
-      viewer,
+    await registrarMovimiento(
+      { id: viewer.id, nombre: viewer.nombre ?? null },
       id,
       {
         cantidad: signo * porVariante.get(id)!,

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly, viewerFromSession } from "@/lib/auth-helpers";
 import { clienteSchema } from "@/lib/validations/cliente";
-import { deleteCliente } from "@/lib/services/cliente.service";
+import { deleteCliente, updateCliente } from "@/lib/services/cliente.service";
 import { httpStatusForServiceError } from "@/lib/services/errors";
 
 export async function GET(
@@ -50,24 +50,25 @@ export async function PUT(
 
   const data = result.data;
 
+  // Por el servicio: es el que cuida que el correo sea de una sola persona
+  // y lo lleva también a la cuenta de la app del cliente.
   try {
-    const cliente = await prisma.cliente.update({
-      where: { id },
-      data: {
-        nombre: data.nombre || "",
-        apellido: data.apellido || null,
-        empresa: data.empresa || null,
-        email: data.email || null,
-        telefono: data.telefono || null,
-        notas: data.notas || null,
-        // La dirección no se edita acá: vive en cada propiedad, y tienen su
-        // propio endpoint (`/api/clientes/[id]/propiedades`).
-        updatedById: user.id,
-      },
+    const cliente = await updateCliente(id, await viewerFromSession(), {
+      nombre: data.nombre || "",
+      apellido: data.apellido || null,
+      empresa: data.empresa || null,
+      email: data.email || null,
+      telefono: data.telefono || null,
+      notas: data.notas || null,
+      // La dirección no se edita acá: vive en cada propiedad, y tienen su
+      // propio endpoint (`/api/clientes/[id]/propiedades`).
     });
     return NextResponse.json(cliente);
-  } catch {
-    return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "No se pudo guardar" },
+      { status: httpStatusForServiceError(e) }
+    );
   }
 }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { nombreCliente } from "@vivero/shared";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 import { getOrden, propiedadesDeLaOrden } from "@/lib/services/orden.service";
+import { mapaDelPedido, textoDeEntrega } from "@/lib/services/pedido-app.service";
 import { facturaVigenteDe } from "@/lib/services/factura-vigente";
 import {
   serviceErrorResponse,
@@ -37,6 +38,18 @@ export async function GET(
       fecha: orden.fecha.toISOString(),
       estado: orden.estado,
       notas: orden.notas,
+      // Lo mismo que el portal: si la pidió el cliente desde el carrito.
+      pedidoApp:
+        orden.origen === "APP"
+          ? {
+              entrega: textoDeEntrega(orden),
+              mapaUrl: mapaDelPedido(orden),
+                  // Lo hizo un invitado: con quién hablar por este pedido.
+                  contacto: orden.contactoNombre
+                    ? [orden.contactoNombre, orden.contactoTelefono].filter(Boolean).join(" · ")
+                    : null,
+            }
+          : null,
       cliente: {
         id: orden.cliente.id,
         nombre: nombreCliente(orden.cliente),

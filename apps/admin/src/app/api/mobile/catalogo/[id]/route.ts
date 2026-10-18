@@ -11,7 +11,10 @@ export async function GET(
   if (!isMobileUser(user)) return user;
   const { id } = await params;
   try {
-    return NextResponse.json(await productoDelCatalogo(id));
+    return NextResponse.json(await productoDelCatalogo(id, {
+        // El drawer de *Elegir opciones* no muestra recomendaciones.
+        ligero: new URL(request.url).searchParams.get("ligero") === "1",
+      }));
   } catch (error) {
     return serviceErrorResponse(error);
   }

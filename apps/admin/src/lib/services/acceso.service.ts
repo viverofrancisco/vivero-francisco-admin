@@ -72,7 +72,7 @@ const VIGENCIA_CLIENTE_MS = 24 * MS_POR_HORA;
  * cuando alguien se entera ya se mandaron invitaciones que no abren; que
  * reviente el botón de invitar es preferible, porque ahí hay alguien mirando.
  */
-function baseUrl(): string {
+export function baseUrl(): string {
   const configurada = process.env.APP_BASE_URL ?? process.env.NEXTAUTH_URL;
   if (!configurada) {
     if (process.env.NODE_ENV === "production") {
@@ -278,20 +278,15 @@ export async function establecerContrasena(
     }
 
     if (!userId) {
-      // El `User` de un cliente es solo la sombra de autenticación: su correo
-      // es un placeholder porque el login resuelve por la ficha del cliente,
-      // no por `User.email`, y así no choca con el correo de alguien del
-      // personal que sea también cliente.
-      //
-      // Desde que `email` admite nulo se podría dejar vacío, y sigue siendo un
-      // placeholder a propósito: las filas viejas ya lo tienen, y una columna
-      // con dos formas obliga a conocer las dos. Nadie le escribe a esa
-      // dirección —los dos caminos de login rechazan a un CLIENTE antes de
-      // mirarla— y el dominio `.local` no sale a ningún lado.
+      // La cuenta del cliente lleva el correo de su ficha: un correo es de
+      // una sola persona entre los clientes (`correo-unico.ts`), y es
+      // `User_email_cliente_key` el que lo garantiza entre sus cuentas; uno
+      // del equipo con el mismo correo no choca. Llegó acá por un enlace que
+      // salió a ese correo.
       const created = await tx.user.create({
         data: {
           role: "CLIENTE",
-          email: `cliente+${cliente.id}@viverofrancisco.local`,
+          email: cliente.email?.trim().toLowerCase() || null,
           password: hashed,
         },
       });
@@ -399,11 +394,29 @@ export function pareceCorreo(identificador: string): boolean {
  * con `accesoRevocadoEl` y con la contraseña, que no es lo mismo en los dos
  * lados.
  */
-export function buscarCuentaPorIdentificador(identificador: string) {
+export async function buscarCuentaPorIdentificador(identificador: string) {
+  return (await buscarCuentasPorIdentificador(identificador))[0] ?? null;
+}
+
+/**
+ * Todas las cuentas que responden a lo tipeado, **la del equipo primero**.
+ *
+ * Un correo es único por lado (`correo-unico.ts`), así que puede haber dos:
+ * la de alguien del equipo y su cuenta de cliente. El login de la app prueba
+ * la contraseña contra cada una en este orden (`validateCredentials`) —entra
+ * a la que coincida—; el portal se queda con la primera, que es del equipo
+ * si la hay. Un `usuario` es solo del equipo y siempre da una.
+ */
+export async function buscarCuentasPorIdentificador(identificador: string) {
   const limpio = identificador.trim();
-  return pareceCorreo(limpio)
-    ? prisma.user.findUnique({ where: { email: limpio.toLowerCase() } })
-    : prisma.user.findUnique({ where: { usuario: normalizarUsuario(limpio) } });
+  if (!pareceCorreo(limpio)) {
+    const u = await prisma.user.findUnique({ where: { usuario: normalizarUsuario(limpio) } });
+    return u ? [u] : [];
+  }
+  const cuentas = await prisma.user.findMany({
+    where: { email: { equals: limpio.toLowerCase(), mode: "insensitive" } },
+  });
+  return cuentas.sort((a, b) => Number(a.role === "CLIENTE") - Number(b.role === "CLIENTE"));
 }
 
 /**

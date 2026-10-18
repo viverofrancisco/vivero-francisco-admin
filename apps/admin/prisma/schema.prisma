@@ -206,7 +206,16 @@ model User {
   /// Por eso esto es opcional y existe `usuario` al lado — uno de los dos
   /// alcanza para entrar. En Postgres un único admite varios nulos, así que
   /// muchas cuentas sin correo conviven sin chocar.
-  email            String?   @unique
+  ///
+  /// **Único por lado, no en toda la tabla**: entre las cuentas del equipo
+  /// (ADMIN, STAFF, PERSONAL) por un lado y entre las de clientes por otro,
+  /// con dos índices parciales escritos a mano en la migración
+  /// (`User_email_equipo_key`, `User_email_cliente_key`) que Prisma no sabe
+  /// expresar. Como en Shopify, el staff y los clientes son mundos aparte: la
+  /// misma persona puede trabajar en el vivero y comprarle plantas con su
+  /// mismo correo. Por eso acá no hay `@unique` y se busca con `findFirst` y
+  /// el rol (`buscarCuentasPorIdentificador`).
+  email            String?
   /**
    * Con qué entra quien no tiene correo. Minúsculas, sin espacios.
    * Lo elige quien crea la cuenta desde la ficha de Personal y se lo dicta a la
@@ -240,49 +249,52 @@ model User {
   obrasActualizadas    Obra[]             @relation("ObraUpdatedBy")
 
   // Audit relations
-  clientesCreated               Cliente[]              @relation("ClienteCreatedBy")
-  clientesUpdated               Cliente[]              @relation("ClienteUpdatedBy")
-  propiedadesCreated            Propiedad[]            @relation("PropiedadCreatedBy")
-  propiedadesUpdated            Propiedad[]            @relation("PropiedadUpdatedBy")
-  media                         Media[]                @relation("MediaCreatedBy")
-  productosCreated              Producto[]             @relation("ProductoCreatedBy")
-  productosUpdated              Producto[]             @relation("ProductoUpdatedBy")
-  movimientosInventario         MovimientoInventario[] @relation("MovimientoCreatedBy")
-  cobrosRegistrados             Cobro[]                @relation("CobroCreatedBy")
-  personalCreated               Personal[]             @relation("JardineroCreatedBy")
-  personalUpdated               Personal[]             @relation("JardineroUpdatedBy")
-  gruposCreated                 Grupo[]                @relation("GrupoCreatedBy")
-  gruposUpdated                 Grupo[]                @relation("GrupoUpdatedBy")
-  suscripcionesCreated          Suscripcion[]          @relation("SuscripcionCreatedBy")
-  suscripcionesUpdated          Suscripcion[]          @relation("SuscripcionUpdatedBy")
-  visitasCreated                Visita[]               @relation("VisitaCreatedBy")
-  visitasUpdated                Visita[]               @relation("VisitaUpdatedBy")
-  visitasCompletadas            Visita[]               @relation("VisitaCompletadaPor")
-  visitasEliminadas             Visita[]               @relation("VisitaDeletedBy")
-  tareasCreated                 Tarea[]                @relation("TareaCreatedBy")
-  tareasUpdated                 Tarea[]                @relation("TareaUpdatedBy")
-  tareasEliminadas              Tarea[]                @relation("TareaDeletedBy")
-  visitaPersonalAdded           VisitaPersonal[]       @relation("VisitaPersonalAddedBy")
-  visitaPersonalRemoved         VisitaPersonal[]       @relation("VisitaPersonalRemovedBy")
+  clientesCreated               Cliente[]                @relation("ClienteCreatedBy")
+  clientesUpdated               Cliente[]                @relation("ClienteUpdatedBy")
+  propiedadesCreated            Propiedad[]              @relation("PropiedadCreatedBy")
+  propiedadesUpdated            Propiedad[]              @relation("PropiedadUpdatedBy")
+  media                         Media[]                  @relation("MediaCreatedBy")
+  productosCreated              Producto[]               @relation("ProductoCreatedBy")
+  productosUpdated              Producto[]               @relation("ProductoUpdatedBy")
+  movimientosInventario         MovimientoInventario[]   @relation("MovimientoCreatedBy")
+  cobrosRegistrados             Cobro[]                  @relation("CobroCreatedBy")
+  personalCreated               Personal[]               @relation("JardineroCreatedBy")
+  personalUpdated               Personal[]               @relation("JardineroUpdatedBy")
+  gruposCreated                 Grupo[]                  @relation("GrupoCreatedBy")
+  gruposUpdated                 Grupo[]                  @relation("GrupoUpdatedBy")
+  suscripcionesCreated          Suscripcion[]            @relation("SuscripcionCreatedBy")
+  suscripcionesUpdated          Suscripcion[]            @relation("SuscripcionUpdatedBy")
+  visitasCreated                Visita[]                 @relation("VisitaCreatedBy")
+  visitasUpdated                Visita[]                 @relation("VisitaUpdatedBy")
+  visitasCompletadas            Visita[]                 @relation("VisitaCompletadaPor")
+  visitasEliminadas             Visita[]                 @relation("VisitaDeletedBy")
+  tareasCreated                 Tarea[]                  @relation("TareaCreatedBy")
+  tareasUpdated                 Tarea[]                  @relation("TareaUpdatedBy")
+  tareasEliminadas              Tarea[]                  @relation("TareaDeletedBy")
+  visitaPersonalAdded           VisitaPersonal[]         @relation("VisitaPersonalAddedBy")
+  visitaPersonalRemoved         VisitaPersonal[]         @relation("VisitaPersonalRemovedBy")
   personal                      Personal?
   cliente                       Cliente?
   pushTokens                    PushToken[]
   refreshTokens                 RefreshToken[]
-  informesGenerados             Informe[]              @relation("InformeGeneratedBy")
-  informesActualizados          Informe[]              @relation("InformeUpdatedBy")
-  informeVersiones              InformeVersion[]       @relation("InformeVersionGeneratedBy")
-  informeBorradoresCreados      InformeBorrador[]      @relation("InformeBorradorCreatedBy")
-  informeBorradoresActualizados InformeBorrador[]      @relation("InformeBorradorUpdatedBy")
-  clienteImports                ClienteImport[]        @relation("ClienteImportCreatedBy")
-  ordenesCreated                Orden[]                @relation("OrdenCreatedBy")
-  ordenesUpdated                Orden[]                @relation("OrdenUpdatedBy")
-  datosFacturacionCreated       DatoFacturacion[]      @relation("DatoFacturacionCreatedBy")
-  datosFacturacionUpdated       DatoFacturacion[]      @relation("DatoFacturacionUpdatedBy")
-  visitaMediaSubidas            VisitaMedia[]          @relation("VisitaMediaSubidaPor")
-  chatsCreados                  Chat[]                 @relation("ChatCreatedBy")
-  chats                         ChatMiembro[]          @relation("ChatMiembro")
-  chatMensajes                  ChatMensaje[]          @relation("ChatMensajeAutor")
-  chatLecturas                  ChatLectura[]          @relation("ChatLectura")
+  informesGenerados             Informe[]                @relation("InformeGeneratedBy")
+  informesActualizados          Informe[]                @relation("InformeUpdatedBy")
+  informeVersiones              InformeVersion[]         @relation("InformeVersionGeneratedBy")
+  informeBorradoresCreados      InformeBorrador[]        @relation("InformeBorradorCreatedBy")
+  informeBorradoresActualizados InformeBorrador[]        @relation("InformeBorradorUpdatedBy")
+  clienteImports                ClienteImport[]          @relation("ClienteImportCreatedBy")
+  ordenesCreated                Orden[]                  @relation("OrdenCreatedBy")
+  ordenesUpdated                Orden[]                  @relation("OrdenUpdatedBy")
+  datosFacturacionCreated       DatoFacturacion[]        @relation("DatoFacturacionCreatedBy")
+  datosFacturacionUpdated       DatoFacturacion[]        @relation("DatoFacturacionUpdatedBy")
+  visitaMediaSubidas            VisitaMedia[]            @relation("VisitaMediaSubidaPor")
+  chatsCreados                  Chat[]                   @relation("ChatCreatedBy")
+  chats                         ChatMiembro[]            @relation("ChatMiembro")
+  chatMensajes                  ChatMensaje[]            @relation("ChatMensajeAutor")
+  chatLecturas                  ChatLectura[]            @relation("ChatLectura")
+  cambioDeCorreoPendiente       CambioDeCorreoPendiente?
+
+  @@index([email])
 }
 
 model Cliente {
@@ -310,13 +322,19 @@ model Cliente {
   /// selectores y no se le agendan visitas hasta reactivarlo. Distinto de
   /// archivar (`deletedAt`), que lo saca de todos lados.
   inactivoDesde         DateTime?
+  /// En qué cliente se fusionó este, si era un duplicado. La ficha queda
+  /// archivada (`deletedAt`) y todo lo suyo pasó al otro; esto deja que un
+  /// enlace viejo lleve a la ficha que quedó. Ver `cliente-fusion.service.ts`.
+  fusionadoEnId         String?
 
   createdById String?
   updatedById String?
-  userId      String? @unique
-  createdBy   User?   @relation("ClienteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy   User?   @relation("ClienteUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String?   @unique
+  createdBy   User?     @relation("ClienteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?     @relation("ClienteUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  fusionadoEn Cliente?  @relation("ClienteFusion", fields: [fusionadoEnId], references: [id], onDelete: SetNull)
+  fusionados  Cliente[] @relation("ClienteFusion")
 
   propiedades       Propiedad[]
   suscripciones     Suscripcion[]
@@ -389,15 +407,17 @@ model Propiedad {
   createdById String?
   updatedById String?
 
-  cliente       Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  sector        Sector?       @relation(fields: [sectorId], references: [id], onDelete: SetNull)
-  createdBy     User?         @relation("PropiedadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy     User?         @relation("PropiedadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  visitas       Visita[]
+  cliente          Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  sector           Sector?       @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  createdBy        User?         @relation("PropiedadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy        User?         @relation("PropiedadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  visitas          Visita[]
   /// Los planes de esta propiedad. `Restrict` en la FK: un plan que renueva
   /// solo no puede quedar apuntando a un lugar que ya no está.
-  suscripciones Suscripcion[]
-  obras         Obra[]
+  suscripciones    Suscripcion[]
+  obras            Obra[]
+  ordenesDeEntrega Orden[]       @relation("OrdenEntregaPropiedad")
+  solicitudes      SolicitudCliente[] @relation("SolicitudPropiedad")
 
   @@index([clienteId])
   @@index([sectorId])
@@ -438,7 +458,8 @@ model Producto {
   opciones    OpcionProducto[]
   variantes   Variante[]
   imagenes    ProductoImagen[]
-  solicitudes SolicitudCliente[]
+  /// Las solicitudes que lo piden (solo servicios).
+  solicitudes SolicitudServicio[]
 }
 
 /// Cómo se agrupa el catálogo: lo que sirve para encontrar un producto en una
@@ -683,6 +704,16 @@ model ProductoImagen {
 }
 
 /// Por qué se movió el stock.
+enum OrigenOrden {
+  PORTAL
+  APP
+}
+
+enum TipoEntrega {
+  RETIRO
+  ENTREGA
+}
+
 enum MotivoMovimiento {
   /// Entró mercadería.
   INGRESO
@@ -694,6 +725,12 @@ enum MotivoMovimiento {
   VENTA
   /// Volvió por una devolución.
   DEVOLUCION
+  /// Apartado por un pedido de la app: baja al pedir, no al facturar.
+  RESERVA
+  /// Lo apartado vuelve: el pedido se anuló, se achicó o se facturó (al
+  /// facturar se libera y se anota la `VENTA`, así la factura sigue diciendo
+  /// qué vendió y el saldo no cambia).
+  LIBERACION
 }
 
 /// Cada vez que el stock de una variante cambió, y por qué.
@@ -718,6 +755,9 @@ model MovimientoInventario {
   /// `Restrict`: el movimiento pasó y sigue siendo cierto aunque la factura se
   /// vaya de la base.
   facturaId String?
+  /// Qué pedido lo apartó o lo liberó, en una `RESERVA` o una `LIBERACION`.
+  /// Sumando los de un pedido se sabe cuánto tiene apartado.
+  ordenId   String?
 
   createdAt       DateTime @default(now())
   createdById     String?
@@ -728,10 +768,12 @@ model MovimientoInventario {
 
   variante  Variante @relation(fields: [varianteId], references: [id], onDelete: Cascade)
   factura   Factura? @relation(fields: [facturaId], references: [id], onDelete: SetNull)
+  orden     Orden?   @relation(fields: [ordenId], references: [id], onDelete: SetNull)
   createdBy User?    @relation("MovimientoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([varianteId, createdAt])
   @@index([facturaId])
+  @@index([ordenId])
 }
 
 /// Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
@@ -976,11 +1018,15 @@ model Visita {
   /// volver, y lo que dice que el viaje en falso y el trabajo de la semana
   /// siguiente son el mismo encargo.
   reprogramadaDeId    String?
+  /// La solicitud del cliente de donde salió, cuando se agendó desde ella.
+  /// Varias visitas pueden salir de una misma solicitud.
+  solicitudId         String?
 
   cliente            Cliente                  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   propiedad          Propiedad                @relation(fields: [propiedadId], references: [id], onDelete: Restrict)
   reprogramadaDe     Visita?                  @relation("Reprogramacion", fields: [reprogramadaDeId], references: [id], onDelete: SetNull)
   reprogramaciones   Visita[]                 @relation("Reprogramacion")
+  solicitud          SolicitudCliente?        @relation(fields: [solicitudId], references: [id], onDelete: SetNull)
   novedades          VisitaNovedad[]
   tareasObligatorias VisitaTareaObligatoria[]
   calificacion       CalificacionVisita?
@@ -1003,6 +1049,7 @@ model Visita {
   /// Para filtrar "completadas entre estas fechas" sin recorrer la tabla.
   @@index([completadaEl])
   @@index([reprogramadaDeId])
+  @@index([solicitudId])
 }
 
 /// "Llegué y no pude hacer la visita", dicho desde el jardín.
@@ -1727,6 +1774,38 @@ enum OrdenTareas {
   ALFABETICO_ZA
 }
 
+/// **Una ubicación del vivero**, como las *Locations* de Shopify: un local con
+/// su nombre, su dirección y su pin. Hoy sirven para que el cliente **retire**
+/// un pedido de la app (`retiro`); el stock sigue siendo uno solo, no por
+/// ubicación. Se desactiva en vez de borrarse cuando un pedido la cita.
+model Ubicacion {
+  id         String  @id @default(cuid())
+  nombre     String
+  direccion  String?
+  ciudad     String?
+  referencia String?
+  lat        Float?
+  lng        Float?
+  telefono   String?
+  /// El horario de la semana: siete días, de lunes a domingo, cada uno
+  /// `{ abierto, desde: "08:00", hasta: "17:00" }` (`HorarioSemanal` en
+  /// `@vivero/shared`). Null es "sin cargar".
+  horarios   Json?
+  /// Si el cliente puede elegirla para retirar su pedido en la app.
+  retiro     Boolean @default(true)
+  /// Apagada no se ofrece en ningún lado, pero sigue nombrando sus pedidos.
+  activa     Boolean @default(true)
+  /// El orden en que se listan, a mano.
+  posicion   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pedidosDeRetiro Orden[]
+
+  @@index([activa, posicion])
+}
+
 model EmpresaConfig {
   id        String   @id @default("default")
   nombre    String?
@@ -1882,6 +1961,25 @@ model Orden {
   estado        EstadoOrden @default(BORRADOR)
   notas         String?     @db.Text
 
+  /// De dónde salió: armada en el portal, o pedida por el cliente desde el
+  /// carrito de la app.
+  origen         OrigenOrden @default(PORTAL)
+  /// **El stock de un pedido de la app se aparta al pedir** (`RESERVA` en el
+  /// libro, con este `ordenId`): anularlo lo devuelve, editarlo ajusta la
+  /// diferencia y facturarlo no cambia el saldo. Ver `reserva.service.ts`.
+  stockReservado Boolean     @default(false)
+
+  /// Cómo recibe el cliente lo que pidió en la app. Null en las del portal.
+  entrega            TipoEntrega?
+  /// Dónde retira, con `RETIRO`: una de las ubicaciones del vivero.
+  retiroUbicacionId  String?
+  /// Adónde se entrega, con `ENTREGA`: una de sus propiedades, o un punto
+  /// marcado en el mapa con su dirección escrita (`entregaPropiedadId` null).
+  entregaPropiedadId String?
+  entregaDireccion   String?
+  entregaLat         Float?
+  entregaLng         Float?
+
   /// Totales denormalizados, recalculados desde las líneas en cada escritura.
   subtotal Decimal @default(0) @db.Decimal(10, 2)
   iva      Decimal @default(0) @db.Decimal(10, 2)
@@ -1889,22 +1987,33 @@ model Orden {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  /// Con quién hablar por **este pedido**, cuando lo hizo un invitado: el
+  /// nombre y el teléfono que escribió en el checkout. Si su correo ya era de
+  /// una ficha, el pedido va a esa ficha (como en Shopify) y esto puede no
+  /// coincidir con lo que la ficha dice: el que pidió puede ser otro de la
+  /// casa, y a quien hay que llamar es a él. `null` en los demás.
+  contactoNombre   String?
+  contactoTelefono String?
   createdById String?
   updatedById String?
 
-  cliente         Cliente          @relation(fields: [clienteId], references: [id], onDelete: Restrict)
-  datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
-  suscripcion     Suscripcion?     @relation(fields: [suscripcionId], references: [id], onDelete: Restrict)
-  createdBy       User?            @relation("OrdenCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy       User?            @relation("OrdenUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  lineas          OrdenLinea[]
-  facturas        Factura[]
-  visitas         OrdenVisita[]
+  cliente          Cliente                @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  datoFacturacion  DatoFacturacion?       @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
+  suscripcion      Suscripcion?           @relation(fields: [suscripcionId], references: [id], onDelete: Restrict)
+  createdBy        User?                  @relation("OrdenCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy        User?                  @relation("OrdenUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  lineas           OrdenLinea[]
+  facturas         Factura[]
+  visitas          OrdenVisita[]
+  movimientos      MovimientoInventario[]
+  entregaPropiedad Propiedad?             @relation("OrdenEntregaPropiedad", fields: [entregaPropiedadId], references: [id], onDelete: SetNull)
+  retiroUbicacion  Ubicacion?             @relation(fields: [retiroUbicacionId], references: [id], onDelete: Restrict)
 
   @@index([clienteId, fecha])
   @@index([estado])
   @@index([datoFacturacionId])
   @@index([suscripcionId])
+  @@index([retiroUbicacionId])
 }
 
 /// De qué visitas es una orden.
@@ -2441,6 +2550,21 @@ model RegistroPendiente {
   createdAt    DateTime @default(now())
 }
 
+/// Un cliente cambiando su correo desde la app: el nuevo espera acá hasta que
+/// el código que se le mandó vuelve. Uno por cuenta; pedir otro lo reemplaza.
+model CambioDeCorreoPendiente {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailNuevo String
+  /// `sha256` del código de seis dígitos; el código en sí no se guarda.
+  codigoHash String
+  expiresAt  DateTime
+  /// Como en el registro: al quinto equivocado hay que pedir otro.
+  intentos   Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
 /// Lo que un cliente le pide al vivero desde la app: una visita, una
 /// cotización de un producto o lo que haga falta, en sus palabras.
 ///
@@ -2456,9 +2580,22 @@ model SolicitudCliente {
   id         String  @id @default(cuid())
   numero     Int     @unique @default(autoincrement())
   clienteId  String?
-  productoId String?
   mensaje    String  @db.Text
+  /// Dónde es el trabajo, en una línea (copiada: si después cambia la
+  /// propiedad, la solicitud sigue diciendo adónde se pidió).
   direccion  String?
+  /// La misma dirección *por partes*, cuando fue otra dirección: es lo que
+  /// la vuelve una propiedad del cliente al agendarle la visita, con sus
+  /// campos en su lugar y no todo en la calle.
+  calle      String?
+  numeroCasa String?
+  ciudad     String?
+  referencia String?
+  /// La propiedad del cliente que eligió, si eligió una de las suyas.
+  propiedadId String?
+  /// El pin: el de la propiedad, o el que marcó en el mapa.
+  lat         Float?
+  lng         Float?
 
   contactoNombre   String?
   contactoTelefono String?
@@ -2470,11 +2607,57 @@ model SolicitudCliente {
   atendidaPorNombre String?
 
   cliente     Cliente?  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  producto    Producto? @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  propiedad   Propiedad? @relation("SolicitudPropiedad", fields: [propiedadId], references: [id], onDelete: SetNull)
   atendidaPor User?     @relation("SolicitudAtendidaPor", fields: [atendidaPorId], references: [id], onDelete: SetNull)
+  /// Las visitas que se agendaron desde ella.
+  visitas     Visita[]
+  /// Los servicios que marcó (al menos uno en las nuevas, o *Otros*).
+  servicios   SolicitudServicio[]
+  /// Marcó *Otros*: lo que quiere no está en la lista, y lo cuenta en el
+  /// mensaje. Cuenta como servicio elegido.
+  otroServicio Boolean @default(false)
+  /// Fotos o videos de su jardín, si mandó alguno: es opcional.
+  adjuntos    SolicitudAdjunto[]
 
   @@index([clienteId])
   @@index([atendidaEl])
+  @@index([propiedadId])
+}
+
+/// Una foto o un video que el cliente adjuntó a su solicitud, para que el
+/// vivero vea el jardín antes de ir. Prefijo propio en R2
+/// (`solicitudes/<clienteId>/`), nunca `VisitaMedia` ni la biblioteca: no es
+/// el trabajo hecho ni algo del catálogo.
+model SolicitudAdjunto {
+  id          String   @id @default(cuid())
+  solicitudId String
+  key         String
+  url         String
+  /// "imagen" o "video", deducido del tipo que se firmó.
+  tipo        String
+  contentType String
+  /// El nombre con que se mandó, si vino.
+  nombre      String?
+  createdAt   DateTime @default(now())
+
+  solicitud SolicitudCliente @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+
+  @@index([solicitudId])
+}
+
+/// Un servicio del catálogo marcado en una solicitud. Los servicios no se
+/// venden desde el catálogo de la app —una poda se cotiza cada vez—: se piden
+/// así, en la solicitud de visita. `Restrict`: un servicio se archiva, nunca
+/// se borra, y la solicitud tiene que seguir diciendo qué pidió.
+model SolicitudServicio {
+  solicitudId String
+  productoId  String
+
+  solicitud SolicitudCliente @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+  producto  Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@id([solicitudId, productoId])
+  @@index([productoId])
 }
 
 // ──────────────────────────────────────────────

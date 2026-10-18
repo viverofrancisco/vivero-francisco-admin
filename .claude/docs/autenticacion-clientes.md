@@ -5,8 +5,11 @@ sin contraseña y la establece su dueño abriendo un **enlace de un solo uso**. 
 el mismo mecanismo, la misma tabla (`SetPasswordToken`) y la misma página
 pública para los dos; lo que cambia es a quién apunta el token y cuánto vive.
 
-Los **clientes** inician sesión en la app móvil con **teléfono o correo +
-contraseña**. (El flujo anterior por OTP de WhatsApp fue retirado.) Todos los
+Los **clientes** inician sesión en la app móvil con **correo + contraseña**. El
+teléfono también servía y se quitó (oct-2026): quien se registra en la app prueba
+su correo con un código, pero nadie prueba que un teléfono es suyo: cualquiera
+puede registrarse con el número de otra persona. Vuelve con el código por WhatsApp. (El flujo anterior por OTP de
+WhatsApp fue retirado.) Todos los
 demás —oficina y jardineros— entran con **usuario o correo + contraseña**, en el
 portal (NextAuth) o por `/api/mobile/auth/login`.
 
@@ -53,10 +56,11 @@ publicada, y por eso su Zod ya **no** valida como dirección.
    [El enlace abre en la app](#el-enlace-abre-en-la-app)).
 4. **Login** — `POST /api/mobile/auth/login` `{ email, password }`, **la misma
    ruta para todos**. El campo se llama `email` por historia y acepta cualquier
-   cosa: el usuario dictado del jardinero, un correo o el teléfono del cliente.
+   cosa: el usuario dictado del jardinero o un correo.
    `autenticarEnLaApp` (`services/login-app.service.ts`) prueba primero la cuenta
    del equipo (`User`, por usuario o correo) y después la ficha del cliente
-   (teléfono o correo, con exactamente una coincidencia), y devuelve el rol junto
+   (solo por correo; con varias fichas con ese correo, la que valida la
+   contraseña), y devuelve el rol junto
    con el `clienteId` o el `personalId` que acota la sesión.
 
    Había una ruta aparte —`/api/mobile/auth/cliente/login`— y con ella dos
@@ -73,8 +77,7 @@ publicada, y por eso su Zod ya **no** valida como dirección.
 
 ## Modo invitado
 
-**Quien abre la app sin cuenta puede mirar el catálogo y pedir una visita o
-una cotización** (*Seguir como invitado*, al pie del login →
+**Quien abre la app sin cuenta puede mirar el catálogo y pedir una visita** (*Seguir como invitado*, al pie del login →
 `apps/mobile/app/(invitado)/`). Es lo que hace que la app le sirva a alguien
 que todavía no es cliente, y lo que Apple pidió para publicarla: la rechazó
 por la regla 3.2 mientras solo se podía entrar con una cuenta creada por el
@@ -92,19 +95,20 @@ vivero. `useAuthGate` deja pasar `(invitado)` sin sesión.
   (`enforceSolicitudInvitadoLimit`), porque cada una le suena a un
   administrador en el teléfono. Las listas la marcan *Sin cuenta*.
 
-## Registro desde la app (hecho, sin botón todavía)
+## Registro desde la app
 
-**El registro está construido pero no se ofrece**: el login ya no tiene
-*Crear cuenta*. Se hizo con el correo, y la mayoría de los clientes del
-vivero tienen teléfono y no correo; la versión buena pide el **teléfono** y
-verifica con un código por **WhatsApp** (una plantilla de categoría
-*AUTHENTICATION* de Meta, que `meta-provider.ts` ya sabe crear; se cobra por
-código enviado), y entonces el teléfono sí puede vincular la cuenta a la
-ficha. Lo de abajo describe lo que existe hoy, por correo: la pantalla
-(`apps/mobile/app/(auth)/registro.tsx`) y las rutas siguen ahí para
-rehacerlas. Quien se registra **queda como cliente**,
-sin estado aparte y sin propiedad, que es lo que tiene un cliente nuevo hasta
-que alguien va a ver el jardín.
+*Crear cuenta*, al pie del login junto a *Seguir como invitado*
+(`apps/mobile/app/(auth)/registro.tsx`), **con el correo**; el teléfono es
+opcional. Se activó así (12-oct-2026) para que la app tenga registro propio
+mientras falta el número de WhatsApp dedicado: la versión con el **teléfono** y un
+código por **WhatsApp** (una plantilla *AUTHENTICATION* de Meta, que
+`meta-provider.ts` ya sabe crear; la cuenta de prueba de Meta no deja crearla y la
+del vivero necesita un número propio conectado) queda para después, y ahí el
+teléfono sí podrá vincular la cuenta a la ficha.
+
+Como el teléfono no vincula, **quien ya estaba cargado por el vivero con su
+teléfono y se registra con su correo queda en dos fichas**. Para eso está la
+**fusión de clientes** (abajo).
 
 Son dos pasos (`registro-cliente.service.ts`):
 
@@ -126,6 +130,33 @@ ficha ya tenía cuenta, el código vale como restablecer la contraseña. Si hay
 dos fichas con el mismo correo se rechaza —elegir una a ciegas podría mostrar
 las visitas de otra persona— y si el acceso está revocado, también. **El
 teléfono no vincula**: no hay cómo probar que es de quien lo escribe.
+
+Por eso puede haber **dos fichas con el mismo teléfono** mientras nadie las
+fusiona, y es la razón de que el teléfono ya no sirva para entrar
+(`clientesPorIdentificador` solo busca por correo): con el teléfono repetido,
+entrar dependía de cuál de las dos tuviera esa contraseña. Con varias fichas con
+el **mismo correo**, `validateClienteCredentials` entra con aquella cuya
+contraseña valida, y *¿Primera vez o olvidaste tu contraseña?* manda el enlace a
+cada una (es el mismo buzón). Vincular, en cambio, exige una sola
+(`resolveClienteByIdentifier`).
+
+**La pantalla valida mientras se escribe**, y el servidor lo vuelve a exigir.
+El correo: la forma con `correoDeRegistro` (`@vivero/shared`, la misma regla que
+`registroSchema`) y, medio segundo sin tipear, si ya tiene cuenta con `POST
+/api/mobile/auth/registro/correo` → `correoParaRegistro` (sin sesión, limitado a
+60 por IP cada 10 minutos porque dice si un correo tiene cuenta). Ya tiene
+cuenta si es de cualquier `User` —del equipo o de un cliente que ya se
+registró: ese entra o recupera su contraseña, no se registra otra vez— o de
+una ficha con cuenta; el de una ficha **sin** cuenta está libre, porque el
+código la une a ella. La contraseña, con `contrasenaDeRegistro` (8 a 72; bcrypt
+ignora lo que pase de 72 bytes). Nombre y apellido son **los dos obligatorios**
+(`nombreDeRegistro`, `apellidoDeRegistro`): dos letras como mínimo y solo
+letras —con tildes y ñ—, espacios, guion y apóstrofo, así que pasan *Li*,
+*María José*, *Pérez-Ruiz* y *D'Angelo* y no *J* ni *Jorge2*. Cada error va **debajo de su campo**, en rojo
+—al pie, con el teclado abierto, no se veía—; el del código, debajo de las
+casillas (un 400: no coincide, venció, demasiados intentos), y lo que no es de
+ningún campo (el correo que no sale, demasiados pedidos, sin conexión, acceso
+bloqueado) en una alerta.
 
 El código y no un enlace porque quien se registra está mirando la app: ir al
 correo, tocar un enlace y volver es perderlo a mitad de camino. El enlace de
@@ -151,14 +182,40 @@ vivero.
 - **Catálogo** (pestaña propia del cliente con sesión): `GET /api/mobile/catalogo` y
   `/api/mobile/catalogo/[id]` (`catalogo.service.ts`), la vidriera aparte de
   la herramienta de la oficina: solo productos `ACTIVO` y vivos, el precio
-  **con IVA**, sin costo ni stock. Un servicio dice *Se cotiza*, y un bien con
-  precio cero también —cero casi siempre es "nadie le puso precio"—.
+  **con IVA**, sin costo ni stock. Solo **bienes**: los servicios no están en
+  el catálogo, se marcan en la solicitud. Un bien con precio cero dice
+  *Gratis* (`textoDePrecio`).
 - **Solicitudes** (`SolicitudCliente`, `solicitud.service.ts`): *Solicitar
-  una visita* desde Mis visitas y *Solicitar cotización* desde un producto.
+  una visita* desde Mis visitas, con los servicios que necesita (al menos uno,
+  `SolicitudServicio`).
   Les llega a ADMIN y STAFF como notificación en el momento
-  (`pushSolicitudDeCliente`) y queda en *Clientes → Solicitudes* del portal y
-  en *Más → Solicitudes* de la app hasta que alguien la marca atendida. El
-  cliente ve las suyas en *Cuenta → Mis solicitudes*.
+  (`pushSolicitudDeCliente`) y queda en *Solicitudes* —ítem propio del menú
+  del portal— y en *Más → Solicitudes* de la app hasta que alguien la marca
+  atendida. Desde ella, *Crear visita* abre el asistente con su cliente y su
+  propiedad puestos; la visita queda enlazada (`Visita.solicitudId`) y la
+  solicitud, atendida. El cliente ve las de visita en su pestaña *Visitas* y las cotizaciones en *Pedidos*, y cada una abre su ficha.
+
+### Fusionar clientes duplicados
+
+*Fusionar con otro cliente*, en el ⋯ de la ficha del cliente en el portal (solo
+ADMIN; `cliente-fusion.service.ts`, `POST /api/clientes/[id]/fusion`). La ficha
+abierta **se conserva** y la elegida se absorbe: pasan sus propiedades, visitas,
+planes, órdenes, informes y borradores, solicitudes, obras y datos de facturación,
+y la ficha que queda toma de la otra los datos de contacto que no tenía (correo,
+teléfono, cédula…). Primero muestra qué se mueve (`confirmar: false`) y después lo
+hace, en una transacción, porque **no se deshace**.
+
+- **Datos de facturación con el mismo RUC o cédula** en las dos: el índice único
+  `[clienteId, identificacion]` no deja tenerlos dos veces, así que las órdenes y
+  facturas que citaban el del duplicado pasan a citar el de la ficha que queda, y el
+  repetido se borra. Los demás se mueven sin robarle el predeterminado.
+- **La cuenta de la app:** si solo el duplicado tiene (el caso típico: el que se
+  registró con el correo), pasa a la ficha que queda y entra con la misma
+  contraseña; si las dos tienen, queda la de la ficha que se conserva y la otra se
+  elimina.
+- El duplicado queda **archivado** (`deletedAt`) con `Cliente.fusionadoEnId`
+  apuntando a la que quedó: un enlace viejo a su ficha redirige ahí. Se deja una
+  línea en las notas.
 
 ## Usuarios del portal (la oficina)
 
@@ -341,7 +398,7 @@ portal con tu correo". Ahora es "app" para `PERSONAL` y para los clientes, y
 | Pieza | Ruta |
 |---|---|
 | Ciclo del token (emitir, leer, consumir) — clientes y usuarios | `apps/admin/src/lib/services/acceso.service.ts` |
-| Servicio de cliente (resolver por teléfono/correo, invitar, login) | `apps/admin/src/lib/services/cliente-invite.service.ts` |
+| Servicio de cliente (resolver por correo, invitar, login) | `apps/admin/src/lib/services/cliente-invite.service.ts` |
 | Invitar / restablecer usuarios del portal | `apps/admin/src/app/api/users/{invite,[id]/enlace-acceso}/route.ts` |
 | Cuenta del personal de campo (generar usuario, renombrar, revocar) | `apps/admin/src/lib/services/personal-acceso.service.ts` + `apps/admin/src/app/api/personal/[id]/{usuario,acceso}/route.ts` |
 | Alta de la ficha, que crea la cuenta | `apps/admin/src/app/api/personal/route.ts` |
@@ -356,12 +413,67 @@ portal con tu correo". Ahora es "app" para `PERSONAL` y para los clientes, y
 | Pantallas móviles | `apps/mobile/app/(auth)/{login,registro,solicitar-acceso}.tsx` |
 | Registro, código y eliminar la cuenta | `apps/admin/src/lib/services/registro-cliente.service.ts` + `apps/admin/src/app/api/mobile/auth/{registro,registro/confirmar,cuenta}/route.ts` |
 
-Nota: `User.email` de un cliente siempre es un placeholder (`cliente+{id}@…`). El login
-resuelve por la **ficha del cliente**, no por `User.email`, para evitar choques con
-correos del personal. Desde que la columna admite nulo se podría dejar vacía, y
-sigue siendo un placeholder a propósito: las filas viejas ya lo tienen, y una
-columna con dos formas obliga a conocer las dos. Nadie le escribe a esa
-dirección —los dos caminos de login rechazan a un `CLIENTE` antes de mirarla—.
+## El cliente cambia su correo
+
+Desde *Cuenta → Cambiar correo* (solo el cliente; el del equipo lo cambia un
+administrador en el portal), **probando que el nuevo es suyo**:
+`POST /api/mobile/auth/correo` revisa que esté libre (`ensureCorreoLibre`),
+guarda el pendiente en `CambioDeCorreoPendiente` (uno por cuenta, código en
+sha256, 15 minutos, cinco intentos) y manda el código **al correo nuevo**;
+`POST /api/mobile/auth/correo/confirmar` lo compara, vuelve a revisar que siga
+libre, cambia la ficha y la cuenta en una transacción y le avisa al correo
+**anterior** (`sendAvisoDeCorreoCambiadoEmail`): si no lo cambió su dueño, es la
+única forma de que se entere. Sin código, cualquiera con el teléfono
+desbloqueado pondría su correo y se quedaría con la cuenta, porque es con lo
+que se entra y adonde llegan los enlaces de contraseña. Servicio:
+`cambio-de-correo.service.ts`.
+
+## Un correo, una persona (por lado)
+
+**Un correo es de una sola persona dentro de su lado** (oct-2026): el
+**equipo** (ADMIN, STAFF, PERSONAL) por un lado y los **clientes** por otro,
+como en Shopify, donde el staff y los *customers* son mundos aparte. Dentro de
+los clientes no lo comparten dos fichas, ni una ficha y la cuenta de otro
+cliente; dentro del equipo, no lo comparten dos cuentas. **Entre lados sí**:
+quien trabaja en el vivero puede comprarle plantas con su mismo correo. Fue un
+correo único en todo el sistema hasta el 17-oct-2026, y eso hacía que el
+correo de alguien del staff no sirviera para comprar como invitado.
+
+Todas las cuentas siguen en `User`, porque todo el acceso —sesiones de la app,
+refresh tokens, push, enlaces de contraseña, revocación— cuelga de esa tabla y
+duplicarlo para los clientes sería mantener dos copias; **la cuenta de un
+cliente lleva el correo de su ficha**. La base lo garantiza con índices únicos
+parciales escritos a mano, porque Prisma no los expresa (un `prisma migrate
+dev` futuro va a querer borrarlos: hay que sacar esos `DROP INDEX` del SQL que
+genere, como con el de las tareas):
+
+- `User_email_equipo_key` y `User_email_cliente_key`, sobre `lower(email)` de
+  las cuentas de cada lado (migración `20261017150000_correo_unico_por_lado`,
+  que quitó el `@unique` de `User.email`; por eso se busca con `findFirst` y el
+  rol, nunca `findUnique({ email })`);
+- `Cliente_email_vivo_key`, sobre `lower(email)` de las fichas **vivas** (la
+  fusionada queda archivada con el suyo; migración `20261014120000_correo_unico`).
+
+Antes de escribir lo pregunta `ensureCorreoLibre(email, lado)`
+(`services/correo-unico.ts`) y responde *"Ese correo ya está registrado."*
+—**sin decir de quién**—. Del lado `"cliente"` lo llaman crear y editar una
+ficha (`createCliente`, `updateCliente`, que también llevan el correo a la
+cuenta de la ficha y no dejan borrarlo si tiene cuenta), la importación por
+CSV, *Cambiar correo*, el cliente nuevo del alta de visita y el registro, que
+solo mira cuentas de clientes (`correoParaRegistro`: *"Este correo ya tiene una
+cuenta. Inicia sesión con él."*); del lado `"equipo"`, las cuentas del equipo
+(`usuario.service`). La fusión alinea el correo de la cuenta con el de la ficha
+que queda.
+
+**El login con un correo que está en los dos lados**: `buscarCuentasPorIdentificador`
+devuelve las cuentas que responden, la del equipo primero, y el login de la app
+(`validateCredentials`) entra a la que coincida la contraseña. Con la misma
+contraseña en las dos, entra siempre como equipo: para entrar como cliente
+necesita otra. El portal se queda con la del equipo y sigue rechazando a un
+`CLIENTE`.
+
+**El checkout de invitado acepta cualquier correo**, como Shopify: si es de
+una ficha, el pedido va a esa ficha (ver `crearPedidoDeInvitado`).
 
 ## Correo: Gmail API (OAuth2 con refresh token)
 
@@ -391,6 +503,15 @@ en la consola del servidor (bypass de desarrollo).
    **Authorize APIs** → inicia sesión **con el buzón remitente** (el de `EMAIL_FROM`) y acepta.
 5. **Exchange authorization code for tokens** → copia el **refresh token** a `GMAIL_REFRESH_TOKEN`.
 6. Reinicia el dev server.
+
+**Cuando deja de salir el correo.** El registro anota en la consola del portal
+la respuesta de Google (`[registro] no se pudo enviar el código`). Dos que ya
+pasaron (oct-2026): `401 deleted_client` —alguien borró el cliente OAuth en Google
+Cloud: se crea otro (pasos de arriba) y se cambian las tres variables, en el
+`.env` **y en Vercel**— y `403 SERVICE_DISABLED` —la Gmail API no está habilitada
+en el proyecto del cliente nuevo—. El consentimiento OAuth del proyecto tiene que
+ser **Interno** (la organización `viverofrancisco.com`): como *Externo* queda en
+modo de prueba y Google vence el refresh token cada 7 días.
 
 ## Nota: solo correo (no WhatsApp)
 

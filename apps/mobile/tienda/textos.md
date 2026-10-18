@@ -1,7 +1,7 @@
 # Textos de las fichas de las tiendas
 
 Desde el 5-oct-2026 la app es **para clientes y para el equipo**: cualquiera,
-sin cuenta, puede ver el catálogo y pedir una visita o una cotización. Apple rechazó la versión que era solo del equipo (regla 3.2).
+sin cuenta, puede ver el catálogo y pedir una visita. Apple rechazó la versión que era solo del equipo (regla 3.2).
 
 Para copiar y pegar en App Store Connect y en Google Play Console. Los
 límites de caracteres de cada campo van entre paréntesis; todos los textos
@@ -35,7 +35,7 @@ muestra a Apple y a quien busca la app que le sirve a cualquiera.
 
 **Texto promocional** (170):
 
-> Mira el catálogo de plantas y servicios, pide una visita o una cotización y sigue el mantenimiento de tu jardín, con fotos de cada trabajo.
+> Mira el catálogo de plantas y productos, pide una visita eligiendo los servicios que necesitas y sigue el mantenimiento de tu jardín, con fotos de cada trabajo.
 
 **Palabras clave** (100, separadas por coma, sin espacios):
 
@@ -46,8 +46,9 @@ muestra a Apple y a quien busca la app que le sirve a cualquiera.
 > Vivero Francisco es la app del vivero y empresa de mantenimiento de jardines Vivero Francisco, en Guayaquil.
 >
 > PARA TI Y TU JARDÍN
-> • Mira el catálogo de plantas, productos y servicios, con fotos y precios.
-> • Pide una visita o una cotización, sin crear una cuenta, y te contactamos.
+> • Crea tu cuenta con tu correo en un minuto, o entra como invitado.
+> • Mira el catálogo de plantas y productos, con fotos y precios.
+> • Pide una visita, sin crear una cuenta: cuéntanos qué necesitas, elige los servicios (poda, riego, diseño, control de plagas…) y un asesor te contacta.
 > • Si ya eres cliente, sigue tus visitas de mantenimiento: cuándo vamos, qué hicimos y las fotos del trabajo.
 > • Califica cada visita.
 >
@@ -60,7 +61,7 @@ muestra a Apple y a quien busca la app que le sirve a cualquiera.
 >
 > PARA LA ADMINISTRACIÓN
 > • Clientes, propiedades con su ubicación y medidas, y suscripciones.
-> • Las solicitudes de visita y de cotización de los clientes, al momento.
+> • Las solicitudes de visita de los clientes, con los servicios que eligieron, al momento.
 > • Agendar visitas y asignar al personal.
 > • Armar informes en PDF con las fotos de cada tarea, listos para enviar al cliente.
 > • Órdenes, facturación electrónica y cobros.
@@ -68,7 +69,7 @@ muestra a Apple y a quien busca la app que le sirve a cualquiera.
 
 **Novedades de esta versión** (4000):
 
-> Primera versión de la app de Vivero Francisco: mira el catálogo y pide una visita o una cotización.
+> Primera versión de la app de Vivero Francisco: mira el catálogo y pide una visita con los servicios que necesitas.
 
 **Información para la revisión (App Review)**
 
@@ -76,7 +77,7 @@ muestra a Apple y a quien busca la app que le sirve a cualquiera.
 - Contraseña: *(la que elegiste)*
 - Notas:
 
-> Vivero Francisco es la app de un vivero y empresa de mantenimiento de jardines en Guayaquil, Ecuador. Cualquier persona, sin cuenta, puede tocar “Seguir como invitado” en la pantalla de inicio: ve el catálogo de plantas, productos y servicios con sus precios y puede pedir una visita o una cotización dejando su nombre y teléfono (le llega al vivero al momento).
+> Vivero Francisco es la app de un vivero y empresa de mantenimiento de jardines en Guayaquil, Ecuador. Cualquier persona puede crear una cuenta desde la pantalla de inicio (“Crear cuenta”): recibe un código en su correo y entra como cliente, con el catálogo de plantas y productos con sus precios, sus solicitudes de visita (con los servicios que elige) y sus visitas. También puede entrar sin cuenta con “Seguir como invitado”, ver el catálogo y pedir una visita dejando su nombre y teléfono. La cuenta se elimina desde Cuenta → Eliminar mi cuenta.
 >
 > La misma app la usa el equipo del vivero (administradores, staff y jardineros). La cuenta de prueba que les damos tiene rol Staff y muestra esa parte, con datos de demostración: clientes, visitas, informes, órdenes y chats. La ubicación se usa solo mientras la app está en uso, cuando un jardinero marca su entrada o su salida de una visita.
 
@@ -84,7 +85,7 @@ muestra a Apple y a quien busca la app que le sirve a cualquiera.
 
 **Descripción breve** (80):
 
-> Plantas, servicios y el mantenimiento de tu jardín. Pide visitas y cotizaciones.
+> Plantas y el mantenimiento de tu jardín. Pide una visita con los servicios.
 
 **Descripción completa** (4000): la misma que la del App Store.
 
@@ -100,7 +101,7 @@ desde la app; el equipo, pidiéndolo):
 | Tipo de dato | Uso | ¿Obligatorio? |
 |---|---|---|
 | Nombre, correo, teléfono, ID de usuario | Funcionalidad de la app, administración de la cuenta | Sí |
-| Otro contenido generado por el usuario (solicitudes de visita y cotización, con dirección) | Funcionalidad | No |
+| Otro contenido generado por el usuario (solicitudes de visita, con los servicios elegidos y la dirección) | Funcionalidad | No |
 | Ubicación precisa | Funcionalidad (marcar entrada y salida) | Sí, para el personal |
 | Fotos y videos | Funcionalidad | No |
 | Archivos y documentos | Funcionalidad (chat, firma electrónica) | No |

@@ -28,10 +28,11 @@ import {
   type CobroPropioInput,
 } from "./cobro.service";
 import {
-  descontarPorVenta,
   devolverPorNotaDeCredito,
   ensureStockParaVender,
 } from "./inventario.service";
+import { alAutorizarLaFactura, apartadoDelPedido } from "./reserva.service";
+import { pushEstadoDePedido } from "@/lib/push/triggers";
 import {
   emitirFacturaSri,
   emitirNotaCreditoSri,
@@ -180,7 +181,7 @@ function ensureFacturaCuadra(
     const b = centavos(orden.get(tasa) ?? 0);
     if (Math.abs(a - b) > 0.005) {
       throw new ValidationError(
-        `El documento no cuadra con la orden: al ${tasa}% suma ${dinero(a)} y la orden ${dinero(b)}.`
+        `El documento no cuadra con el pedido: al ${tasa}% suma ${dinero(a)} y el pedido ${dinero(b)}.`
       );
     }
   }
@@ -259,18 +260,18 @@ export async function emitirFactura(
 
   const orden = await getOrden(viewer, ordenId);
   if (orden.estado === "ANULADA") {
-    throw new ConflictError("Esta orden está anulada.");
+    throw new ConflictError("Este pedido está anulado.");
   }
   // Un borrador **sí** se factura: emitir es lo que lo confirma. El paso previo
   // dejó de existir cuando confirmar y facturar pasaron a ser el mismo momento.
   const yaEmitida = facturaVigenteDe(orden.facturas);
   if (yaEmitida) {
     throw new ConflictError(
-      `Esta orden ya tiene la factura ${yaEmitida.numero}.`
+      `Este pedido ya tiene la factura ${yaEmitida.numero}.`
     );
   }
   if (orden.lineas.length === 0) {
-    throw new ValidationError("La orden no tiene productos.");
+    throw new ValidationError("El pedido no tiene productos.");
   }
 
   // Con qué RUC se emite. Sin elegir uno, el predeterminado: con un solo
@@ -318,12 +319,14 @@ export async function emitirFactura(
   // ¿Hay stock? Se pregunta **antes de emitir**: después el comprobante ya
   // está autorizado y no se deshace, así que cortar ahí dejaría la factura
   // viva y la salida sin poder anotarse.
+  // Lo que un pedido de la app ya apartó es suyo: cuenta como disponible.
   await ensureStockParaVender(
     propuestas.map((l) => ({
       varianteId: l.varianteId ?? null,
       cantidad: l.cantidad,
       descripcion: l.descripcion,
-    }))
+    })),
+    orden.stockReservado ? await apartadoDelPedido(prisma, orden.id) : undefined
   );
 
   return emitirPorSri(viewer, {
@@ -545,26 +548,14 @@ async function emitirPorSri(
     });
     if (r.estado === "AUTORIZADO") {
       // La mercadería salió. Se anota **después** de la autorización y no
-      // antes: un comprobante rechazado no vendió nada, y descontar ahí dejaría
-      // el stock corto por una factura que no existe.
-      await descontarPorVenta(
-        viewer,
-        creada.id,
-        creada.numero,
-        propuestas.map((l) => ({
-          varianteId: l.varianteId ?? null,
-          cantidad: l.cantidad,
-        })),
-        tx
-      );
-      await tx.orden.update({
-        where: { id: orden.id },
-        data: { estado: "CONFIRMADA", updatedById: viewer.id },
-      });
+      // antes: un comprobante rechazado no vendió nada.
+      await alAutorizarLaFactura(tx, creada.id, { id: viewer.id, nombre: viewer.nombre ?? null });
+      await tx.orden.update({ where: { id: orden.id }, data: { updatedById: viewer.id } });
     }
     return creada;
   });
 
+  if (factura.estado === "AUTORIZADO") void pushEstadoDePedido(orden.id);
   return {
     facturaId: factura.id,
     numero: factura.numero,
@@ -848,7 +839,7 @@ export async function cobrarOrden(
   const orden = await getOrden(viewer, ordenId);
 
   if (orden.estado === "ANULADA") {
-    throw new ConflictError("Esta orden está anulada.");
+    throw new ConflictError("Este pedido está anulado.");
   }
   const vigente = facturaVigenteDe(orden.facturas);
   const factura = vigente
@@ -911,7 +902,7 @@ export async function anularOrdenCompleta(
   const vigente = facturaVigenteDe(orden.facturas);
   if (vigente) {
     throw new ConflictError(
-      `Esta orden tiene la factura ${vigente.numero} autorizada por el SRI. Emitile una nota de crédito y después anulala.`
+      `Este pedido tiene la factura ${vigente.numero} autorizada por el SRI. Emítele una nota de crédito y después anúlala.`
     );
   }
 
@@ -967,13 +958,14 @@ export async function consultarFacturaAlSri(viewer: Viewer, facturaId: string) {
             : undefined,
         },
       });
-      if (estado === "AUTORIZADO") {
-        await tx.orden.updateMany({
-          where: { id: factura.ordenId, estado: "BORRADOR" },
-          data: { estado: "CONFIRMADA" },
-        });
+      // Una sola vez: la que ya estaba autorizada ya anotó su venta.
+      if (estado === "AUTORIZADO" && factura.estado !== "AUTORIZADO") {
+        await alAutorizarLaFactura(tx, facturaId, { id: viewer.id, nombre: viewer.nombre ?? null });
       }
     });
+    if (estado === "AUTORIZADO" && factura.estado !== "AUTORIZADO") {
+      void pushEstadoDePedido(factura.ordenId);
+    }
   }
 
   return { estado: r.estado, resuelta: estado !== null, mensajes: r.mensajes ?? [] };

@@ -151,7 +151,7 @@ export function OrdenLineasEditor({
   );
 
   const guardar = () => {
-    if (lineas.length === 0) return toast.error("La orden necesita un producto");
+    if (lineas.length === 0) return toast.error("El pedido necesita un producto");
     const sinDescripcion = lineas.find((l) => !l.descripcion.trim());
     if (sinDescripcion) return toast.error("Hay un producto sin descripción");
     const sinPrecio = lineas.find(

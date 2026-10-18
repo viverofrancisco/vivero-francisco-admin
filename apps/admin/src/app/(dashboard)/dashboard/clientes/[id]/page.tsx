@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
 import { isAdminRole } from "@/lib/services/viewer";
@@ -78,6 +78,14 @@ export default async function EditarClientePage({
   ]);
 
   if (!cliente) {
+    // Si era un duplicado que se fusionó, a la ficha que quedó.
+    const fusionado = await prisma.cliente.findUnique({
+      where: { id },
+      select: { fusionadoEnId: true },
+    });
+    if (fusionado?.fusionadoEnId) {
+      redirect(`/dashboard/clientes/${fusionado.fusionadoEnId}`);
+    }
     notFound();
   }
 
@@ -125,6 +133,7 @@ export default async function EditarClientePage({
     <div>
       <ClienteDetailTabs
         verPlata={verPlata}
+        puedeFusionar={user.role === "ADMIN"}
         cliente={{
           id: cliente.id,
           nombre: cliente.nombre,

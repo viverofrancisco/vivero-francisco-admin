@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { buscarCuentaPorIdentificador } from "@/lib/services/acceso.service";
+import { buscarCuentasPorIdentificador } from "@/lib/services/acceso.service";
 import type { User, UserRole } from "@/generated/prisma/client";
 
 /**
@@ -117,10 +117,14 @@ export async function validateCredentials(
   identificador: string,
   password: string
 ): Promise<User | null> {
-  const user = await buscarCuentaPorIdentificador(identificador);
-  if (!user?.password) return null;
-  // Con el acceso revocado la contraseña deja de importar.
-  if (user.accesoRevocadoEl) return null;
-  const valid = await bcrypt.compare(password, user.password);
-  return valid ? user : null;
+  // Con un correo puede haber dos cuentas, la del equipo y la de cliente
+  // (un correo es único por lado): entra a la que coincida la contraseña,
+  // probando primero la del equipo.
+  for (const user of await buscarCuentasPorIdentificador(identificador)) {
+    if (!user.password) continue;
+    // Con el acceso revocado la contraseña deja de importar.
+    if (user.accesoRevocadoEl) continue;
+    if (await bcrypt.compare(password, user.password)) return user;
+  }
+  return null;
 }

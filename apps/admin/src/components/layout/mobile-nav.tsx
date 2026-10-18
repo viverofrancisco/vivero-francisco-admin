@@ -17,12 +17,10 @@ import {
   RefreshCw,
   Users,
   Tag,
-  UserCheck,
-  UsersRound,
   CalendarDays,
   FileText,
   Settings,
-  MapPin,
+  Inbox,
   Menu,
   LogOut,
   ChevronDown,
@@ -48,13 +46,10 @@ interface NavItem {
 /** El menú completo — el mismo del sidebar, que es lo que abre "Más". */
 const navItems: NavItem[] = [
   { label: "Panel", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "STAFF"] },
-  {
-    label: "Clientes",
-    href: "/dashboard/clientes",
-    icon: Users,
-    roles: ["ADMIN", "STAFF"],
-    children: [{ label: "Solicitudes", href: "/dashboard/clientes/solicitudes" }],
-  },
+  { label: "Clientes", href: "/dashboard/clientes", icon: Users, roles: ["ADMIN", "STAFF"] },
+  // Lo que los clientes piden desde la app: visitas y cotizaciones. Ítem
+  // propio y no colgado de Clientes: es una bandeja que se revisa a diario.
+  { label: "Solicitudes", href: "/dashboard/solicitudes", icon: Inbox, roles: ["ADMIN", "STAFF"] },
   {
     label: "Productos",
     href: "/dashboard/productos",
@@ -92,7 +87,7 @@ const navItems: NavItem[] = [
     roles: ["ADMIN", "STAFF"],
   },
   {
-    label: "Órdenes",
+    label: "Pedidos",
     href: "/dashboard/ordenes",
     icon: Receipt,
     roles: ["ADMIN", "STAFF"],
@@ -114,19 +109,23 @@ const navItems: NavItem[] = [
       { label: "Centros de costo", href: "/dashboard/contabilidad/centros-costo" },
     ],
   },
-  { label: "Personal", href: "/dashboard/personal", icon: UserCheck, roles: ["ADMIN", "STAFF"] },
-  { label: "Grupos", href: "/dashboard/grupos", icon: UsersRound, roles: ["ADMIN", "STAFF"] },
-  { label: "Sectores", href: "/dashboard/sectores", icon: MapPin, roles: ["ADMIN"] },
+  // Personal, Grupos y Sectores se arman una vez y se tocan poco: viven
+  // dentro de Configuración, con sus URLs de siempre. Staff ve Configuración
+  // solo por Personal y Grupos; el resto es del administrador.
   {
     label: "Configuración",
     href: "/dashboard/configuracion",
     icon: Settings,
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "STAFF"],
     children: [
-      { label: "Empresa", href: "/dashboard/configuracion/empresa" },
-      { label: "Usuarios", href: "/dashboard/configuracion/usuarios" },
-      { label: "Notificaciones", href: "/dashboard/configuracion/notificaciones" },
-      { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion" },
+      { label: "Personal", href: "/dashboard/personal" },
+      { label: "Grupos", href: "/dashboard/grupos" },
+      { label: "Sectores", href: "/dashboard/sectores", roles: ["ADMIN"] },
+      { label: "Empresa", href: "/dashboard/configuracion/empresa", roles: ["ADMIN"] },
+      { label: "Usuarios", href: "/dashboard/configuracion/usuarios", roles: ["ADMIN"] },
+      { label: "Notificaciones", href: "/dashboard/configuracion/notificaciones", roles: ["ADMIN"] },
+      { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion", roles: ["ADMIN"] },
+      { label: "Ubicaciones", href: "/dashboard/configuracion/ubicaciones", roles: ["ADMIN"] },
     ],
   },
   { label: "Cuenta", href: "/dashboard/cuenta", icon: UserCircle },
@@ -364,7 +363,10 @@ export function MobileNav({ branding, role }: MobileNavProps) {
 
             <div className="min-h-0 flex-1 overflow-y-auto p-3">
               {visibles.map((item) => {
-                const activo = esActivo(pathname, item.href);
+                // Con hijos, manda la sección de la ruta, como en el sidebar.
+                const activo = item.children?.length
+                  ? seccionDeLaRuta === item.href
+                  : esActivo(pathname, item.href);
                 const hijos = (item.children ?? []).filter(
                   (child) => !child.roles || (role && child.roles.includes(role))
                 );

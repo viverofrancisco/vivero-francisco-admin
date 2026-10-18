@@ -257,7 +257,7 @@ export function EmitirFacturaPage({
             : sinPrecio
             ? "Hay una línea sin precio."
             : descuadres.length > 0
-              ? "El documento no cuadra con la orden."
+              ? "El documento no cuadra con el pedido."
               : !datoFacturacionId
                 ? "Falta elegir a nombre de quién se emite."
                 : null;
@@ -317,7 +317,7 @@ export function EmitirFacturaPage({
         </Link>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-2xl font-bold">
-            Emitir orden #{orden.numero}
+            Emitir pedido #{orden.numero}
           </h1>
           <p className="truncate text-sm text-muted-foreground">
             {nombreCliente(orden.cliente)} · {fecha(orden.fecha)}
@@ -349,9 +349,9 @@ export function EmitirFacturaPage({
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Las líneas vienen de la orden. Puedes juntarlas en una sola —
+                Las líneas vienen del pedido. Puedes juntarlas en una sola —
                 &quot;servicio de mantenimiento&quot;— mientras el documento siga
-                cuadrando con ella.
+                cuadrando con él.
               </p>
 
               <div className="space-y-3">
@@ -586,7 +586,7 @@ export function EmitirFacturaPage({
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Orden</span>
+                <span className="text-muted-foreground">Pedido</span>
                 <span className="tabular-nums">{money(orden.total)}</span>
               </div>
               <div className="flex justify-between font-medium">
@@ -602,13 +602,13 @@ export function EmitirFacturaPage({
                 <div className="space-y-1 border-t pt-2">
                   <p className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
                     <TriangleAlert className="h-3.5 w-3.5 flex-none" />
-                    No cuadra con la orden
+                    No cuadra con el pedido
                   </p>
                   {/* Por tasa y no solo por total: juntar una línea al 0% con
                       una al 15% cierra el total y miente el IVA. */}
                   {descuadres.map((d) => (
                     <p key={d.tasa} className="text-xs text-muted-foreground">
-                      Al {d.tasa}%: documento {money(d.documento)} · orden{" "}
+                      Al {d.tasa}%: documento {money(d.documento)} · pedido{" "}
                       {money(d.orden)}
                     </p>
                   ))}

@@ -253,7 +253,7 @@ export function ServicioForm({
               {
                 clave: "BORRADOR",
                 etiqueta: ESTADO_PRODUCTO_LABEL.BORRADOR,
-                detalle: "No aparece al armar una orden",
+                detalle: "No aparece al armar un pedido",
               },
             ]}
           />
@@ -290,7 +290,7 @@ export function ServicioForm({
                 placeholder="0.00"
               />
               <Text variant="bodySmall" style={styles.ayuda}>
-                Se propone al armar una orden y se puede cambiar ahí. En cero,
+                Se propone al armar un pedido y se puede cambiar ahí. En cero,
                 se ofrece gratis.
               </Text>
               <Campo

@@ -32,6 +32,23 @@ import type { UnidadPeso } from "@vivero/shared";
 import type { ImagenProducto } from "./producto-imagenes";
 import type { CambiosDeVariante } from "./producto-inventario";
 import { SelectorFotoDeVariante } from "./selector-foto-de-variante";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ACCIONES_DE_VARIANTES_EN_LOTE,
+  type CampoDeVarianteEnLote,
+} from "@vivero/shared";
+import {
+  VariantesEnLote,
+  type ValoresEnLote,
+  type VarianteEnLote,
+} from "./variantes-en-lote";
 import type { MediaItem } from "./media-library";
 
 /** Cuántos ejes admite un producto. El servicio aplica el mismo tope. */
@@ -299,6 +316,10 @@ export function ProductoVariantes({
   /** Por qué eje se agrupa. Solo con dos o más: con uno no hay nada que juntar. */
   const [agruparPor, setAgruparPor] = useState(0);
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set());
+  /** Las variantes marcadas para *Editar en lote*. Solo las que ya existen. */
+  const [marcadas, setMarcadas] = useState<Set<string>>(new Set());
+  /** El campo que se está editando en lote, con su diálogo abierto. */
+  const [editandoCampo, setEditandoCampo] = useState<CampoDeVarianteEnLote | null>(null);
   // Las variantes vienen del servidor y ya no se tocan desde acá: lo que se
   // escribe queda pendiente en el formulario hasta que alguien guarda.
   const variantes = variantesIniciales;
@@ -341,6 +362,81 @@ export function ProductoVariantes({
     }
     return [...mapa.entries()].map(([valor, filas]) => ({ valor, filas }));
   }, [opciones, agruparPor, filas]);
+
+  /** Las que se pueden marcar: existen y el producto también. */
+  const marcables = productoId
+    ? filas.map((f) => f.variante?.id).filter((x): x is string => !!x)
+    : [];
+  const todasMarcadas = marcables.length > 0 && marcables.every((id) => marcadas.has(id));
+  const marcar = (ids: string[], si: boolean) =>
+    setMarcadas((prev) => {
+      const s = new Set(prev);
+      for (const id of ids) {
+        if (si) s.add(id);
+        else s.delete(id);
+      }
+      return s;
+    });
+
+  /** Las marcadas como se ven ahora: lo guardado con lo pendiente encima. */
+  const elegidas: VarianteEnLote[] = variantes
+    .filter((v) => marcadas.has(v.id))
+    .map((v) => {
+      const c = cambios[v.id] ?? {};
+      return {
+        id: v.id,
+        nombre: nombreVariante(v, productoNombre),
+        precio: precios[v.id] ?? c.precio ?? v.precio,
+        sku: skus[v.id] ?? c.sku ?? v.sku,
+        costo: c.costo !== undefined ? c.costo : v.costo,
+        peso: c.peso !== undefined ? c.peso : v.peso,
+        pesoUnidad: c.pesoUnidad ?? v.pesoUnidad,
+        stock: stockProyectado(v.stock, movimientos[v.id]),
+        manejaInventario: c.manejaInventario ?? v.manejaInventario,
+      };
+    });
+
+  /**
+   * Lo editado en lote va a los **mismos cambios pendientes** que editar una
+   * fila: se ve en ámbar en la tabla y se guarda con la barra de arriba.
+   */
+  function aplicarCampo(valores: ValoresEnLote, pesoUnidad?: UnidadPeso) {
+    const ids = Object.keys(valores);
+    if (editandoCampo === "precio") {
+      onPreciosChange({ ...precios, ...(valores as Record<string, number>) });
+    } else if (editandoCampo === "sku") {
+      onSkusChange({ ...skus, ...(valores as Record<string, string>) });
+    } else if (editandoCampo === "stock") {
+      const m = { ...movimientos };
+      for (const id of ids) {
+        m[id] = { motivo: "CONTEO", valor: valores[id] as number, nota: "Edición en lote" };
+      }
+      onMovimientosChange(m);
+    } else if (editandoCampo === "costo" || editandoCampo === "peso") {
+      const c = { ...cambios };
+      const unidad = editandoCampo === "peso" && pesoUnidad ? { pesoUnidad } : {};
+      for (const id of ids) {
+        c[id] = { ...c[id], [editandoCampo]: valores[id] as number | null, ...unidad };
+      }
+      // Cambiar solo la unidad también es un cambio de peso.
+      if (editandoCampo === "peso" && pesoUnidad) {
+        for (const v of elegidas) {
+          if (v.pesoUnidad !== pesoUnidad) c[v.id] = { ...c[v.id], pesoUnidad };
+        }
+      }
+      onCambiosChange(c);
+    }
+    setEditandoCampo(null);
+  }
+
+  function aplicarInterruptor(
+    campo: "cobraIva" | "manejaInventario" | "permiteNegativo",
+    valor: boolean
+  ) {
+    const c = { ...cambios };
+    for (const id of marcadas) c[id] = { ...c[id], [campo]: valor };
+    onCambiosChange(c);
+  }
 
   const alternar = (clave: string) =>
     setAbiertos((prev) => {
@@ -448,25 +544,94 @@ export function ProductoVariantes({
               <div className="divide-y rounded-md border">
                 {/* Un encabezado y no una `<table>`: las filas se pliegan en
                     grupos y sangran, que es lo que una tabla no sabe hacer. */}
-                <div className="flex items-center gap-3 bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground">
-                  <span className="min-w-0 flex-1">Variante</span>
-                  <span className="w-32 flex-none">SKU</span>
-                  <span className="w-24 flex-none text-right">Precio</span>
-                  <span className="w-20 flex-none text-right">Stock</span>
-                  <span className="w-7 flex-none" />
-                </div>
+                {/* Con algo marcado, la barra de la selección **tapa** el
+                    encabezado en vez de empujar la lista, como en toda tabla
+                    del portal; ahí vive *Editar en lote*. */}
+                {marcadas.size > 0 ? (
+                  <div className="flex h-9 items-center gap-3 bg-secondary px-3">
+                    <Checkbox
+                      checked={todasMarcadas}
+                      indeterminate={!todasMarcadas}
+                      onCheckedChange={() => setMarcadas(new Set())}
+                      aria-label="Quitar la selección"
+                    />
+                    <span className="text-xs font-bold tracking-wide text-secondary-foreground">
+                      {marcadas.size === 1
+                        ? "1 variante seleccionada"
+                        : `${marcadas.size} variantes seleccionadas`}
+                    </span>
+                    <span className="flex-1" />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={<Button type="button" variant="outline" size="sm" className="h-7" />}
+                      >
+                        Editar en lote
+                        <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-auto" align="end">
+                        {ACCIONES_DE_VARIANTES_EN_LOTE.map((a, i) => (
+                          <div key={a.etiqueta}>
+                            {a.tipo === "interruptor" &&
+                            ACCIONES_DE_VARIANTES_EN_LOTE[i - 1]?.tipo === "campo" ? (
+                              <DropdownMenuSeparator />
+                            ) : null}
+                            <DropdownMenuItem
+                              onClick={() =>
+                                a.tipo === "campo"
+                                  ? setEditandoCampo(a.campo)
+                                  : aplicarInterruptor(a.campo, a.valor)
+                              }
+                            >
+                              {a.etiqueta}
+                            </DropdownMenuItem>
+                          </div>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ) : (
+                  <div className="flex h-9 items-center gap-3 bg-muted/40 px-3 text-xs font-medium text-muted-foreground">
+                    {marcables.length > 0 ? (
+                      <Checkbox
+                        checked={false}
+                        onCheckedChange={() => marcar(marcables, true)}
+                        aria-label="Seleccionar todas las variantes"
+                      />
+                    ) : null}
+                    <span className="min-w-0 flex-1">Variante</span>
+                    <span className="w-32 flex-none">SKU</span>
+                    <span className="w-24 flex-none text-right">Precio</span>
+                    <span className="w-20 flex-none text-right">Stock</span>
+                    <span className="w-7 flex-none" />
+                  </div>
+                )}
                 {grupos
                   ? grupos.map((g) => {
                       const abierto = abiertos.has(g.valor);
                       const cuentan = g.filas
                         .map((f) => f.variante)
                         .filter((v) => v?.manejaInventario);
+                      const delGrupo = g.filas
+                        .map((f) => f.variante?.id)
+                        .filter((x): x is string => !!x && !!productoId);
+                      const marcadasDelGrupo = delGrupo.filter((id) => marcadas.has(id)).length;
                       return (
                         <div key={g.valor}>
+                          <div className="flex items-center gap-3 pl-3 hover:bg-muted/50">
+                          {delGrupo.length > 0 ? (
+                            <Checkbox
+                              checked={marcadasDelGrupo === delGrupo.length}
+                              indeterminate={marcadasDelGrupo > 0 && marcadasDelGrupo < delGrupo.length}
+                              onCheckedChange={() =>
+                                marcar(delGrupo, marcadasDelGrupo < delGrupo.length)
+                              }
+                              aria-label={`Seleccionar ${g.valor}`}
+                            />
+                          ) : null}
                           <button
                             type="button"
                             onClick={() => alternar(g.valor)}
-                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50"
+                            className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 text-left"
                           >
                             {abierto ? (
                               <ChevronDown className="h-4 w-4 flex-none text-muted-foreground" />
@@ -496,6 +661,7 @@ export function ProductoVariantes({
                             </span>
                             <span className="w-7 flex-none" />
                           </button>
+                          </div>
                           {abierto && (
                             <div className="divide-y border-t bg-muted/20">
                               {g.filas.map((f) => (
@@ -506,6 +672,12 @@ export function ProductoVariantes({
                                   productoNombre={productoNombre}
                                   imagenes={imagenes}
                                   sangrada
+                                  marcada={!!f.variante && marcadas.has(f.variante.id)}
+                                  onMarcar={
+                                    f.variante && productoId
+                                      ? (si) => marcar([f.variante!.id], si)
+                                      : undefined
+                                  }
                                   pendiente={nuevas[nombreDeFila(f)]}
                                   onPendiente={(v) =>
                                     onNuevasChange({
@@ -573,6 +745,12 @@ export function ProductoVariantes({
                         productoId={productoId}
                         productoNombre={productoNombre}
                         imagenes={imagenes}
+                        marcada={!!f.variante && marcadas.has(f.variante.id)}
+                        onMarcar={
+                          f.variante && productoId
+                            ? (si) => marcar([f.variante!.id], si)
+                            : undefined
+                        }
                         pendiente={nuevas[nombreDeFila(f)]}
                         onPendiente={(v) =>
                           onNuevasChange({ ...nuevas, [nombreDeFila(f)]: v })
@@ -632,6 +810,12 @@ export function ProductoVariantes({
         </CardContent>
       </Card>
 
+      <VariantesEnLote
+        campo={editandoCampo}
+        variantes={elegidas}
+        onListo={aplicarCampo}
+        onCerrar={() => setEditandoCampo(null)}
+      />
     </>
   );
 }
@@ -649,6 +833,8 @@ function FilaVariante({
   productoNombre,
   imagenes,
   sangrada,
+  marcada,
+  onMarcar,
   pendiente,
   onPendiente,
   precioPendiente,
@@ -666,6 +852,9 @@ function FilaVariante({
   productoNombre: string;
   imagenes: ImagenProducto[];
   sangrada?: boolean;
+  /** Si está marcada para *Editar en lote*. Sin `onMarcar` no se marca (todavía no existe). */
+  marcada?: boolean;
+  onMarcar?: (si: boolean) => void;
   /** Con qué SKU, precio y stock nace, si todavía no existe. */
   pendiente?: VariantePendiente;
   onPendiente: (v: VariantePendiente) => void;
@@ -696,8 +885,17 @@ function FilaVariante({
 
   return (
     <div
-      className={`flex items-center gap-3 px-3 py-2.5 ${sangrada ? "pl-10" : ""}`}
+      className={`flex items-center gap-3 px-3 py-2.5 ${sangrada ? "pl-10" : ""} ${
+        marcada ? "bg-secondary/60" : ""
+      }`}
     >
+      {onMarcar ? (
+        <Checkbox
+          checked={!!marcada}
+          onCheckedChange={(v) => onMarcar(!!v)}
+          aria-label={`Seleccionar ${nombre}`}
+        />
+      ) : null}
       {/* La miniatura abre el diálogo para elegir cuál de las fotos del
           producto es la de esta variante, como en la tabla de Shopify. En
           ámbar mientras la elección no esté guardada. Una combinación que

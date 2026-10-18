@@ -6,6 +6,7 @@ export default function ClienteVisitasLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="calificar/[id]" options={{ title: "Calificar" }} />
       <Stack.Screen name="[id]" options={{ title: "Visita" }} />
+      <Stack.Screen name="solicitud/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -11,6 +11,7 @@ import {
   CardAction,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { FusionarClienteDialog } from "@/components/clientes/fusionar-cliente-dialog";
 import { ClienteForm } from "@/components/clientes/cliente-form";
 import {
   PropiedadesCard,
@@ -142,6 +143,8 @@ interface ClienteDetailTabsProps {
   visitas: VisitaRow[];
   /** A dónde vuelve el botón "atrás" (depende de dónde se llegó). */
   backHref?: string;
+  /** Fusionar un duplicado en esta ficha: solo el ADMIN. */
+  puedeFusionar?: boolean;
 }
 
 const formatPrice = (price: number) =>
@@ -182,7 +185,9 @@ export function ClienteDetailTabs({
   verPlata = true,
   visitas,
   backHref = "/dashboard/clientes",
+  puedeFusionar = false,
 }: ClienteDetailTabsProps) {
+  const [fusionando, setFusionando] = useState(false);
   const router = useRouter();
   // Las pantallas de suscripción vuelven acá, no siempre a su propia lista.
   const volverAca = encodeURIComponent(usePathname());
@@ -339,6 +344,11 @@ export function ClienteDetailTabs({
                 <DropdownMenuItem onClick={() => cambiarActividad(!cliente.inactivoDesde)}>
                   {cliente.inactivoDesde ? "Reactivar cliente" : "Marcar como inactivo"}
                 </DropdownMenuItem>
+                {puedeFusionar ? (
+                  <DropdownMenuItem onClick={() => setFusionando(true)}>
+                    Fusionar con otro cliente
+                  </DropdownMenuItem>
+                ) : null}
               </DropdownMenuContent>
             </DropdownMenu>
           </>
@@ -412,12 +422,26 @@ export function ClienteDetailTabs({
                   <DropdownMenuItem onClick={() => cambiarActividad(!cliente.inactivoDesde)}>
                     {cliente.inactivoDesde ? "Reactivar cliente" : "Marcar como inactivo"}
                   </DropdownMenuItem>
+                  {puedeFusionar ? (
+                    <DropdownMenuItem onClick={() => setFusionando(true)}>
+                      Fusionar con otro cliente
+                    </DropdownMenuItem>
+                  ) : null}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           )}
         </div>
       </div>
+
+      {puedeFusionar ? (
+        <FusionarClienteDialog
+          clienteId={cliente.id}
+          nombre={nombreCompleto}
+          abierto={fusionando}
+          onCerrar={() => setFusionando(false)}
+        />
+      ) : null}
 
       {/* Content below header */}
       <div className="px-4 md:px-6 pt-3 md:pt-6 pb-6">
@@ -462,19 +486,19 @@ export function ClienteDetailTabs({
             {verPlata && (
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Órdenes</CardTitle>
+                <CardTitle>Pedidos</CardTitle>
                 <CardAction>
                   <Link href={`/dashboard/ordenes/nueva?cliente=${cliente.id}`}>
                     <Button size="sm" variant="outline">
                       <Plus className="mr-2 h-3.5 w-3.5" />
-                      Nueva orden
+                      Nuevo pedido
                     </Button>
                   </Link>
                 </CardAction>
               </CardHeader>
               <CardContent>
                 {ordenes.length === 0 ? (
-                  <EmptyState message="Sin órdenes" />
+                  <EmptyState message="Sin pedidos" />
                 ) : (
                   <div className="space-y-1">
                     {ordenes.slice(0, 3).map((o) => (
@@ -485,7 +509,7 @@ export function ClienteDetailTabs({
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-bold">
-                            Orden #{o.numero}
+                            Pedido #{o.numero}
                             <span className="ml-2 text-xs font-semibold text-muted-foreground">
                               {formatDate(o.fecha)}
                             </span>
@@ -511,7 +535,7 @@ export function ClienteDetailTabs({
                         href={`/dashboard/ordenes?cliente=${cliente.id}`}
                         className="flex items-center justify-center gap-1 pt-1 text-sm text-primary hover:underline"
                       >
-                        Ver todas ({ordenes.length})
+                        Ver todos ({ordenes.length})
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     )}

@@ -9,6 +9,8 @@ import {
   DollarSign,
   FileText,
   RefreshCw,
+  Inbox,
+  Tag,
   Search,
   Users,
 } from "lucide-react";
@@ -22,9 +24,11 @@ import type {
 const typeMeta: Record<SearchType, { label: string; icon: typeof Users }> = {
   cliente: { label: "Cliente", icon: Users },
   visita: { label: "Visita", icon: CalendarDays },
-  orden: { label: "Orden", icon: DollarSign },
+  orden: { label: "Pedido", icon: DollarSign },
   suscripcion: { label: "Suscripción", icon: RefreshCw },
   informe: { label: "Informe", icon: FileText },
+  producto: { label: "Producto", icon: Tag },
+  solicitud: { label: "Solicitud", icon: Inbox },
 };
 
 /** Cuántos resultados entran antes de "Ver todos". */
@@ -84,6 +88,8 @@ function useBusqueda(preview: number) {
         ...result.visitas.items,
         ...result.ordenes.items,
         ...result.suscripciones.items,
+        ...result.productos.items,
+        ...result.solicitudes.items,
         ...result.informes.items,
       ].slice(0, preview)
     : [];

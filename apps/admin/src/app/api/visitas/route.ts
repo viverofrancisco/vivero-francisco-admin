@@ -61,14 +61,17 @@ export async function POST(request: Request) {
 
   try {
     const visitas = await createVisitasBatch(viewerFromSession(user), {
-      clienteId: result.data.clienteId,
-      propiedadId: result.data.propiedadId,
+      clienteId: result.data.clienteId ?? null,
+      clienteNuevo: result.data.clienteNuevo ?? null,
+      propiedadId: result.data.propiedadId ?? null,
+      propiedadNueva: result.data.propiedadNueva ?? null,
       tareasObligatoriasIds: result.data.tareasObligatoriasIds,
       suscripcionId: result.data.suscripcionId || null,
       fechas: result.data.fechas.map((f) => new Date(f)),
       grupoId: result.data.grupoId || null,
       notas: result.data.notas || null,
       personalIds: result.data.personalIds,
+      solicitudId: result.data.solicitudId || null,
     });
     return NextResponse.json(visitas, { status: 201 });
   } catch (error) {

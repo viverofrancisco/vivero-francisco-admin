@@ -16,6 +16,8 @@ import {
   type ISequenceProvider,
 } from "facturacion-electronica-ec";
 import { certificadoParaFirmar } from "@/lib/services/emisor.service";
+import { alAutorizarLaFactura } from "@/lib/services/reserva.service";
+import { pushEstadoDePedido } from "@/lib/push/triggers";
 import { siguienteSecuencial } from "./secuenciales";
 import type { DatosFactura, DatosNotaCredito } from "./comprobante";
 
@@ -247,14 +249,13 @@ export async function sincronizarPendientesSri(limite = 100) {
               : undefined,
           },
         });
-        // La autorización que llegó tarde también confirma la orden.
+        // La autorización que llegó tarde también confirma la orden y anota
+        // la salida del stock: antes solo confirmaba, y lo vendido no bajaba.
         if (estado === "AUTORIZADO") {
-          await tx.orden.updateMany({
-            where: { id: f.ordenId, estado: "BORRADOR" },
-            data: { estado: "CONFIRMADA" },
-          });
+          await alAutorizarLaFactura(tx, f.id, { id: null, nombre: "Consulta automática al SRI" });
         }
       });
+      if (estado === "AUTORIZADO") void pushEstadoDePedido(f.ordenId);
       actualizadas++;
     } catch (error) {
       fallidas.push({

@@ -343,7 +343,7 @@ export function NuevaOrdenPage({
   const cambiarVisitas = (ids: string[]) => {
     if (ids.length > 0 && tienePeriodo) {
       toast.error(
-        "Esta orden cubre un período de suscripción. Las visitas van en otra."
+        "Este pedido cubre un período de suscripción. Las visitas van en otro."
       );
       return;
     }
@@ -361,13 +361,13 @@ export function NuevaOrdenPage({
   const agregarPendiente = (p: Pendiente) => {
     if (visitaIds.length > 0) {
       toast.error(
-        "Esta orden es por unas visitas. Los períodos de suscripción van en otra."
+        "Este pedido es por unas visitas. Los períodos de suscripción van en otro."
       );
       return;
     }
     if (deOtroPlan(p)) {
       toast.error(
-        "Esta orden ya es de otra suscripción. Arma una orden por plan."
+        "Este pedido ya es de otra suscripción. Arma un pedido por plan."
       );
       return;
     }
@@ -377,7 +377,7 @@ export function NuevaOrdenPage({
   const agregarTodosLosPeriodos = () => {
     if (visitaIds.length > 0) {
       toast.error(
-        "Esta orden es por unas visitas. Los períodos de suscripción van en otra."
+        "Este pedido es por unas visitas. Los períodos de suscripción van en otro."
       );
       return;
     }
@@ -389,7 +389,7 @@ export function NuevaOrdenPage({
     setLineas((prev) => [...prev, ...delPlan.map(lineaDesde)]);
     if (delPlan.length < periodosPendientes.length) {
       toast.info(
-        "Se agregaron los períodos de un solo plan: una orden es de un plan."
+        "Se agregaron los períodos de un solo plan: un pedido es de un plan."
       );
     }
   };
@@ -460,10 +460,10 @@ export function NuevaOrdenPage({
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
       const orden = await res.json();
-      toast.success(`Orden #${orden.numero} creada`);
+      toast.success(`Pedido #${orden.numero} creado`);
       router.push(`/dashboard/ordenes/${orden.id}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos crear la orden");
+      toast.error(e instanceof Error ? e.message : "No pudimos crear el pedido");
     } finally {
       setGuardando(false);
     }
@@ -650,7 +650,7 @@ export function NuevaOrdenPage({
             Cancelar
           </Link>
           <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
-            Nueva orden
+            Nuevo pedido
           </h1>
           <button
             type="button"
@@ -670,7 +670,7 @@ export function NuevaOrdenPage({
             </Button>
           </Link>
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold">Nueva orden</h1>
+            <h1 className="text-2xl font-bold">Nuevo pedido</h1>
             {/* Llegando desde una visita hay que decirlo: si no, la línea ya
                 cargada parece salida de la nada. */}
             {desdeVisita ? (
@@ -686,7 +686,7 @@ export function NuevaOrdenPage({
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Arma la orden con lo que se vendió. Facturarla es el paso
+                Arma el pedido con lo que se vendió. Facturarlo es el paso
                 siguiente, desde su ficha.
               </p>
             )}
@@ -788,14 +788,14 @@ export function NuevaOrdenPage({
           <Seccion titulo="Visitas">
             {tienePeriodo ? (
               <p className="text-[13px] leading-[18px] text-muted-foreground">
-                Esta orden cubre un período de suscripción. Las visitas van en
-                otra orden.
+                Este pedido cubre un período de suscripción. Las visitas van en
+                otro pedido.
               </p>
             ) : (
               <>
                 <p className="mb-2 text-[13px] leading-[18px] text-muted-foreground">
-                  Deja dicho por qué existe esta orden y permite ir de una a la
-                  otra. No carga productos.
+                  Deja dicho por qué existe este pedido y permite ir de la visita
+                  al pedido y al revés. No carga productos.
                 </p>
                 {visitas.map((v) => {
                   const marcada = visitaIds.includes(v.id);
@@ -866,7 +866,7 @@ export function NuevaOrdenPage({
             <CardContent className="space-y-3">
               {lineas.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
-                  Todavía no hay nada en la orden.
+                  Todavía no hay nada en el pedido.
                 </p>
               ) : (
                 <div className="space-y-3">{lineas.map(renderLinea)}</div>
@@ -931,7 +931,7 @@ export function NuevaOrdenPage({
               onCambiar={cambiarVisitas}
               fija={bloqueada ? desdeVisita?.id : null}
               deshabilitado={tienePeriodo}
-              motivoDeshabilitado="Esta orden cubre un período de suscripción. Las visitas van en otra orden."
+              motivoDeshabilitado="Este pedido cubre un período de suscripción. Las visitas van en otro pedido."
             />
           )}
 

@@ -83,6 +83,51 @@ export async function enforceRegistroLimit(
   return null;
 }
 
+const correoRegistroPorIp = make("registro-correo:ip:10m", 60, "10 m");
+
+/**
+ * Revisar si un correo está libre mientras se escribe dice si tiene cuenta,
+ * así que se limita por IP: sesenta en diez minutos alcanzan para tipear y
+ * corregir varias veces, y frenan a quien quiera recorrer una lista de
+ * correos.
+ */
+export async function enforceCorreoRegistroLimit(
+  ip: string | null
+): Promise<RateLimitError | null> {
+  if (!ip) return null;
+  const res = await correoRegistroPorIp.limit(ip);
+  if (!res.success) {
+    return {
+      blocked: true,
+      reason: "Demasiados intentos. Espera unos minutos.",
+      retryAfterSeconds: retryAfter(res.reset),
+    };
+  }
+  return null;
+}
+
+const pedidoInvitadoPorIp = make("pedido-invitado:ip:1h", 5, "1 h");
+
+/**
+ * Un pedido sin cuenta **aparta stock** y crea una ficha: sin freno, alguien
+ * podría vaciar la vitrina con pedidos falsos. Cinco por hora y por IP
+ * alcanzan para quien compra de verdad.
+ */
+export async function enforcePedidoInvitadoLimit(
+  ip: string | null
+): Promise<RateLimitError | null> {
+  if (!ip) return null;
+  const res = await pedidoInvitadoPorIp.limit(ip);
+  if (!res.success) {
+    return {
+      blocked: true,
+      reason: "Hiciste muchos pedidos seguidos. Intenta de nuevo en una hora.",
+      retryAfterSeconds: retryAfter(res.reset),
+    };
+  }
+  return null;
+}
+
 const solicitudInvitadoPorIp = make("solicitud-invitado:ip:1h", 10, "1 h");
 
 /**

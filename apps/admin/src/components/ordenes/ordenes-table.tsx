@@ -66,11 +66,11 @@ interface OrdenRow {
  * que un filtro de estados hubiera tenido una sola opción útil.
  */
 const FILTROS = [
-  { value: "", label: "Todas" },
+  { value: "", label: "Todos" },
   { value: "SIN_COBRAR", label: "Sin cobrar" },
   { value: "PARCIAL", label: "Cobrado parcialmente" },
   { value: "COBRADO", label: "Cobrado" },
-  { value: "ANULADA", label: "Anuladas" },
+  { value: "ANULADA", label: "Anulados" },
 ];
 
 export function OrdenesTable({
@@ -136,10 +136,10 @@ export function OrdenesTable({
   return (
     <>
       <PageHeader
-        title="Órdenes"
+        title="Pedidos"
         actions={[
           {
-            label: "Nueva orden",
+            label: "Nuevo pedido",
             href: "/dashboard/ordenes/nueva",
             icon: "plus",
             primary: true,
@@ -167,7 +167,7 @@ export function OrdenesTable({
             value={estado}
             onChange={(v) => actualizar({ estado: v || null })}
             options={FILTROS}
-            placeholder="Todas"
+            placeholder="Todos"
           />
         </div>
       </BarraFiltros>
@@ -182,8 +182,8 @@ export function OrdenesTable({
             <EmptyState
               message={
                 ordenes.length === 0
-                  ? "Todavía no hay órdenes"
-                  : "Ninguna orden coincide con los filtros"
+                  ? "Todavía no hay pedidos"
+                  : "Ningún pedido coincide con los filtros"
               }
             />
           ) : (
@@ -228,7 +228,7 @@ export function OrdenesTable({
                     </TableCell>
                     <TableCell className="text-right">
                       {o.estado === "ANULADA" ? (
-                        <Badge variant="destructive">Anulada</Badge>
+                        <Badge variant="destructive">Anulado</Badge>
                       ) : (
                         <Badge
                           variant={cobroVariant[estadoCobro(o.total, o.saldo)]}
@@ -248,8 +248,8 @@ export function OrdenesTable({
           page={pagina}
           total={filtradas.length}
           onPageChange={setPage}
-          sustantivo="orden"
-          plural="órdenes"
+          sustantivo="pedido"
+          plural="pedidos"
         />
       </div>
 
@@ -260,8 +260,8 @@ export function OrdenesTable({
         vacia={filtradas.length === 0}
         mensajeVacio={
           ordenes.length === 0
-            ? "Todavía no hay órdenes"
-            : "Ninguna orden coincide con los filtros"
+            ? "Todavía no hay pedidos"
+            : "Ningún pedido coincide con los filtros"
         }
         hayMas={hayMas}
         cargando={cargando}
@@ -288,7 +288,7 @@ export function OrdenesTable({
               </span>
             </span>
             {o.estado === "ANULADA" ? (
-              <Badge variant="destructive">Anulada</Badge>
+              <Badge variant="destructive">Anulado</Badge>
             ) : (
               <Badge variant={cobroVariant[estadoCobro(o.total, o.saldo)]}>
                 {cobroLabel[estadoCobro(o.total, o.saldo)]}

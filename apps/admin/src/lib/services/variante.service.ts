@@ -19,6 +19,7 @@ import type { UnidadPeso } from "@vivero/shared";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
+import { contarStock } from "./inventario.service";
 
 function ensureAdmin(viewer: Viewer): void {
   if (!isAdminRole(viewer.role)) throw new ForbiddenError();
@@ -304,7 +305,9 @@ export async function guardarOpciones(
       ejes,
       descartarVariantes,
     });
-  });
+    // Una variante por combinación, cada una con sus valores: con 3 × 3 ya
+    // pasaba de los 5 s por defecto de Prisma contra Neon desde fuera.
+  }, { timeout: 30_000 });
 }
 
 /**
@@ -596,7 +599,7 @@ export async function actualizarVariante(
   // anotado en el libro por qué dejó de haber.
   if (payload.manejaInventario === false && variante.stock !== 0) {
     throw new ValidationError(
-      `Esta variante tiene ${variante.stock} en stock. Ajustala a cero antes de dejar de contarla.`
+      `Esta variante tiene ${variante.stock} en stock. Ajústala a cero antes de dejar de contarla.`
     );
   }
 
@@ -632,6 +635,74 @@ export async function actualizarVariante(
     }
     throw error;
   }
+}
+
+/** Lo que se cambia de una variante en un lote: sus datos y, si viene, el conteo. */
+export interface CambioDeVarianteEnLote extends VarianteInput {
+  id: string;
+  /** Cuántas hay en el estante (un `CONTEO`): el libro anota la diferencia. */
+  contado?: number;
+}
+
+/**
+ * **Editar varias variantes a la vez**, el *Bulk edit* de Shopify: precios,
+ * costos, SKU, pesos, el stock contado y los interruptores, cada variante con
+ * su propio valor.
+ *
+ * Va **una por una**, como archivar en lote: cada variante tiene lo suyo que
+ * revisar —un SKU que ya usa otra, apagar el conteo con stock cargado— y la
+ * que falla no tiene que llevarse a las demás. La respuesta dice cuántas
+ * quedaron y **nombra** cada una que no, con su motivo.
+ */
+export async function editarVariantesEnLote(
+  viewer: Viewer,
+  productoId: string,
+  cambios: CambioDeVarianteEnLote[]
+): Promise<{ editadas: number; errores: { id: string; nombre: string | null; motivo: string }[] }> {
+  ensureAdmin(viewer);
+  const variantes = await prisma.variante.findMany({
+    where: { productoId, id: { in: cambios.map((c) => c.id) } },
+    select: {
+      id: true,
+      valores: {
+        select: { valor: { select: { valor: true, opcion: { select: { posicion: true } } } } },
+      },
+    },
+  });
+  const nombreDe = new Map(
+    variantes.map((v) => [
+      v.id,
+      v.valores
+        .map((x) => x.valor)
+        .sort((a, b) => a.opcion.posicion - b.opcion.posicion)
+        .map((x) => x.valor)
+        .join(" / "),
+    ])
+  );
+
+  let editadas = 0;
+  const errores: { id: string; nombre: string | null; motivo: string }[] = [];
+  // La misma variante dos veces es un solo cambio: el último manda.
+  const porId = new Map(cambios.map((c) => [c.id, c]));
+  for (const { id, contado, ...datos } of porId.values()) {
+    // Una variante de otro producto no se toca desde este.
+    if (!nombreDe.has(id)) {
+      errores.push({ id, nombre: null, motivo: "No es una variante de este producto." });
+      continue;
+    }
+    try {
+      if (Object.keys(datos).length > 0) await actualizarVariante(viewer, id, datos);
+      if (contado !== undefined) await contarStock(viewer, id, contado, "Edición en lote");
+      editadas++;
+    } catch (error) {
+      errores.push({
+        id,
+        nombre: nombreDe.get(id) || null,
+        motivo: error instanceof Error ? error.message : "No se pudo guardar.",
+      });
+    }
+  }
+  return { editadas, errores };
 }
 
 /**

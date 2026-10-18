@@ -88,7 +88,7 @@ export default function EmitirOrdenScreen() {
         setEmisorId(e.items.find((x) => x.predeterminado)?.id ?? e.items[0]?.id ?? null);
         setDatoId(d.items.find((x) => x.esPredeterminado)?.id ?? d.items[0]?.id ?? null);
       } catch (e) {
-        setError(mensajeDeError(e, "No pudimos cargar la orden"));
+        setError(mensajeDeError(e, "No pudimos cargar el pedido"));
       } finally {
         setCargando(false);
       }
@@ -192,7 +192,7 @@ export default function EmitirOrdenScreen() {
   return (
     <View style={styles.flex}>
       <EncabezadoDeFormulario
-        titulo={`Emitir orden #${orden.numero}`}
+        titulo={`Emitir pedido #${orden.numero}`}
         accion="Emitir"
         onAccion={emitir}
         onCancelar={() => router.back()}
@@ -382,7 +382,7 @@ export default function EmitirOrdenScreen() {
             </View>
           </View>
           <Text style={styles.ayuda}>
-            Las líneas salen de la orden tal cual. Para juntarlas en una sola
+            Las líneas salen del pedido tal cual. Para juntarlas en una sola
             —&quot;servicio de mantenimiento&quot;— emite desde el portal.
           </Text>
 

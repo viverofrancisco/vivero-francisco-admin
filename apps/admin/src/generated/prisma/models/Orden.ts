@@ -28,6 +28,8 @@ export type AggregateOrden = {
 
 export type OrdenAvgAggregateOutputType = {
   numero: number | null
+  entregaLat: number | null
+  entregaLng: number | null
   subtotal: runtime.Decimal | null
   iva: runtime.Decimal | null
   total: runtime.Decimal | null
@@ -35,6 +37,8 @@ export type OrdenAvgAggregateOutputType = {
 
 export type OrdenSumAggregateOutputType = {
   numero: number | null
+  entregaLat: number | null
+  entregaLng: number | null
   subtotal: runtime.Decimal | null
   iva: runtime.Decimal | null
   total: runtime.Decimal | null
@@ -49,11 +53,21 @@ export type OrdenMinAggregateOutputType = {
   fecha: Date | null
   estado: $Enums.EstadoOrden | null
   notas: string | null
+  origen: $Enums.OrigenOrden | null
+  stockReservado: boolean | null
+  entrega: $Enums.TipoEntrega | null
+  retiroUbicacionId: string | null
+  entregaPropiedadId: string | null
+  entregaDireccion: string | null
+  entregaLat: number | null
+  entregaLng: number | null
   subtotal: runtime.Decimal | null
   iva: runtime.Decimal | null
   total: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
+  contactoNombre: string | null
+  contactoTelefono: string | null
   createdById: string | null
   updatedById: string | null
 }
@@ -67,11 +81,21 @@ export type OrdenMaxAggregateOutputType = {
   fecha: Date | null
   estado: $Enums.EstadoOrden | null
   notas: string | null
+  origen: $Enums.OrigenOrden | null
+  stockReservado: boolean | null
+  entrega: $Enums.TipoEntrega | null
+  retiroUbicacionId: string | null
+  entregaPropiedadId: string | null
+  entregaDireccion: string | null
+  entregaLat: number | null
+  entregaLng: number | null
   subtotal: runtime.Decimal | null
   iva: runtime.Decimal | null
   total: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
+  contactoNombre: string | null
+  contactoTelefono: string | null
   createdById: string | null
   updatedById: string | null
 }
@@ -85,11 +109,21 @@ export type OrdenCountAggregateOutputType = {
   fecha: number
   estado: number
   notas: number
+  origen: number
+  stockReservado: number
+  entrega: number
+  retiroUbicacionId: number
+  entregaPropiedadId: number
+  entregaDireccion: number
+  entregaLat: number
+  entregaLng: number
   subtotal: number
   iva: number
   total: number
   createdAt: number
   updatedAt: number
+  contactoNombre: number
+  contactoTelefono: number
   createdById: number
   updatedById: number
   _all: number
@@ -98,6 +132,8 @@ export type OrdenCountAggregateOutputType = {
 
 export type OrdenAvgAggregateInputType = {
   numero?: true
+  entregaLat?: true
+  entregaLng?: true
   subtotal?: true
   iva?: true
   total?: true
@@ -105,6 +141,8 @@ export type OrdenAvgAggregateInputType = {
 
 export type OrdenSumAggregateInputType = {
   numero?: true
+  entregaLat?: true
+  entregaLng?: true
   subtotal?: true
   iva?: true
   total?: true
@@ -119,11 +157,21 @@ export type OrdenMinAggregateInputType = {
   fecha?: true
   estado?: true
   notas?: true
+  origen?: true
+  stockReservado?: true
+  entrega?: true
+  retiroUbicacionId?: true
+  entregaPropiedadId?: true
+  entregaDireccion?: true
+  entregaLat?: true
+  entregaLng?: true
   subtotal?: true
   iva?: true
   total?: true
   createdAt?: true
   updatedAt?: true
+  contactoNombre?: true
+  contactoTelefono?: true
   createdById?: true
   updatedById?: true
 }
@@ -137,11 +185,21 @@ export type OrdenMaxAggregateInputType = {
   fecha?: true
   estado?: true
   notas?: true
+  origen?: true
+  stockReservado?: true
+  entrega?: true
+  retiroUbicacionId?: true
+  entregaPropiedadId?: true
+  entregaDireccion?: true
+  entregaLat?: true
+  entregaLng?: true
   subtotal?: true
   iva?: true
   total?: true
   createdAt?: true
   updatedAt?: true
+  contactoNombre?: true
+  contactoTelefono?: true
   createdById?: true
   updatedById?: true
 }
@@ -155,11 +213,21 @@ export type OrdenCountAggregateInputType = {
   fecha?: true
   estado?: true
   notas?: true
+  origen?: true
+  stockReservado?: true
+  entrega?: true
+  retiroUbicacionId?: true
+  entregaPropiedadId?: true
+  entregaDireccion?: true
+  entregaLat?: true
+  entregaLng?: true
   subtotal?: true
   iva?: true
   total?: true
   createdAt?: true
   updatedAt?: true
+  contactoNombre?: true
+  contactoTelefono?: true
   createdById?: true
   updatedById?: true
   _all?: true
@@ -260,11 +328,21 @@ export type OrdenGroupByOutputType = {
   fecha: Date
   estado: $Enums.EstadoOrden
   notas: string | null
+  origen: $Enums.OrigenOrden
+  stockReservado: boolean
+  entrega: $Enums.TipoEntrega | null
+  retiroUbicacionId: string | null
+  entregaPropiedadId: string | null
+  entregaDireccion: string | null
+  entregaLat: number | null
+  entregaLng: number | null
   subtotal: runtime.Decimal
   iva: runtime.Decimal
   total: runtime.Decimal
   createdAt: Date
   updatedAt: Date
+  contactoNombre: string | null
+  contactoTelefono: string | null
   createdById: string | null
   updatedById: string | null
   _count: OrdenCountAggregateOutputType | null
@@ -301,11 +379,21 @@ export type OrdenWhereInput = {
   fecha?: Prisma.DateTimeFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenFilter<"Orden"> | $Enums.EstadoOrden
   notas?: Prisma.StringNullableFilter<"Orden"> | string | null
+  origen?: Prisma.EnumOrigenOrdenFilter<"Orden"> | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFilter<"Orden"> | boolean
+  entrega?: Prisma.EnumTipoEntregaNullableFilter<"Orden"> | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaPropiedadId?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaDireccion?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaLat?: Prisma.FloatNullableFilter<"Orden"> | number | null
+  entregaLng?: Prisma.FloatNullableFilter<"Orden"> | number | null
   subtotal?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Orden"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Orden"> | Date | string
+  contactoNombre?: Prisma.StringNullableFilter<"Orden"> | string | null
+  contactoTelefono?: Prisma.StringNullableFilter<"Orden"> | string | null
   createdById?: Prisma.StringNullableFilter<"Orden"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Orden"> | string | null
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
@@ -316,6 +404,9 @@ export type OrdenWhereInput = {
   lineas?: Prisma.OrdenLineaListRelationFilter
   facturas?: Prisma.FacturaListRelationFilter
   visitas?: Prisma.OrdenVisitaListRelationFilter
+  movimientos?: Prisma.MovimientoInventarioListRelationFilter
+  entregaPropiedad?: Prisma.XOR<Prisma.PropiedadNullableScalarRelationFilter, Prisma.PropiedadWhereInput> | null
+  retiroUbicacion?: Prisma.XOR<Prisma.UbicacionNullableScalarRelationFilter, Prisma.UbicacionWhereInput> | null
 }
 
 export type OrdenOrderByWithRelationInput = {
@@ -327,11 +418,21 @@ export type OrdenOrderByWithRelationInput = {
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
+  origen?: Prisma.SortOrder
+  stockReservado?: Prisma.SortOrder
+  entrega?: Prisma.SortOrderInput | Prisma.SortOrder
+  retiroUbicacionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaPropiedadId?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaDireccion?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaLat?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaLng?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  contactoNombre?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactoTelefono?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   cliente?: Prisma.ClienteOrderByWithRelationInput
@@ -342,6 +443,9 @@ export type OrdenOrderByWithRelationInput = {
   lineas?: Prisma.OrdenLineaOrderByRelationAggregateInput
   facturas?: Prisma.FacturaOrderByRelationAggregateInput
   visitas?: Prisma.OrdenVisitaOrderByRelationAggregateInput
+  movimientos?: Prisma.MovimientoInventarioOrderByRelationAggregateInput
+  entregaPropiedad?: Prisma.PropiedadOrderByWithRelationInput
+  retiroUbicacion?: Prisma.UbicacionOrderByWithRelationInput
 }
 
 export type OrdenWhereUniqueInput = Prisma.AtLeast<{
@@ -356,11 +460,21 @@ export type OrdenWhereUniqueInput = Prisma.AtLeast<{
   fecha?: Prisma.DateTimeFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenFilter<"Orden"> | $Enums.EstadoOrden
   notas?: Prisma.StringNullableFilter<"Orden"> | string | null
+  origen?: Prisma.EnumOrigenOrdenFilter<"Orden"> | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFilter<"Orden"> | boolean
+  entrega?: Prisma.EnumTipoEntregaNullableFilter<"Orden"> | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaPropiedadId?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaDireccion?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaLat?: Prisma.FloatNullableFilter<"Orden"> | number | null
+  entregaLng?: Prisma.FloatNullableFilter<"Orden"> | number | null
   subtotal?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Orden"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Orden"> | Date | string
+  contactoNombre?: Prisma.StringNullableFilter<"Orden"> | string | null
+  contactoTelefono?: Prisma.StringNullableFilter<"Orden"> | string | null
   createdById?: Prisma.StringNullableFilter<"Orden"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Orden"> | string | null
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
@@ -371,6 +485,9 @@ export type OrdenWhereUniqueInput = Prisma.AtLeast<{
   lineas?: Prisma.OrdenLineaListRelationFilter
   facturas?: Prisma.FacturaListRelationFilter
   visitas?: Prisma.OrdenVisitaListRelationFilter
+  movimientos?: Prisma.MovimientoInventarioListRelationFilter
+  entregaPropiedad?: Prisma.XOR<Prisma.PropiedadNullableScalarRelationFilter, Prisma.PropiedadWhereInput> | null
+  retiroUbicacion?: Prisma.XOR<Prisma.UbicacionNullableScalarRelationFilter, Prisma.UbicacionWhereInput> | null
 }, "id" | "numero">
 
 export type OrdenOrderByWithAggregationInput = {
@@ -382,11 +499,21 @@ export type OrdenOrderByWithAggregationInput = {
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
+  origen?: Prisma.SortOrder
+  stockReservado?: Prisma.SortOrder
+  entrega?: Prisma.SortOrderInput | Prisma.SortOrder
+  retiroUbicacionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaPropiedadId?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaDireccion?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaLat?: Prisma.SortOrderInput | Prisma.SortOrder
+  entregaLng?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  contactoNombre?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactoTelefono?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.OrdenCountOrderByAggregateInput
@@ -408,11 +535,21 @@ export type OrdenScalarWhereWithAggregatesInput = {
   fecha?: Prisma.DateTimeWithAggregatesFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenWithAggregatesFilter<"Orden"> | $Enums.EstadoOrden
   notas?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
+  origen?: Prisma.EnumOrigenOrdenWithAggregatesFilter<"Orden"> | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolWithAggregatesFilter<"Orden"> | boolean
+  entrega?: Prisma.EnumTipoEntregaNullableWithAggregatesFilter<"Orden"> | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
+  entregaPropiedadId?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
+  entregaDireccion?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
+  entregaLat?: Prisma.FloatNullableWithAggregatesFilter<"Orden"> | number | null
+  entregaLng?: Prisma.FloatNullableWithAggregatesFilter<"Orden"> | number | null
   subtotal?: Prisma.DecimalWithAggregatesFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalWithAggregatesFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalWithAggregatesFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Orden"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Orden"> | Date | string
+  contactoNombre?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
+  contactoTelefono?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
   createdById?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
   updatedById?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
 }
@@ -423,11 +560,19 @@ export type OrdenCreateInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
@@ -436,6 +581,9 @@ export type OrdenCreateInput = {
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateInput = {
@@ -447,16 +595,27 @@ export type OrdenUncheckedCreateInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUpdateInput = {
@@ -464,11 +623,19 @@ export type OrdenUpdateInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
@@ -477,6 +644,9 @@ export type OrdenUpdateInput = {
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateInput = {
@@ -488,16 +658,27 @@ export type OrdenUncheckedUpdateInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateManyInput = {
@@ -509,11 +690,21 @@ export type OrdenCreateManyInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
 }
@@ -523,11 +714,19 @@ export type OrdenUpdateManyMutationInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type OrdenUncheckedUpdateManyInput = {
@@ -539,11 +738,21 @@ export type OrdenUncheckedUpdateManyInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -558,6 +767,11 @@ export type OrdenOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type OrdenNullableScalarRelationFilter = {
+  is?: Prisma.OrdenWhereInput | null
+  isNot?: Prisma.OrdenWhereInput | null
+}
+
 export type OrdenCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
@@ -567,17 +781,29 @@ export type OrdenCountOrderByAggregateInput = {
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  origen?: Prisma.SortOrder
+  stockReservado?: Prisma.SortOrder
+  entrega?: Prisma.SortOrder
+  retiroUbicacionId?: Prisma.SortOrder
+  entregaPropiedadId?: Prisma.SortOrder
+  entregaDireccion?: Prisma.SortOrder
+  entregaLat?: Prisma.SortOrder
+  entregaLng?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  contactoNombre?: Prisma.SortOrder
+  contactoTelefono?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
 }
 
 export type OrdenAvgOrderByAggregateInput = {
   numero?: Prisma.SortOrder
+  entregaLat?: Prisma.SortOrder
+  entregaLng?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
@@ -592,11 +818,21 @@ export type OrdenMaxOrderByAggregateInput = {
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  origen?: Prisma.SortOrder
+  stockReservado?: Prisma.SortOrder
+  entrega?: Prisma.SortOrder
+  retiroUbicacionId?: Prisma.SortOrder
+  entregaPropiedadId?: Prisma.SortOrder
+  entregaDireccion?: Prisma.SortOrder
+  entregaLat?: Prisma.SortOrder
+  entregaLng?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  contactoNombre?: Prisma.SortOrder
+  contactoTelefono?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
 }
@@ -610,17 +846,29 @@ export type OrdenMinOrderByAggregateInput = {
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  origen?: Prisma.SortOrder
+  stockReservado?: Prisma.SortOrder
+  entrega?: Prisma.SortOrder
+  retiroUbicacionId?: Prisma.SortOrder
+  entregaPropiedadId?: Prisma.SortOrder
+  entregaDireccion?: Prisma.SortOrder
+  entregaLat?: Prisma.SortOrder
+  entregaLng?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  contactoNombre?: Prisma.SortOrder
+  contactoTelefono?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
 }
 
 export type OrdenSumOrderByAggregateInput = {
   numero?: Prisma.SortOrder
+  entregaLat?: Prisma.SortOrder
+  entregaLng?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
@@ -757,6 +1005,64 @@ export type OrdenUncheckedUpdateManyWithoutClienteNestedInput = {
   deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
 }
 
+export type OrdenCreateNestedManyWithoutEntregaPropiedadInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput> | Prisma.OrdenCreateWithoutEntregaPropiedadInput[] | Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput | Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput[]
+  createMany?: Prisma.OrdenCreateManyEntregaPropiedadInputEnvelope
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+}
+
+export type OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput> | Prisma.OrdenCreateWithoutEntregaPropiedadInput[] | Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput | Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput[]
+  createMany?: Prisma.OrdenCreateManyEntregaPropiedadInputEnvelope
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+}
+
+export type OrdenUpdateManyWithoutEntregaPropiedadNestedInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput> | Prisma.OrdenCreateWithoutEntregaPropiedadInput[] | Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput | Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput[]
+  upsert?: Prisma.OrdenUpsertWithWhereUniqueWithoutEntregaPropiedadInput | Prisma.OrdenUpsertWithWhereUniqueWithoutEntregaPropiedadInput[]
+  createMany?: Prisma.OrdenCreateManyEntregaPropiedadInputEnvelope
+  set?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  disconnect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  delete?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  update?: Prisma.OrdenUpdateWithWhereUniqueWithoutEntregaPropiedadInput | Prisma.OrdenUpdateWithWhereUniqueWithoutEntregaPropiedadInput[]
+  updateMany?: Prisma.OrdenUpdateManyWithWhereWithoutEntregaPropiedadInput | Prisma.OrdenUpdateManyWithWhereWithoutEntregaPropiedadInput[]
+  deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
+}
+
+export type OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput> | Prisma.OrdenCreateWithoutEntregaPropiedadInput[] | Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput | Prisma.OrdenCreateOrConnectWithoutEntregaPropiedadInput[]
+  upsert?: Prisma.OrdenUpsertWithWhereUniqueWithoutEntregaPropiedadInput | Prisma.OrdenUpsertWithWhereUniqueWithoutEntregaPropiedadInput[]
+  createMany?: Prisma.OrdenCreateManyEntregaPropiedadInputEnvelope
+  set?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  disconnect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  delete?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  update?: Prisma.OrdenUpdateWithWhereUniqueWithoutEntregaPropiedadInput | Prisma.OrdenUpdateWithWhereUniqueWithoutEntregaPropiedadInput[]
+  updateMany?: Prisma.OrdenUpdateManyWithWhereWithoutEntregaPropiedadInput | Prisma.OrdenUpdateManyWithWhereWithoutEntregaPropiedadInput[]
+  deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
+}
+
+export type OrdenCreateNestedOneWithoutMovimientosInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutMovimientosInput, Prisma.OrdenUncheckedCreateWithoutMovimientosInput>
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutMovimientosInput
+  connect?: Prisma.OrdenWhereUniqueInput
+}
+
+export type OrdenUpdateOneWithoutMovimientosNestedInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutMovimientosInput, Prisma.OrdenUncheckedCreateWithoutMovimientosInput>
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutMovimientosInput
+  upsert?: Prisma.OrdenUpsertWithoutMovimientosInput
+  disconnect?: Prisma.OrdenWhereInput | boolean
+  delete?: Prisma.OrdenWhereInput | boolean
+  connect?: Prisma.OrdenWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrdenUpdateToOneWithWhereWithoutMovimientosInput, Prisma.OrdenUpdateWithoutMovimientosInput>, Prisma.OrdenUncheckedUpdateWithoutMovimientosInput>
+}
+
 export type OrdenCreateNestedManyWithoutSuscripcionInput = {
   create?: Prisma.XOR<Prisma.OrdenCreateWithoutSuscripcionInput, Prisma.OrdenUncheckedCreateWithoutSuscripcionInput> | Prisma.OrdenCreateWithoutSuscripcionInput[] | Prisma.OrdenUncheckedCreateWithoutSuscripcionInput[]
   connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutSuscripcionInput | Prisma.OrdenCreateOrConnectWithoutSuscripcionInput[]
@@ -799,8 +1105,58 @@ export type OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput = {
   deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
 }
 
+export type OrdenCreateNestedManyWithoutRetiroUbicacionInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput> | Prisma.OrdenCreateWithoutRetiroUbicacionInput[] | Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput | Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput[]
+  createMany?: Prisma.OrdenCreateManyRetiroUbicacionInputEnvelope
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+}
+
+export type OrdenUncheckedCreateNestedManyWithoutRetiroUbicacionInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput> | Prisma.OrdenCreateWithoutRetiroUbicacionInput[] | Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput | Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput[]
+  createMany?: Prisma.OrdenCreateManyRetiroUbicacionInputEnvelope
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+}
+
+export type OrdenUpdateManyWithoutRetiroUbicacionNestedInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput> | Prisma.OrdenCreateWithoutRetiroUbicacionInput[] | Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput | Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput[]
+  upsert?: Prisma.OrdenUpsertWithWhereUniqueWithoutRetiroUbicacionInput | Prisma.OrdenUpsertWithWhereUniqueWithoutRetiroUbicacionInput[]
+  createMany?: Prisma.OrdenCreateManyRetiroUbicacionInputEnvelope
+  set?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  disconnect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  delete?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  update?: Prisma.OrdenUpdateWithWhereUniqueWithoutRetiroUbicacionInput | Prisma.OrdenUpdateWithWhereUniqueWithoutRetiroUbicacionInput[]
+  updateMany?: Prisma.OrdenUpdateManyWithWhereWithoutRetiroUbicacionInput | Prisma.OrdenUpdateManyWithWhereWithoutRetiroUbicacionInput[]
+  deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
+}
+
+export type OrdenUncheckedUpdateManyWithoutRetiroUbicacionNestedInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput> | Prisma.OrdenCreateWithoutRetiroUbicacionInput[] | Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput[]
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput | Prisma.OrdenCreateOrConnectWithoutRetiroUbicacionInput[]
+  upsert?: Prisma.OrdenUpsertWithWhereUniqueWithoutRetiroUbicacionInput | Prisma.OrdenUpsertWithWhereUniqueWithoutRetiroUbicacionInput[]
+  createMany?: Prisma.OrdenCreateManyRetiroUbicacionInputEnvelope
+  set?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  disconnect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  delete?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
+  update?: Prisma.OrdenUpdateWithWhereUniqueWithoutRetiroUbicacionInput | Prisma.OrdenUpdateWithWhereUniqueWithoutRetiroUbicacionInput[]
+  updateMany?: Prisma.OrdenUpdateManyWithWhereWithoutRetiroUbicacionInput | Prisma.OrdenUpdateManyWithWhereWithoutRetiroUbicacionInput[]
+  deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
+}
+
 export type EnumEstadoOrdenFieldUpdateOperationsInput = {
   set?: $Enums.EstadoOrden
+}
+
+export type EnumOrigenOrdenFieldUpdateOperationsInput = {
+  set?: $Enums.OrigenOrden
+}
+
+export type NullableEnumTipoEntregaFieldUpdateOperationsInput = {
+  set?: $Enums.TipoEntrega | null
 }
 
 export type OrdenCreateNestedOneWithoutVisitasInput = {
@@ -893,11 +1249,19 @@ export type OrdenCreateWithoutCreatedByInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
@@ -905,6 +1269,9 @@ export type OrdenCreateWithoutCreatedByInput = {
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutCreatedByInput = {
@@ -916,15 +1283,26 @@ export type OrdenUncheckedCreateWithoutCreatedByInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutCreatedByInput = {
@@ -943,11 +1321,19 @@ export type OrdenCreateWithoutUpdatedByInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
@@ -955,6 +1341,9 @@ export type OrdenCreateWithoutUpdatedByInput = {
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutUpdatedByInput = {
@@ -966,15 +1355,26 @@ export type OrdenUncheckedCreateWithoutUpdatedByInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutUpdatedByInput = {
@@ -1015,11 +1415,21 @@ export type OrdenScalarWhereInput = {
   fecha?: Prisma.DateTimeFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenFilter<"Orden"> | $Enums.EstadoOrden
   notas?: Prisma.StringNullableFilter<"Orden"> | string | null
+  origen?: Prisma.EnumOrigenOrdenFilter<"Orden"> | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFilter<"Orden"> | boolean
+  entrega?: Prisma.EnumTipoEntregaNullableFilter<"Orden"> | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaPropiedadId?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaDireccion?: Prisma.StringNullableFilter<"Orden"> | string | null
+  entregaLat?: Prisma.FloatNullableFilter<"Orden"> | number | null
+  entregaLng?: Prisma.FloatNullableFilter<"Orden"> | number | null
   subtotal?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"Orden"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Orden"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Orden"> | Date | string
+  contactoNombre?: Prisma.StringNullableFilter<"Orden"> | string | null
+  contactoTelefono?: Prisma.StringNullableFilter<"Orden"> | string | null
   createdById?: Prisma.StringNullableFilter<"Orden"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Orden"> | string | null
 }
@@ -1046,11 +1456,19 @@ export type OrdenCreateWithoutClienteInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
@@ -1058,6 +1476,9 @@ export type OrdenCreateWithoutClienteInput = {
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutClienteInput = {
@@ -1068,16 +1489,27 @@ export type OrdenUncheckedCreateWithoutClienteInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutClienteInput = {
@@ -1106,17 +1538,252 @@ export type OrdenUpdateManyWithWhereWithoutClienteInput = {
   data: Prisma.XOR<Prisma.OrdenUpdateManyMutationInput, Prisma.OrdenUncheckedUpdateManyWithoutClienteInput>
 }
 
+export type OrdenCreateWithoutEntregaPropiedadInput = {
+  id?: string
+  numero?: number
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
+  datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
+  lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
+  facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
+}
+
+export type OrdenUncheckedCreateWithoutEntregaPropiedadInput = {
+  id?: string
+  clienteId: string
+  datoFacturacionId?: string | null
+  numero?: number
+  suscripcionId?: string | null
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  createdById?: string | null
+  updatedById?: string | null
+  lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
+  facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
+}
+
+export type OrdenCreateOrConnectWithoutEntregaPropiedadInput = {
+  where: Prisma.OrdenWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput>
+}
+
+export type OrdenCreateManyEntregaPropiedadInputEnvelope = {
+  data: Prisma.OrdenCreateManyEntregaPropiedadInput | Prisma.OrdenCreateManyEntregaPropiedadInput[]
+  skipDuplicates?: boolean
+}
+
+export type OrdenUpsertWithWhereUniqueWithoutEntregaPropiedadInput = {
+  where: Prisma.OrdenWhereUniqueInput
+  update: Prisma.XOR<Prisma.OrdenUpdateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedUpdateWithoutEntregaPropiedadInput>
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedCreateWithoutEntregaPropiedadInput>
+}
+
+export type OrdenUpdateWithWhereUniqueWithoutEntregaPropiedadInput = {
+  where: Prisma.OrdenWhereUniqueInput
+  data: Prisma.XOR<Prisma.OrdenUpdateWithoutEntregaPropiedadInput, Prisma.OrdenUncheckedUpdateWithoutEntregaPropiedadInput>
+}
+
+export type OrdenUpdateManyWithWhereWithoutEntregaPropiedadInput = {
+  where: Prisma.OrdenScalarWhereInput
+  data: Prisma.XOR<Prisma.OrdenUpdateManyMutationInput, Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadInput>
+}
+
+export type OrdenCreateWithoutMovimientosInput = {
+  id?: string
+  numero?: number
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
+  datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
+  lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
+  facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
+}
+
+export type OrdenUncheckedCreateWithoutMovimientosInput = {
+  id?: string
+  clienteId: string
+  datoFacturacionId?: string | null
+  numero?: number
+  suscripcionId?: string | null
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  createdById?: string | null
+  updatedById?: string | null
+  lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
+  facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+}
+
+export type OrdenCreateOrConnectWithoutMovimientosInput = {
+  where: Prisma.OrdenWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutMovimientosInput, Prisma.OrdenUncheckedCreateWithoutMovimientosInput>
+}
+
+export type OrdenUpsertWithoutMovimientosInput = {
+  update: Prisma.XOR<Prisma.OrdenUpdateWithoutMovimientosInput, Prisma.OrdenUncheckedUpdateWithoutMovimientosInput>
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutMovimientosInput, Prisma.OrdenUncheckedCreateWithoutMovimientosInput>
+  where?: Prisma.OrdenWhereInput
+}
+
+export type OrdenUpdateToOneWithWhereWithoutMovimientosInput = {
+  where?: Prisma.OrdenWhereInput
+  data: Prisma.XOR<Prisma.OrdenUpdateWithoutMovimientosInput, Prisma.OrdenUncheckedUpdateWithoutMovimientosInput>
+}
+
+export type OrdenUpdateWithoutMovimientosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
+  datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
+  lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
+}
+
+export type OrdenUncheckedUpdateWithoutMovimientosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+}
+
 export type OrdenCreateWithoutSuscripcionInput = {
   id?: string
   numero?: number
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
@@ -1124,6 +1791,9 @@ export type OrdenCreateWithoutSuscripcionInput = {
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutSuscripcionInput = {
@@ -1134,16 +1804,27 @@ export type OrdenUncheckedCreateWithoutSuscripcionInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutSuscripcionInput = {
@@ -1172,17 +1853,25 @@ export type OrdenUpdateManyWithWhereWithoutSuscripcionInput = {
   data: Prisma.XOR<Prisma.OrdenUpdateManyMutationInput, Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionInput>
 }
 
-export type OrdenCreateWithoutVisitasInput = {
+export type OrdenCreateWithoutRetiroUbicacionInput = {
   id?: string
   numero?: number
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
@@ -1190,6 +1879,97 @@ export type OrdenCreateWithoutVisitasInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+}
+
+export type OrdenUncheckedCreateWithoutRetiroUbicacionInput = {
+  id?: string
+  clienteId: string
+  datoFacturacionId?: string | null
+  numero?: number
+  suscripcionId?: string | null
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  createdById?: string | null
+  updatedById?: string | null
+  lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
+  facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
+}
+
+export type OrdenCreateOrConnectWithoutRetiroUbicacionInput = {
+  where: Prisma.OrdenWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput>
+}
+
+export type OrdenCreateManyRetiroUbicacionInputEnvelope = {
+  data: Prisma.OrdenCreateManyRetiroUbicacionInput | Prisma.OrdenCreateManyRetiroUbicacionInput[]
+  skipDuplicates?: boolean
+}
+
+export type OrdenUpsertWithWhereUniqueWithoutRetiroUbicacionInput = {
+  where: Prisma.OrdenWhereUniqueInput
+  update: Prisma.XOR<Prisma.OrdenUpdateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedUpdateWithoutRetiroUbicacionInput>
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedCreateWithoutRetiroUbicacionInput>
+}
+
+export type OrdenUpdateWithWhereUniqueWithoutRetiroUbicacionInput = {
+  where: Prisma.OrdenWhereUniqueInput
+  data: Prisma.XOR<Prisma.OrdenUpdateWithoutRetiroUbicacionInput, Prisma.OrdenUncheckedUpdateWithoutRetiroUbicacionInput>
+}
+
+export type OrdenUpdateManyWithWhereWithoutRetiroUbicacionInput = {
+  where: Prisma.OrdenScalarWhereInput
+  data: Prisma.XOR<Prisma.OrdenUpdateManyMutationInput, Prisma.OrdenUncheckedUpdateManyWithoutRetiroUbicacionInput>
+}
+
+export type OrdenCreateWithoutVisitasInput = {
+  id?: string
+  numero?: number
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
+  datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
+  lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
+  facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutVisitasInput = {
@@ -1201,15 +1981,26 @@ export type OrdenUncheckedCreateWithoutVisitasInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutVisitasInput = {
@@ -1233,11 +2024,19 @@ export type OrdenUpdateWithoutVisitasInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
@@ -1245,6 +2044,9 @@ export type OrdenUpdateWithoutVisitasInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutVisitasInput = {
@@ -1256,15 +2058,26 @@ export type OrdenUncheckedUpdateWithoutVisitasInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateWithoutLineasInput = {
@@ -1273,11 +2086,19 @@ export type OrdenCreateWithoutLineasInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
@@ -1285,6 +2106,9 @@ export type OrdenCreateWithoutLineasInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutLineasInput = {
@@ -1296,15 +2120,26 @@ export type OrdenUncheckedCreateWithoutLineasInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutLineasInput = {
@@ -1328,11 +2163,19 @@ export type OrdenUpdateWithoutLineasInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
@@ -1340,6 +2183,9 @@ export type OrdenUpdateWithoutLineasInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutLineasInput = {
@@ -1351,15 +2197,26 @@ export type OrdenUncheckedUpdateWithoutLineasInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateWithoutDatoFacturacionInput = {
@@ -1368,11 +2225,19 @@ export type OrdenCreateWithoutDatoFacturacionInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
@@ -1380,6 +2245,9 @@ export type OrdenCreateWithoutDatoFacturacionInput = {
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutDatoFacturacionInput = {
@@ -1390,16 +2258,27 @@ export type OrdenUncheckedCreateWithoutDatoFacturacionInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutDatoFacturacionInput = {
@@ -1434,11 +2313,19 @@ export type OrdenCreateWithoutFacturasInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
@@ -1446,6 +2333,9 @@ export type OrdenCreateWithoutFacturasInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutOrdenInput
+  entregaPropiedad?: Prisma.PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput
+  retiroUbicacion?: Prisma.UbicacionCreateNestedOneWithoutPedidosDeRetiroInput
 }
 
 export type OrdenUncheckedCreateWithoutFacturasInput = {
@@ -1457,15 +2347,26 @@ export type OrdenUncheckedCreateWithoutFacturasInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutFacturasInput = {
@@ -1489,11 +2390,19 @@ export type OrdenUpdateWithoutFacturasInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
@@ -1501,6 +2410,9 @@ export type OrdenUpdateWithoutFacturasInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutFacturasInput = {
@@ -1512,15 +2424,26 @@ export type OrdenUncheckedUpdateWithoutFacturasInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateManyCreatedByInput = {
@@ -1532,11 +2455,21 @@ export type OrdenCreateManyCreatedByInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   updatedById?: string | null
 }
 
@@ -1549,11 +2482,21 @@ export type OrdenCreateManyUpdatedByInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
 }
 
@@ -1562,11 +2505,19 @@ export type OrdenUpdateWithoutCreatedByInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
@@ -1574,6 +2525,9 @@ export type OrdenUpdateWithoutCreatedByInput = {
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutCreatedByInput = {
@@ -1585,15 +2539,26 @@ export type OrdenUncheckedUpdateWithoutCreatedByInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1605,11 +2570,21 @@ export type OrdenUncheckedUpdateManyWithoutCreatedByInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -1618,11 +2593,19 @@ export type OrdenUpdateWithoutUpdatedByInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
@@ -1630,6 +2613,9 @@ export type OrdenUpdateWithoutUpdatedByInput = {
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutUpdatedByInput = {
@@ -1641,15 +2627,26 @@ export type OrdenUncheckedUpdateWithoutUpdatedByInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -1661,11 +2658,21 @@ export type OrdenUncheckedUpdateManyWithoutUpdatedByInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -1677,11 +2684,21 @@ export type OrdenCreateManyClienteInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
 }
@@ -1691,11 +2708,19 @@ export type OrdenUpdateWithoutClienteInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
@@ -1703,6 +2728,9 @@ export type OrdenUpdateWithoutClienteInput = {
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutClienteInput = {
@@ -1713,16 +2741,27 @@ export type OrdenUncheckedUpdateWithoutClienteInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutClienteInput = {
@@ -1733,11 +2772,136 @@ export type OrdenUncheckedUpdateManyWithoutClienteInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type OrdenCreateManyEntregaPropiedadInput = {
+  id?: string
+  clienteId: string
+  datoFacturacionId?: string | null
+  numero?: number
+  suscripcionId?: string | null
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  createdById?: string | null
+  updatedById?: string | null
+}
+
+export type OrdenUpdateWithoutEntregaPropiedadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
+  datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
+  lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
+}
+
+export type OrdenUncheckedUpdateWithoutEntregaPropiedadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
+}
+
+export type OrdenUncheckedUpdateManyWithoutEntregaPropiedadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1750,11 +2914,21 @@ export type OrdenCreateManySuscripcionInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
 }
@@ -1764,11 +2938,19 @@ export type OrdenUpdateWithoutSuscripcionInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
@@ -1776,6 +2958,9 @@ export type OrdenUpdateWithoutSuscripcionInput = {
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutSuscripcionInput = {
@@ -1786,16 +2971,27 @@ export type OrdenUncheckedUpdateWithoutSuscripcionInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutSuscripcionInput = {
@@ -1806,11 +3002,136 @@ export type OrdenUncheckedUpdateManyWithoutSuscripcionInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type OrdenCreateManyRetiroUbicacionInput = {
+  id?: string
+  clienteId: string
+  datoFacturacionId?: string | null
+  numero?: number
+  suscripcionId?: string | null
+  fecha: Date | string
+  estado?: $Enums.EstadoOrden
+  notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
+  createdById?: string | null
+  updatedById?: string | null
+}
+
+export type OrdenUpdateWithoutRetiroUbicacionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
+  datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
+  lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+}
+
+export type OrdenUncheckedUpdateWithoutRetiroUbicacionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
+}
+
+export type OrdenUncheckedUpdateManyWithoutRetiroUbicacionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1823,11 +3144,21 @@ export type OrdenCreateManyDatoFacturacionInput = {
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
+  origen?: $Enums.OrigenOrden
+  stockReservado?: boolean
+  entrega?: $Enums.TipoEntrega | null
+  retiroUbicacionId?: string | null
+  entregaPropiedadId?: string | null
+  entregaDireccion?: string | null
+  entregaLat?: number | null
+  entregaLng?: number | null
   subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  contactoNombre?: string | null
+  contactoTelefono?: string | null
   createdById?: string | null
   updatedById?: string | null
 }
@@ -1837,11 +3168,19 @@ export type OrdenUpdateWithoutDatoFacturacionInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
@@ -1849,6 +3188,9 @@ export type OrdenUpdateWithoutDatoFacturacionInput = {
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutOrdenNestedInput
+  entregaPropiedad?: Prisma.PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput
+  retiroUbicacion?: Prisma.UbicacionUpdateOneWithoutPedidosDeRetiroNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutDatoFacturacionInput = {
@@ -1859,16 +3201,27 @@ export type OrdenUncheckedUpdateWithoutDatoFacturacionInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
   visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutDatoFacturacionInput = {
@@ -1879,11 +3232,21 @@ export type OrdenUncheckedUpdateManyWithoutDatoFacturacionInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origen?: Prisma.EnumOrigenOrdenFieldUpdateOperationsInput | $Enums.OrigenOrden
+  stockReservado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  entrega?: Prisma.NullableEnumTipoEntregaFieldUpdateOperationsInput | $Enums.TipoEntrega | null
+  retiroUbicacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaPropiedadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaDireccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entregaLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  entregaLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -1897,12 +3260,14 @@ export type OrdenCountOutputType = {
   lineas: number
   facturas: number
   visitas: number
+  movimientos: number
 }
 
 export type OrdenCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lineas?: boolean | OrdenCountOutputTypeCountLineasArgs
   facturas?: boolean | OrdenCountOutputTypeCountFacturasArgs
   visitas?: boolean | OrdenCountOutputTypeCountVisitasArgs
+  movimientos?: boolean | OrdenCountOutputTypeCountMovimientosArgs
 }
 
 /**
@@ -1936,6 +3301,13 @@ export type OrdenCountOutputTypeCountVisitasArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.OrdenVisitaWhereInput
 }
 
+/**
+ * OrdenCountOutputType without action
+ */
+export type OrdenCountOutputTypeCountMovimientosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MovimientoInventarioWhereInput
+}
+
 
 export type OrdenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1946,11 +3318,21 @@ export type OrdenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   fecha?: boolean
   estado?: boolean
   notas?: boolean
+  origen?: boolean
+  stockReservado?: boolean
+  entrega?: boolean
+  retiroUbicacionId?: boolean
+  entregaPropiedadId?: boolean
+  entregaDireccion?: boolean
+  entregaLat?: boolean
+  entregaLng?: boolean
   subtotal?: boolean
   iva?: boolean
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  contactoNombre?: boolean
+  contactoTelefono?: boolean
   createdById?: boolean
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
@@ -1961,6 +3343,9 @@ export type OrdenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   lineas?: boolean | Prisma.Orden$lineasArgs<ExtArgs>
   facturas?: boolean | Prisma.Orden$facturasArgs<ExtArgs>
   visitas?: boolean | Prisma.Orden$visitasArgs<ExtArgs>
+  movimientos?: boolean | Prisma.Orden$movimientosArgs<ExtArgs>
+  entregaPropiedad?: boolean | Prisma.Orden$entregaPropiedadArgs<ExtArgs>
+  retiroUbicacion?: boolean | Prisma.Orden$retiroUbicacionArgs<ExtArgs>
   _count?: boolean | Prisma.OrdenCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["orden"]>
 
@@ -1973,11 +3358,21 @@ export type OrdenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   fecha?: boolean
   estado?: boolean
   notas?: boolean
+  origen?: boolean
+  stockReservado?: boolean
+  entrega?: boolean
+  retiroUbicacionId?: boolean
+  entregaPropiedadId?: boolean
+  entregaDireccion?: boolean
+  entregaLat?: boolean
+  entregaLng?: boolean
   subtotal?: boolean
   iva?: boolean
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  contactoNombre?: boolean
+  contactoTelefono?: boolean
   createdById?: boolean
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
@@ -1985,6 +3380,8 @@ export type OrdenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
+  entregaPropiedad?: boolean | Prisma.Orden$entregaPropiedadArgs<ExtArgs>
+  retiroUbicacion?: boolean | Prisma.Orden$retiroUbicacionArgs<ExtArgs>
 }, ExtArgs["result"]["orden"]>
 
 export type OrdenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1996,11 +3393,21 @@ export type OrdenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   fecha?: boolean
   estado?: boolean
   notas?: boolean
+  origen?: boolean
+  stockReservado?: boolean
+  entrega?: boolean
+  retiroUbicacionId?: boolean
+  entregaPropiedadId?: boolean
+  entregaDireccion?: boolean
+  entregaLat?: boolean
+  entregaLng?: boolean
   subtotal?: boolean
   iva?: boolean
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  contactoNombre?: boolean
+  contactoTelefono?: boolean
   createdById?: boolean
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
@@ -2008,6 +3415,8 @@ export type OrdenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
+  entregaPropiedad?: boolean | Prisma.Orden$entregaPropiedadArgs<ExtArgs>
+  retiroUbicacion?: boolean | Prisma.Orden$retiroUbicacionArgs<ExtArgs>
 }, ExtArgs["result"]["orden"]>
 
 export type OrdenSelectScalar = {
@@ -2019,16 +3428,26 @@ export type OrdenSelectScalar = {
   fecha?: boolean
   estado?: boolean
   notas?: boolean
+  origen?: boolean
+  stockReservado?: boolean
+  entrega?: boolean
+  retiroUbicacionId?: boolean
+  entregaPropiedadId?: boolean
+  entregaDireccion?: boolean
+  entregaLat?: boolean
+  entregaLng?: boolean
   subtotal?: boolean
   iva?: boolean
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  contactoNombre?: boolean
+  contactoTelefono?: boolean
   createdById?: boolean
   updatedById?: boolean
 }
 
-export type OrdenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "datoFacturacionId" | "numero" | "suscripcionId" | "fecha" | "estado" | "notas" | "subtotal" | "iva" | "total" | "createdAt" | "updatedAt" | "createdById" | "updatedById", ExtArgs["result"]["orden"]>
+export type OrdenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "datoFacturacionId" | "numero" | "suscripcionId" | "fecha" | "estado" | "notas" | "origen" | "stockReservado" | "entrega" | "retiroUbicacionId" | "entregaPropiedadId" | "entregaDireccion" | "entregaLat" | "entregaLng" | "subtotal" | "iva" | "total" | "createdAt" | "updatedAt" | "contactoNombre" | "contactoTelefono" | "createdById" | "updatedById", ExtArgs["result"]["orden"]>
 export type OrdenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Orden$datoFacturacionArgs<ExtArgs>
@@ -2038,6 +3457,9 @@ export type OrdenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   lineas?: boolean | Prisma.Orden$lineasArgs<ExtArgs>
   facturas?: boolean | Prisma.Orden$facturasArgs<ExtArgs>
   visitas?: boolean | Prisma.Orden$visitasArgs<ExtArgs>
+  movimientos?: boolean | Prisma.Orden$movimientosArgs<ExtArgs>
+  entregaPropiedad?: boolean | Prisma.Orden$entregaPropiedadArgs<ExtArgs>
+  retiroUbicacion?: boolean | Prisma.Orden$retiroUbicacionArgs<ExtArgs>
   _count?: boolean | Prisma.OrdenCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrdenIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2046,6 +3468,8 @@ export type OrdenIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
+  entregaPropiedad?: boolean | Prisma.Orden$entregaPropiedadArgs<ExtArgs>
+  retiroUbicacion?: boolean | Prisma.Orden$retiroUbicacionArgs<ExtArgs>
 }
 export type OrdenIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
@@ -2053,6 +3477,8 @@ export type OrdenIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
+  entregaPropiedad?: boolean | Prisma.Orden$entregaPropiedadArgs<ExtArgs>
+  retiroUbicacion?: boolean | Prisma.Orden$retiroUbicacionArgs<ExtArgs>
 }
 
 export type $OrdenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2066,6 +3492,9 @@ export type $OrdenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     lineas: Prisma.$OrdenLineaPayload<ExtArgs>[]
     facturas: Prisma.$FacturaPayload<ExtArgs>[]
     visitas: Prisma.$OrdenVisitaPayload<ExtArgs>[]
+    movimientos: Prisma.$MovimientoInventarioPayload<ExtArgs>[]
+    entregaPropiedad: Prisma.$PropiedadPayload<ExtArgs> | null
+    retiroUbicacion: Prisma.$UbicacionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2093,6 +3522,33 @@ export type $OrdenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     estado: $Enums.EstadoOrden
     notas: string | null
     /**
+     * De dónde salió: armada en el portal, o pedida por el cliente desde el
+     * carrito de la app.
+     */
+    origen: $Enums.OrigenOrden
+    /**
+     * **El stock de un pedido de la app se aparta al pedir** (`RESERVA` en el
+     * libro, con este `ordenId`): anularlo lo devuelve, editarlo ajusta la
+     * diferencia y facturarlo no cambia el saldo. Ver `reserva.service.ts`.
+     */
+    stockReservado: boolean
+    /**
+     * Cómo recibe el cliente lo que pidió en la app. Null en las del portal.
+     */
+    entrega: $Enums.TipoEntrega | null
+    /**
+     * Dónde retira, con `RETIRO`: una de las ubicaciones del vivero.
+     */
+    retiroUbicacionId: string | null
+    /**
+     * Adónde se entrega, con `ENTREGA`: una de sus propiedades, o un punto
+     * marcado en el mapa con su dirección escrita (`entregaPropiedadId` null).
+     */
+    entregaPropiedadId: string | null
+    entregaDireccion: string | null
+    entregaLat: number | null
+    entregaLng: number | null
+    /**
      * Totales denormalizados, recalculados desde las líneas en cada escritura.
      */
     subtotal: runtime.Decimal
@@ -2100,6 +3556,15 @@ export type $OrdenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     total: runtime.Decimal
     createdAt: Date
     updatedAt: Date
+    /**
+     * Con quién hablar por **este pedido**, cuando lo hizo un invitado: el
+     * nombre y el teléfono que escribió en el checkout. Si su correo ya era de
+     * una ficha, el pedido va a esa ficha (como en Shopify) y esto puede no
+     * coincidir con lo que la ficha dice: el que pidió puede ser otro de la
+     * casa, y a quien hay que llamar es a él. `null` en los demás.
+     */
+    contactoNombre: string | null
+    contactoTelefono: string | null
     createdById: string | null
     updatedById: string | null
   }, ExtArgs["result"]["orden"]>
@@ -2504,6 +3969,9 @@ export interface Prisma__OrdenClient<T, Null = never, ExtArgs extends runtime.Ty
   lineas<T extends Prisma.Orden$lineasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$lineasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenLineaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   facturas<T extends Prisma.Orden$facturasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$facturasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FacturaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitas<T extends Prisma.Orden$visitasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$visitasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenVisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  movimientos<T extends Prisma.Orden$movimientosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$movimientosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MovimientoInventarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  entregaPropiedad<T extends Prisma.Orden$entregaPropiedadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$entregaPropiedadArgs<ExtArgs>>): Prisma.Prisma__PropiedadClient<runtime.Types.Result.GetResult<Prisma.$PropiedadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  retiroUbicacion<T extends Prisma.Orden$retiroUbicacionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$retiroUbicacionArgs<ExtArgs>>): Prisma.Prisma__UbicacionClient<runtime.Types.Result.GetResult<Prisma.$UbicacionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2541,11 +4009,21 @@ export interface OrdenFieldRefs {
   readonly fecha: Prisma.FieldRef<"Orden", 'DateTime'>
   readonly estado: Prisma.FieldRef<"Orden", 'EstadoOrden'>
   readonly notas: Prisma.FieldRef<"Orden", 'String'>
+  readonly origen: Prisma.FieldRef<"Orden", 'OrigenOrden'>
+  readonly stockReservado: Prisma.FieldRef<"Orden", 'Boolean'>
+  readonly entrega: Prisma.FieldRef<"Orden", 'TipoEntrega'>
+  readonly retiroUbicacionId: Prisma.FieldRef<"Orden", 'String'>
+  readonly entregaPropiedadId: Prisma.FieldRef<"Orden", 'String'>
+  readonly entregaDireccion: Prisma.FieldRef<"Orden", 'String'>
+  readonly entregaLat: Prisma.FieldRef<"Orden", 'Float'>
+  readonly entregaLng: Prisma.FieldRef<"Orden", 'Float'>
   readonly subtotal: Prisma.FieldRef<"Orden", 'Decimal'>
   readonly iva: Prisma.FieldRef<"Orden", 'Decimal'>
   readonly total: Prisma.FieldRef<"Orden", 'Decimal'>
   readonly createdAt: Prisma.FieldRef<"Orden", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Orden", 'DateTime'>
+  readonly contactoNombre: Prisma.FieldRef<"Orden", 'String'>
+  readonly contactoTelefono: Prisma.FieldRef<"Orden", 'String'>
   readonly createdById: Prisma.FieldRef<"Orden", 'String'>
   readonly updatedById: Prisma.FieldRef<"Orden", 'String'>
 }
@@ -3094,6 +4572,68 @@ export type Orden$visitasArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.OrdenVisitaScalarFieldEnum | Prisma.OrdenVisitaScalarFieldEnum[]
+}
+
+/**
+ * Orden.movimientos
+ */
+export type Orden$movimientosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MovimientoInventario
+   */
+  select?: Prisma.MovimientoInventarioSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MovimientoInventario
+   */
+  omit?: Prisma.MovimientoInventarioOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MovimientoInventarioInclude<ExtArgs> | null
+  where?: Prisma.MovimientoInventarioWhereInput
+  orderBy?: Prisma.MovimientoInventarioOrderByWithRelationInput | Prisma.MovimientoInventarioOrderByWithRelationInput[]
+  cursor?: Prisma.MovimientoInventarioWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MovimientoInventarioScalarFieldEnum | Prisma.MovimientoInventarioScalarFieldEnum[]
+}
+
+/**
+ * Orden.entregaPropiedad
+ */
+export type Orden$entregaPropiedadArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Propiedad
+   */
+  select?: Prisma.PropiedadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Propiedad
+   */
+  omit?: Prisma.PropiedadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PropiedadInclude<ExtArgs> | null
+  where?: Prisma.PropiedadWhereInput
+}
+
+/**
+ * Orden.retiroUbicacion
+ */
+export type Orden$retiroUbicacionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Ubicacion
+   */
+  select?: Prisma.UbicacionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Ubicacion
+   */
+  omit?: Prisma.UbicacionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UbicacionInclude<ExtArgs> | null
+  where?: Prisma.UbicacionWhereInput
 }
 
 /**

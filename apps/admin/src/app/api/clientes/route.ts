@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
 import { clienteConPropiedadSchema } from "@/lib/validations/cliente";
-import { createCliente, PROPIEDADES_DEL_CLIENTE } from "@/lib/services/cliente.service";
+import {
+  createCliente,
+  PROPIEDADES_DEL_CLIENTE,
+} from "@/lib/services/cliente.service";
 import { viewerFromSession } from "@/lib/auth-helpers";
+import { httpStatusForServiceError } from "@/lib/services/errors";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -40,7 +44,7 @@ export async function POST(request: Request) {
   if (!result.success) {
     return NextResponse.json(
       { error: "Datos inválidos", details: result.error.issues },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -49,32 +53,40 @@ export async function POST(request: Request) {
 
   // Por el servicio y no con un `create` suelto: es el que crea al cliente con
   // su primera propiedad adentro de la misma transacción.
-  const cliente = await createCliente(await viewerFromSession(), {
-    nombre: data.nombre || "",
-    apellido: data.apellido || null,
-    empresa: data.empresa || null,
-    email: data.email || null,
-    telefono: data.telefono || null,
-    notas: data.notas || null,
-    propiedad: {
-      nombre: p?.nombre || null,
-      ciudad: p?.ciudad || null,
-      sectorId: p?.sectorId || null,
-      direccion: p?.direccion || null,
-      numeroCasa: p?.numeroCasa || null,
-      referencia: p?.referencia || null,
-      notas: p?.notas || null,
-      lat: p?.lat ?? null,
-      lng: p?.lng ?? null,
-      m2Total: p?.m2Total ?? null,
-      jardinerasPlantaAlta: p?.jardinerasPlantaAlta ?? false,
-      numeroArboles: p?.numeroArboles ?? null,
-      mlVegetacionBaja: p?.mlVegetacionBaja ?? null,
-      mlVegetacionMedia: p?.mlVegetacionMedia ?? null,
-      mlVegetacionAlta: p?.mlVegetacionAlta ?? null,
-      m2Cesped: p?.m2Cesped ?? null,
-    },
-  });
+  let cliente;
+  try {
+    cliente = await createCliente(await viewerFromSession(), {
+      nombre: data.nombre || "",
+      apellido: data.apellido || null,
+      empresa: data.empresa || null,
+      email: data.email || null,
+      telefono: data.telefono || null,
+      notas: data.notas || null,
+      propiedad: {
+        nombre: p?.nombre || null,
+        ciudad: p?.ciudad || null,
+        sectorId: p?.sectorId || null,
+        direccion: p?.direccion || null,
+        numeroCasa: p?.numeroCasa || null,
+        referencia: p?.referencia || null,
+        notas: p?.notas || null,
+        lat: p?.lat ?? null,
+        lng: p?.lng ?? null,
+        m2Total: p?.m2Total ?? null,
+        jardinerasPlantaAlta: p?.jardinerasPlantaAlta ?? false,
+        numeroArboles: p?.numeroArboles ?? null,
+        mlVegetacionBaja: p?.mlVegetacionBaja ?? null,
+        mlVegetacionMedia: p?.mlVegetacionMedia ?? null,
+        mlVegetacionAlta: p?.mlVegetacionAlta ?? null,
+        m2Cesped: p?.m2Cesped ?? null,
+      },
+    });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "No se pudo crear el cliente" },
+      { status: httpStatusForServiceError(e) },
+    );
+  }
 
   return NextResponse.json(cliente, { status: 201 });
 }

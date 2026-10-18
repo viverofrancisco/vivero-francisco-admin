@@ -136,7 +136,7 @@ export function EditarProductoMovil({
           onChange={(e) => setEstado(e as "ACTIVO" | "BORRADOR")}
           options={[
             { value: "ACTIVO", label: "Activo" },
-            { value: "BORRADOR", label: "Borrador", hint: "No aparece al armar una orden" },
+            { value: "BORRADOR", label: "Borrador", hint: "No aparece al armar un pedido" },
           ]}
         />
 

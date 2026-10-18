@@ -50,6 +50,11 @@ export default function PersonalTabsLayout() {
         router.push({ pathname: "/(personal)/chats/[id]", params: { id: chatId } });
         return;
       }
+      // Un pedido del carrito: a ese pedido, donde se confirma y se factura.
+      if (data.type === "pedido_app" && typeof data.ordenId === "string") {
+        router.push({ pathname: "/(personal)/ordenes/[id]", params: { id: data.ordenId } });
+        return;
+      }
       // Un cliente pidió algo desde la app: a la lista, donde se atiende.
       if (data.type === "solicitud_cliente") {
         router.push("/(personal)/solicitudes");
@@ -136,7 +141,7 @@ export default function PersonalTabsLayout() {
       <Tabs.Screen
         name="ordenes"
         options={{
-          title: "Órdenes",
+          title: "Pedidos",
           href: isAdminOrStaff ? undefined : null,
           tabBarItemStyle: isAdminOrStaff ? undefined : { display: "none" },
           tabBarIcon: ({ color, size }) => (
@@ -206,6 +211,17 @@ export default function PersonalTabsLayout() {
           tabBarItemStyle: { display: "none" },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="business-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="ubicaciones"
+        options={{
+          title: "Ubicaciones",
+          href: isAdmin ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="location-outline" size={size} color={color} />
           ),
         }}
       />

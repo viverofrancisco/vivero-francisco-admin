@@ -408,6 +408,8 @@ export type PropiedadWhereInput = {
   visitas?: Prisma.VisitaListRelationFilter
   suscripciones?: Prisma.SuscripcionListRelationFilter
   obras?: Prisma.ObraListRelationFilter
+  ordenesDeEntrega?: Prisma.OrdenListRelationFilter
+  solicitudes?: Prisma.SolicitudClienteListRelationFilter
 }
 
 export type PropiedadOrderByWithRelationInput = {
@@ -441,6 +443,8 @@ export type PropiedadOrderByWithRelationInput = {
   visitas?: Prisma.VisitaOrderByRelationAggregateInput
   suscripciones?: Prisma.SuscripcionOrderByRelationAggregateInput
   obras?: Prisma.ObraOrderByRelationAggregateInput
+  ordenesDeEntrega?: Prisma.OrdenOrderByRelationAggregateInput
+  solicitudes?: Prisma.SolicitudClienteOrderByRelationAggregateInput
 }
 
 export type PropiedadWhereUniqueInput = Prisma.AtLeast<{
@@ -477,6 +481,8 @@ export type PropiedadWhereUniqueInput = Prisma.AtLeast<{
   visitas?: Prisma.VisitaListRelationFilter
   suscripciones?: Prisma.SuscripcionListRelationFilter
   obras?: Prisma.ObraListRelationFilter
+  ordenesDeEntrega?: Prisma.OrdenListRelationFilter
+  solicitudes?: Prisma.SolicitudClienteListRelationFilter
 }, "id">
 
 export type PropiedadOrderByWithAggregationInput = {
@@ -566,6 +572,8 @@ export type PropiedadCreateInput = {
   visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateInput = {
@@ -595,6 +603,8 @@ export type PropiedadUncheckedCreateInput = {
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUpdateInput = {
@@ -624,6 +634,8 @@ export type PropiedadUpdateInput = {
   visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateInput = {
@@ -653,6 +665,8 @@ export type PropiedadUncheckedUpdateInput = {
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadCreateManyInput = {
@@ -1053,6 +1067,38 @@ export type PropiedadUncheckedUpdateManyWithoutSectorNestedInput = {
   deleteMany?: Prisma.PropiedadScalarWhereInput | Prisma.PropiedadScalarWhereInput[]
 }
 
+export type PropiedadCreateNestedOneWithoutOrdenesDeEntregaInput = {
+  create?: Prisma.XOR<Prisma.PropiedadCreateWithoutOrdenesDeEntregaInput, Prisma.PropiedadUncheckedCreateWithoutOrdenesDeEntregaInput>
+  connectOrCreate?: Prisma.PropiedadCreateOrConnectWithoutOrdenesDeEntregaInput
+  connect?: Prisma.PropiedadWhereUniqueInput
+}
+
+export type PropiedadUpdateOneWithoutOrdenesDeEntregaNestedInput = {
+  create?: Prisma.XOR<Prisma.PropiedadCreateWithoutOrdenesDeEntregaInput, Prisma.PropiedadUncheckedCreateWithoutOrdenesDeEntregaInput>
+  connectOrCreate?: Prisma.PropiedadCreateOrConnectWithoutOrdenesDeEntregaInput
+  upsert?: Prisma.PropiedadUpsertWithoutOrdenesDeEntregaInput
+  disconnect?: Prisma.PropiedadWhereInput | boolean
+  delete?: Prisma.PropiedadWhereInput | boolean
+  connect?: Prisma.PropiedadWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PropiedadUpdateToOneWithWhereWithoutOrdenesDeEntregaInput, Prisma.PropiedadUpdateWithoutOrdenesDeEntregaInput>, Prisma.PropiedadUncheckedUpdateWithoutOrdenesDeEntregaInput>
+}
+
+export type PropiedadCreateNestedOneWithoutSolicitudesInput = {
+  create?: Prisma.XOR<Prisma.PropiedadCreateWithoutSolicitudesInput, Prisma.PropiedadUncheckedCreateWithoutSolicitudesInput>
+  connectOrCreate?: Prisma.PropiedadCreateOrConnectWithoutSolicitudesInput
+  connect?: Prisma.PropiedadWhereUniqueInput
+}
+
+export type PropiedadUpdateOneWithoutSolicitudesNestedInput = {
+  create?: Prisma.XOR<Prisma.PropiedadCreateWithoutSolicitudesInput, Prisma.PropiedadUncheckedCreateWithoutSolicitudesInput>
+  connectOrCreate?: Prisma.PropiedadCreateOrConnectWithoutSolicitudesInput
+  upsert?: Prisma.PropiedadUpsertWithoutSolicitudesInput
+  disconnect?: Prisma.PropiedadWhereInput | boolean
+  delete?: Prisma.PropiedadWhereInput | boolean
+  connect?: Prisma.PropiedadWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PropiedadUpdateToOneWithWhereWithoutSolicitudesInput, Prisma.PropiedadUpdateWithoutSolicitudesInput>, Prisma.PropiedadUncheckedUpdateWithoutSolicitudesInput>
+}
+
 export type PropiedadCreateNestedOneWithoutObrasInput = {
   create?: Prisma.XOR<Prisma.PropiedadCreateWithoutObrasInput, Prisma.PropiedadUncheckedCreateWithoutObrasInput>
   connectOrCreate?: Prisma.PropiedadCreateOrConnectWithoutObrasInput
@@ -1095,6 +1141,8 @@ export type PropiedadCreateWithoutCreatedByInput = {
   visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateWithoutCreatedByInput = {
@@ -1123,6 +1171,8 @@ export type PropiedadUncheckedCreateWithoutCreatedByInput = {
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadCreateOrConnectWithoutCreatedByInput = {
@@ -1161,6 +1211,8 @@ export type PropiedadCreateWithoutUpdatedByInput = {
   visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateWithoutUpdatedByInput = {
@@ -1189,6 +1241,8 @@ export type PropiedadUncheckedCreateWithoutUpdatedByInput = {
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadCreateOrConnectWithoutUpdatedByInput = {
@@ -1288,6 +1342,8 @@ export type PropiedadCreateWithoutClienteInput = {
   visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateWithoutClienteInput = {
@@ -1316,6 +1372,8 @@ export type PropiedadUncheckedCreateWithoutClienteInput = {
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadCreateOrConnectWithoutClienteInput = {
@@ -1370,6 +1428,8 @@ export type PropiedadCreateWithoutSuscripcionesInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutPropiedadesUpdatedInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateWithoutSuscripcionesInput = {
@@ -1398,6 +1458,8 @@ export type PropiedadUncheckedCreateWithoutSuscripcionesInput = {
   updatedById?: string | null
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadCreateOrConnectWithoutSuscripcionesInput = {
@@ -1442,6 +1504,8 @@ export type PropiedadUpdateWithoutSuscripcionesInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutPropiedadesUpdatedNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateWithoutSuscripcionesInput = {
@@ -1470,6 +1534,8 @@ export type PropiedadUncheckedUpdateWithoutSuscripcionesInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadCreateWithoutVisitasInput = {
@@ -1498,6 +1564,8 @@ export type PropiedadCreateWithoutVisitasInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutPropiedadesUpdatedInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateWithoutVisitasInput = {
@@ -1526,6 +1594,8 @@ export type PropiedadUncheckedCreateWithoutVisitasInput = {
   updatedById?: string | null
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadCreateOrConnectWithoutVisitasInput = {
@@ -1570,6 +1640,8 @@ export type PropiedadUpdateWithoutVisitasInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutPropiedadesUpdatedNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateWithoutVisitasInput = {
@@ -1598,6 +1670,8 @@ export type PropiedadUncheckedUpdateWithoutVisitasInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadCreateWithoutSectorInput = {
@@ -1626,6 +1700,8 @@ export type PropiedadCreateWithoutSectorInput = {
   visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateWithoutSectorInput = {
@@ -1654,6 +1730,8 @@ export type PropiedadUncheckedCreateWithoutSectorInput = {
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
   obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadCreateOrConnectWithoutSectorInput = {
@@ -1682,6 +1760,278 @@ export type PropiedadUpdateManyWithWhereWithoutSectorInput = {
   data: Prisma.XOR<Prisma.PropiedadUpdateManyMutationInput, Prisma.PropiedadUncheckedUpdateManyWithoutSectorInput>
 }
 
+export type PropiedadCreateWithoutOrdenesDeEntregaInput = {
+  id?: string
+  nombre: string
+  ciudad?: string | null
+  direccion?: string | null
+  numeroCasa?: string | null
+  referencia?: string | null
+  notas?: string | null
+  lat?: number | null
+  lng?: number | null
+  m2Total?: number | null
+  jardinerasPlantaAlta?: boolean
+  numeroArboles?: number | null
+  mlVegetacionBaja?: number | null
+  mlVegetacionMedia?: number | null
+  mlVegetacionAlta?: number | null
+  m2Cesped?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutPropiedadesInput
+  sector?: Prisma.SectorCreateNestedOneWithoutPropiedadesInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutPropiedadesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutPropiedadesUpdatedInput
+  visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
+  suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
+  obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
+}
+
+export type PropiedadUncheckedCreateWithoutOrdenesDeEntregaInput = {
+  id?: string
+  clienteId: string
+  nombre: string
+  ciudad?: string | null
+  sectorId?: string | null
+  direccion?: string | null
+  numeroCasa?: string | null
+  referencia?: string | null
+  notas?: string | null
+  lat?: number | null
+  lng?: number | null
+  m2Total?: number | null
+  jardinerasPlantaAlta?: boolean
+  numeroArboles?: number | null
+  mlVegetacionBaja?: number | null
+  mlVegetacionMedia?: number | null
+  mlVegetacionAlta?: number | null
+  m2Cesped?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
+  suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
+  obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
+}
+
+export type PropiedadCreateOrConnectWithoutOrdenesDeEntregaInput = {
+  where: Prisma.PropiedadWhereUniqueInput
+  create: Prisma.XOR<Prisma.PropiedadCreateWithoutOrdenesDeEntregaInput, Prisma.PropiedadUncheckedCreateWithoutOrdenesDeEntregaInput>
+}
+
+export type PropiedadUpsertWithoutOrdenesDeEntregaInput = {
+  update: Prisma.XOR<Prisma.PropiedadUpdateWithoutOrdenesDeEntregaInput, Prisma.PropiedadUncheckedUpdateWithoutOrdenesDeEntregaInput>
+  create: Prisma.XOR<Prisma.PropiedadCreateWithoutOrdenesDeEntregaInput, Prisma.PropiedadUncheckedCreateWithoutOrdenesDeEntregaInput>
+  where?: Prisma.PropiedadWhereInput
+}
+
+export type PropiedadUpdateToOneWithWhereWithoutOrdenesDeEntregaInput = {
+  where?: Prisma.PropiedadWhereInput
+  data: Prisma.XOR<Prisma.PropiedadUpdateWithoutOrdenesDeEntregaInput, Prisma.PropiedadUncheckedUpdateWithoutOrdenesDeEntregaInput>
+}
+
+export type PropiedadUpdateWithoutOrdenesDeEntregaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numeroCasa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  jardinerasPlantaAlta?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  numeroArboles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mlVegetacionBaja?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionMedia?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionAlta?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Cesped?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutPropiedadesNestedInput
+  sector?: Prisma.SectorUpdateOneWithoutPropiedadesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutPropiedadesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutPropiedadesUpdatedNestedInput
+  visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
+  suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
+  obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
+}
+
+export type PropiedadUncheckedUpdateWithoutOrdenesDeEntregaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sectorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numeroCasa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  jardinerasPlantaAlta?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  numeroArboles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mlVegetacionBaja?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionMedia?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionAlta?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Cesped?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
+  suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
+  obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
+}
+
+export type PropiedadCreateWithoutSolicitudesInput = {
+  id?: string
+  nombre: string
+  ciudad?: string | null
+  direccion?: string | null
+  numeroCasa?: string | null
+  referencia?: string | null
+  notas?: string | null
+  lat?: number | null
+  lng?: number | null
+  m2Total?: number | null
+  jardinerasPlantaAlta?: boolean
+  numeroArboles?: number | null
+  mlVegetacionBaja?: number | null
+  mlVegetacionMedia?: number | null
+  mlVegetacionAlta?: number | null
+  m2Cesped?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutPropiedadesInput
+  sector?: Prisma.SectorCreateNestedOneWithoutPropiedadesInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutPropiedadesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutPropiedadesUpdatedInput
+  visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
+  suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
+  obras?: Prisma.ObraCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+}
+
+export type PropiedadUncheckedCreateWithoutSolicitudesInput = {
+  id?: string
+  clienteId: string
+  nombre: string
+  ciudad?: string | null
+  sectorId?: string | null
+  direccion?: string | null
+  numeroCasa?: string | null
+  referencia?: string | null
+  notas?: string | null
+  lat?: number | null
+  lng?: number | null
+  m2Total?: number | null
+  jardinerasPlantaAlta?: boolean
+  numeroArboles?: number | null
+  mlVegetacionBaja?: number | null
+  mlVegetacionMedia?: number | null
+  mlVegetacionAlta?: number | null
+  m2Cesped?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
+  suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
+  obras?: Prisma.ObraUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+}
+
+export type PropiedadCreateOrConnectWithoutSolicitudesInput = {
+  where: Prisma.PropiedadWhereUniqueInput
+  create: Prisma.XOR<Prisma.PropiedadCreateWithoutSolicitudesInput, Prisma.PropiedadUncheckedCreateWithoutSolicitudesInput>
+}
+
+export type PropiedadUpsertWithoutSolicitudesInput = {
+  update: Prisma.XOR<Prisma.PropiedadUpdateWithoutSolicitudesInput, Prisma.PropiedadUncheckedUpdateWithoutSolicitudesInput>
+  create: Prisma.XOR<Prisma.PropiedadCreateWithoutSolicitudesInput, Prisma.PropiedadUncheckedCreateWithoutSolicitudesInput>
+  where?: Prisma.PropiedadWhereInput
+}
+
+export type PropiedadUpdateToOneWithWhereWithoutSolicitudesInput = {
+  where?: Prisma.PropiedadWhereInput
+  data: Prisma.XOR<Prisma.PropiedadUpdateWithoutSolicitudesInput, Prisma.PropiedadUncheckedUpdateWithoutSolicitudesInput>
+}
+
+export type PropiedadUpdateWithoutSolicitudesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numeroCasa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  jardinerasPlantaAlta?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  numeroArboles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mlVegetacionBaja?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionMedia?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionAlta?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Cesped?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutPropiedadesNestedInput
+  sector?: Prisma.SectorUpdateOneWithoutPropiedadesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutPropiedadesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutPropiedadesUpdatedNestedInput
+  visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
+  suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
+  obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+}
+
+export type PropiedadUncheckedUpdateWithoutSolicitudesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sectorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numeroCasa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  jardinerasPlantaAlta?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  numeroArboles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mlVegetacionBaja?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionMedia?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mlVegetacionAlta?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  m2Cesped?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
+  suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
+  obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+}
+
 export type PropiedadCreateWithoutObrasInput = {
   id?: string
   nombre: string
@@ -1708,6 +2058,8 @@ export type PropiedadCreateWithoutObrasInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutPropiedadesUpdatedInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadUncheckedCreateWithoutObrasInput = {
@@ -1736,6 +2088,8 @@ export type PropiedadUncheckedCreateWithoutObrasInput = {
   updatedById?: string | null
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutPropiedadInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedCreateNestedManyWithoutEntregaPropiedadInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutPropiedadInput
 }
 
 export type PropiedadCreateOrConnectWithoutObrasInput = {
@@ -1780,6 +2134,8 @@ export type PropiedadUpdateWithoutObrasInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutPropiedadesUpdatedNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateWithoutObrasInput = {
@@ -1808,6 +2164,8 @@ export type PropiedadUncheckedUpdateWithoutObrasInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadCreateManyCreatedByInput = {
@@ -1886,6 +2244,8 @@ export type PropiedadUpdateWithoutCreatedByInput = {
   visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateWithoutCreatedByInput = {
@@ -1914,6 +2274,8 @@ export type PropiedadUncheckedUpdateWithoutCreatedByInput = {
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1967,6 +2329,8 @@ export type PropiedadUpdateWithoutUpdatedByInput = {
   visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateWithoutUpdatedByInput = {
@@ -1995,6 +2359,8 @@ export type PropiedadUncheckedUpdateWithoutUpdatedByInput = {
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -2073,6 +2439,8 @@ export type PropiedadUpdateWithoutClienteInput = {
   visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateWithoutClienteInput = {
@@ -2101,6 +2469,8 @@ export type PropiedadUncheckedUpdateWithoutClienteInput = {
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateManyWithoutClienteInput = {
@@ -2179,6 +2549,8 @@ export type PropiedadUpdateWithoutSectorInput = {
   visitas?: Prisma.VisitaUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateWithoutSectorInput = {
@@ -2207,6 +2579,8 @@ export type PropiedadUncheckedUpdateWithoutSectorInput = {
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutPropiedadNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutPropiedadNestedInput
+  ordenesDeEntrega?: Prisma.OrdenUncheckedUpdateManyWithoutEntregaPropiedadNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutPropiedadNestedInput
 }
 
 export type PropiedadUncheckedUpdateManyWithoutSectorInput = {
@@ -2243,12 +2617,16 @@ export type PropiedadCountOutputType = {
   visitas: number
   suscripciones: number
   obras: number
+  ordenesDeEntrega: number
+  solicitudes: number
 }
 
 export type PropiedadCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visitas?: boolean | PropiedadCountOutputTypeCountVisitasArgs
   suscripciones?: boolean | PropiedadCountOutputTypeCountSuscripcionesArgs
   obras?: boolean | PropiedadCountOutputTypeCountObrasArgs
+  ordenesDeEntrega?: boolean | PropiedadCountOutputTypeCountOrdenesDeEntregaArgs
+  solicitudes?: boolean | PropiedadCountOutputTypeCountSolicitudesArgs
 }
 
 /**
@@ -2280,6 +2658,20 @@ export type PropiedadCountOutputTypeCountSuscripcionesArgs<ExtArgs extends runti
  */
 export type PropiedadCountOutputTypeCountObrasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ObraWhereInput
+}
+
+/**
+ * PropiedadCountOutputType without action
+ */
+export type PropiedadCountOutputTypeCountOrdenesDeEntregaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenWhereInput
+}
+
+/**
+ * PropiedadCountOutputType without action
+ */
+export type PropiedadCountOutputTypeCountSolicitudesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SolicitudClienteWhereInput
 }
 
 
@@ -2314,6 +2706,8 @@ export type PropiedadSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   visitas?: boolean | Prisma.Propiedad$visitasArgs<ExtArgs>
   suscripciones?: boolean | Prisma.Propiedad$suscripcionesArgs<ExtArgs>
   obras?: boolean | Prisma.Propiedad$obrasArgs<ExtArgs>
+  ordenesDeEntrega?: boolean | Prisma.Propiedad$ordenesDeEntregaArgs<ExtArgs>
+  solicitudes?: boolean | Prisma.Propiedad$solicitudesArgs<ExtArgs>
   _count?: boolean | Prisma.PropiedadCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["propiedad"]>
 
@@ -2412,6 +2806,8 @@ export type PropiedadInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   visitas?: boolean | Prisma.Propiedad$visitasArgs<ExtArgs>
   suscripciones?: boolean | Prisma.Propiedad$suscripcionesArgs<ExtArgs>
   obras?: boolean | Prisma.Propiedad$obrasArgs<ExtArgs>
+  ordenesDeEntrega?: boolean | Prisma.Propiedad$ordenesDeEntregaArgs<ExtArgs>
+  solicitudes?: boolean | Prisma.Propiedad$solicitudesArgs<ExtArgs>
   _count?: boolean | Prisma.PropiedadCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PropiedadIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2441,6 +2837,8 @@ export type $PropiedadPayload<ExtArgs extends runtime.Types.Extensions.InternalA
      */
     suscripciones: Prisma.$SuscripcionPayload<ExtArgs>[]
     obras: Prisma.$ObraPayload<ExtArgs>[]
+    ordenesDeEntrega: Prisma.$OrdenPayload<ExtArgs>[]
+    solicitudes: Prisma.$SolicitudClientePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2894,6 +3292,8 @@ export interface Prisma__PropiedadClient<T, Null = never, ExtArgs extends runtim
   visitas<T extends Prisma.Propiedad$visitasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Propiedad$visitasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   suscripciones<T extends Prisma.Propiedad$suscripcionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Propiedad$suscripcionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   obras<T extends Prisma.Propiedad$obrasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Propiedad$obrasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ObraPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ordenesDeEntrega<T extends Prisma.Propiedad$ordenesDeEntregaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Propiedad$ordenesDeEntregaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  solicitudes<T extends Prisma.Propiedad$solicitudesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Propiedad$solicitudesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SolicitudClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3473,6 +3873,54 @@ export type Propiedad$obrasArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.ObraScalarFieldEnum | Prisma.ObraScalarFieldEnum[]
+}
+
+/**
+ * Propiedad.ordenesDeEntrega
+ */
+export type Propiedad$ordenesDeEntregaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Orden
+   */
+  select?: Prisma.OrdenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Orden
+   */
+  omit?: Prisma.OrdenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrdenInclude<ExtArgs> | null
+  where?: Prisma.OrdenWhereInput
+  orderBy?: Prisma.OrdenOrderByWithRelationInput | Prisma.OrdenOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrdenScalarFieldEnum | Prisma.OrdenScalarFieldEnum[]
+}
+
+/**
+ * Propiedad.solicitudes
+ */
+export type Propiedad$solicitudesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SolicitudCliente
+   */
+  select?: Prisma.SolicitudClienteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SolicitudCliente
+   */
+  omit?: Prisma.SolicitudClienteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SolicitudClienteInclude<ExtArgs> | null
+  where?: Prisma.SolicitudClienteWhereInput
+  orderBy?: Prisma.SolicitudClienteOrderByWithRelationInput | Prisma.SolicitudClienteOrderByWithRelationInput[]
+  cursor?: Prisma.SolicitudClienteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SolicitudClienteScalarFieldEnum | Prisma.SolicitudClienteScalarFieldEnum[]
 }
 
 /**

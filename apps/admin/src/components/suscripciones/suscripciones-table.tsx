@@ -101,7 +101,7 @@ export function SuscripcionesTable({
     setPendientes(false);
   };
 
-  /** Cuántas suscripciones esperan que se les cree la orden del período. */
+  /** Cuántas suscripciones esperan que se les cree el pedido del período. */
   const conPendientes = suscripciones.filter(
     (s) => (s.periodosPendientes ?? 0) > 0
   ).length;
@@ -122,7 +122,7 @@ export function SuscripcionesTable({
       toast.success(
         body.creadas === 0
           ? "No había períodos por generar"
-          : `${body.creadas} ${body.creadas === 1 ? "orden creada" : "órdenes creadas"}`
+          : `${body.creadas} ${body.creadas === 1 ? "pedido creado" : "pedidos creados"}`
       );
       for (const o of body.omitidas ?? []) {
         toast.warning(`Suscripción omitida: ${o.motivo}`);
@@ -260,9 +260,9 @@ export function SuscripcionesTable({
                   className="mt-0.5"
                 />
                 <span className="text-sm">
-                  Con períodos sin orden
+                  Con períodos sin pedido
                   <span className="block text-xs text-muted-foreground">
-                    {conPendientes} esperan que se les cree la orden
+                    {conPendientes} esperan que se les cree el pedido
                   </span>
                 </span>
               </label>
@@ -285,8 +285,8 @@ export function SuscripcionesTable({
           <Button
             variant="outline"
             size="sm"
-            aria-label="Generar órdenes"
-            title="Generar órdenes"
+            aria-label="Generar pedidos"
+            title="Generar pedidos"
             className="h-9 w-9 flex-none p-0 md:w-auto md:px-2.5"
             onClick={generarRenovaciones}
             disabled={generando}
@@ -296,7 +296,7 @@ export function SuscripcionesTable({
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            <span className="hidden md:inline">Generar órdenes</span>
+            <span className="hidden md:inline">Generar pedidos</span>
           </Button>
         )}
         {verPrecios && mensualizado > 0 && (

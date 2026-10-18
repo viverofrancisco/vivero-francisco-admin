@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { olvidarIndiceEnMemoria } from "./cache-de-visitas";
 import { useColaDeEnvio } from "./cola-de-envio";
 import { useColaDeVisitas } from "./cola-de-visitas";
+import { CLAVE_DEL_CARRITO, traerCarritoDelInvitado, useCarrito } from "./carrito";
 
 /**
  * Los datos que la app guarda en el teléfono son **de una cuenta**.
@@ -22,7 +23,9 @@ import { useColaDeVisitas } from "./cola-de-visitas";
  */
 const CLAVE_DUENO = "sesion:dueno";
 const PREFIJOS_DE_COPIAS = ["visitas:cache:", "chats:cache:"];
-const COLAS = ["chats:cola-de-envio", "visitas:cola-de-trabajo"];
+// El carrito va con las colas: es de quien lo armó, y la primera vez (sin
+// dueño anotado) puede ser de quien entra.
+const COLAS = ["chats:cola-de-envio", "visitas:cola-de-trabajo", CLAVE_DEL_CARRITO];
 
 export async function prepararDatosPara(userId: string): Promise<void> {
   let dueno: string | null = null;
@@ -31,7 +34,10 @@ export async function prepararDatosPara(userId: string): Promise<void> {
   } catch {
     dueno = null;
   }
-  if (dueno === userId) return;
+  if (dueno === userId) {
+    await traerCarritoDelInvitado();
+    return;
+  }
 
   try {
     const claves = await AsyncStorage.getAllKeys();
@@ -47,7 +53,11 @@ export async function prepararDatosPara(userId: string): Promise<void> {
   if (dueno !== null) {
     useColaDeEnvio.setState({ items: [], hidratada: false });
     useColaDeVisitas.setState({ items: [], hidratada: false });
+    useCarrito.setState({ dueno: "cuenta", lineas: [], hidratado: false });
   }
+  // Lo que eligió como invitado antes de entrar no se pierde: se suma al de
+  // esta cuenta, ya limpio de lo de la anterior.
+  await traerCarritoDelInvitado();
 }
 
 /** Cuántas cosas esperan señal en este teléfono, para avisar antes de salir. */

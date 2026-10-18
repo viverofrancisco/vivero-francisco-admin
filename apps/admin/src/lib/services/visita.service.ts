@@ -25,7 +25,12 @@ import {
   pushPedirCalificacion,
   pushVisitaNoRealizada,
 } from "@/lib/push/triggers";
-import { visitaCerrada } from "@vivero/shared";
+import {
+  visitaCerrada,
+  type ClienteNuevoDeVisita,
+  type PropiedadNuevaDeVisita,
+} from "@vivero/shared";
+import { ensureCorreoLibre, normalizarCorreo } from "./correo-unico";
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
 import { TAREAS_DE_VISITA_INCLUDE, nombrePersonal } from "@/lib/visita-tareas";
 import { hoyISOEcuador } from "@/lib/fechas";
@@ -1566,9 +1571,18 @@ export async function cancelVisita(
 // ──────────────────────────────────────────────
 
 export interface CreateVisitasBatchPayload {
-  clienteId: string;
-  /** Dónde. Obligatorio: una visita pasa en un lugar. */
-  propiedadId: string;
+  /** Un cliente que ya está, **o** `clienteNuevo`. */
+  clienteId?: string | null;
+  /**
+   * Un cliente escrito en el mismo alta, como en Shopify: nace con la visita,
+   * en la misma transacción, con su propiedad (`propiedadNueva`, o la
+   * *Principal* vacía si no se escribió dirección).
+   */
+  clienteNuevo?: ClienteNuevoDeVisita | null;
+  /** Dónde: una de sus propiedades, **o** `propiedadNueva`. Una visita pasa en un lugar. */
+  propiedadId?: string | null;
+  /** Una propiedad escrita en el mismo alta; nace con la visita. */
+  propiedadNueva?: PropiedadNuevaDeVisita | null;
   fechas: Date[];
   /**
    * De qué plan es la visita, si es de alguno. `null` = trabajo aparte.
@@ -1585,6 +1599,11 @@ export interface CreateVisitasBatchPayload {
   tareasObligatoriasIds?: string[];
   /** De qué visita no realizada es la repetición. Solo la pone `markVisitaNoRealizada`. */
   reprogramadaDeId?: string | null;
+  /**
+   * La solicitud del cliente de donde sale, cuando se agenda desde ella.
+   * Tiene que ser de este mismo cliente, y agendar la deja atendida.
+   */
+  solicitudId?: string | null;
 }
 
 /** Las tareas exigidas tienen que existir y estar vivas. */
@@ -1667,38 +1686,138 @@ export async function createVisitasBatch(
     throw new ValidationError("Selecciona al menos una fecha.");
   }
 
-  const cliente = await prisma.cliente.findFirst({
-    where: { id: payload.clienteId, deletedAt: null },
-    select: { id: true, inactivoDesde: true },
-  });
-  if (!cliente) throw new NotFoundError("Cliente no encontrado");
-  // El selector ya lo muestra atenuado; esto es para que la regla no dependa
-  // de la pantalla.
-  if (cliente.inactivoDesde) {
-    throw new ValidationError(
-      "Este cliente está marcado como inactivo. Reactívalo desde su ficha para agendarle visitas."
-    );
+  // **Un cliente que ya está, o uno nuevo escrito acá mismo.** El nuevo no
+  // tiene propiedades ni planes, así que de él solo se revisa el correo
+  // (`ensureCorreoLibre`: un correo es de una sola persona).
+  const nuevo = payload.clienteNuevo ?? null;
+  if (nuevo && payload.clienteId) {
+    throw new ValidationError("Elige un cliente o escribe uno nuevo, no los dos.");
+  }
+  let cliente: { id: string } | null = null;
+  const emailNuevo = nuevo ? normalizarCorreo(nuevo.email) : null;
+  if (nuevo) {
+    if (!nuevo.nombre?.trim()) throw new ValidationError("Escribe el nombre del cliente.");
+    if (payload.propiedadId) {
+      throw new ValidationError("Un cliente nuevo todavía no tiene propiedades.");
+    }
+    if (payload.suscripcionId) {
+      throw new ValidationError("Un cliente nuevo todavía no tiene planes.");
+    }
+    await ensureCorreoLibre(emailNuevo, "cliente");
+  } else {
+    if (!payload.clienteId) throw new ValidationError("Elige un cliente.");
+    const existente = await prisma.cliente.findFirst({
+      where: { id: payload.clienteId, deletedAt: null },
+      select: { id: true, inactivoDesde: true },
+    });
+    if (!existente) throw new NotFoundError("Cliente no encontrado");
+    // El selector ya lo muestra atenuado; esto es para que la regla no
+    // dependa de la pantalla.
+    if (existente.inactivoDesde) {
+      throw new ValidationError(
+        "Este cliente está marcado como inactivo. Reactívalo desde su ficha para agendarle visitas."
+      );
+    }
+    cliente = existente;
   }
 
-  const propiedadId = await validarPropiedadDelCliente(
-    payload.propiedadId,
-    cliente.id,
-  );
+  // Dónde: una de sus propiedades, o una nueva que nace con la visita.
+  const propiedadNueva = payload.propiedadNueva ?? null;
+  if (propiedadNueva && payload.propiedadId) {
+    throw new ValidationError("Elige una propiedad o escribe una nueva, no las dos.");
+  }
+  const propiedadExistente =
+    cliente && !propiedadNueva
+      ? await validarPropiedadDelCliente(payload.propiedadId, cliente.id)
+      : null;
+  if (propiedadNueva && payload.suscripcionId) {
+    throw new ValidationError("Un plan es de una propiedad que ya está: elige esa.");
+  }
 
-  const suscripcionId = await validarPlanDelCliente(
-    payload.suscripcionId,
-    cliente.id,
-    propiedadId,
-  );
+  const suscripcionId =
+    cliente && propiedadExistente
+      ? await validarPlanDelCliente(payload.suscripcionId, cliente.id, propiedadExistente)
+      : null;
   const tareaIds = await validarTareas(payload.tareasObligatoriasIds ?? []);
   const personalIds = [...new Set(payload.personalIds ?? [])];
 
+  // Una solicitud de otro cliente (o de un invitado, que no tiene) no puede
+  // quedar como el origen de esta visita: diría que la pidió quien no la pidió.
+  const solicitud = payload.solicitudId
+    ? await prisma.solicitudCliente.findUnique({
+        where: { id: payload.solicitudId },
+        select: { id: true, clienteId: true, propiedadId: true, atendidaEl: true },
+      })
+    : null;
+  if (payload.solicitudId && !solicitud) {
+    throw new NotFoundError("Solicitud no encontrada");
+  }
+  // La de un invitado no tiene cliente: es justo la que se agenda con uno
+  // nuevo, y queda de él. Con un cliente que ya está, tiene que ser la suya.
+  if (solicitud && solicitud.clienteId && solicitud.clienteId !== cliente?.id) {
+    throw new ValidationError("La solicitud es de otro cliente.");
+  }
+
   const visitas = await prisma.$transaction(async (tx) => {
+    // Lo nuevo nace primero, adentro: si la visita no se puede crear, no
+    // queda un cliente ni una propiedad sueltos.
+    let clienteId = cliente?.id ?? null;
+    let propiedadId = propiedadExistente;
+    const datosDePropiedad = propiedadNueva
+      ? {
+          direccion: propiedadNueva.direccion?.trim() || null,
+          numeroCasa: propiedadNueva.numeroCasa?.trim() || null,
+          ciudad: propiedadNueva.ciudad?.trim() || null,
+          referencia: propiedadNueva.referencia?.trim() || null,
+          lat: propiedadNueva.lat ?? null,
+          lng: propiedadNueva.lng ?? null,
+          createdById: viewer.id,
+          updatedById: viewer.id,
+        }
+      : null;
+    if (nuevo) {
+      const creado = await tx.cliente.create({
+        data: {
+          nombre: nuevo.nombre.trim(),
+          apellido: nuevo.apellido?.trim() || null,
+          telefono: nuevo.telefono?.trim() || null,
+          email: emailNuevo,
+          createdById: viewer.id,
+          updatedById: viewer.id,
+          // Nace con su propiedad, como en `createCliente`.
+          propiedades: {
+            create: {
+              nombre: propiedadNueva?.nombre?.trim() || "Principal",
+              ...(datosDePropiedad ?? { createdById: viewer.id, updatedById: viewer.id }),
+            },
+          },
+        },
+        select: { id: true, propiedades: { select: { id: true } } },
+      });
+      clienteId = creado.id;
+      propiedadId = creado.propiedades[0].id;
+    } else if (datosDePropiedad && clienteId) {
+      const p = await tx.propiedad.create({
+        data: {
+          clienteId,
+          nombre:
+            propiedadNueva?.nombre?.trim() ||
+            (datosDePropiedad.direccion ?? "Otra dirección").slice(0, 60),
+          ...datosDePropiedad,
+        },
+        select: { id: true },
+      });
+      propiedadId = p.id;
+    }
+    if (!clienteId || !propiedadId) {
+      throw new ValidationError("Elige en qué propiedad es la visita.");
+    }
+
     // **Una visita por cliente y por día.** Dos visitas el mismo día al mismo
     // cliente son dos viajes, dos chats y dos informes para un solo trabajo:
     // agregarle algo a un día ya agendado es editar esa visita, no abrir otra.
     // Una cancelada no ocupa el día.
-    const existentes = await visitasDelDia(tx, cliente.id, payload.fechas);
+    const existentes = await visitasDelDia(tx, clienteId, payload.fechas);
     if (existentes.length > 0) {
       const detalle = nombrarVisitas(existentes);
       throw new ConflictError(
@@ -1713,13 +1832,14 @@ export async function createVisitasBatch(
     // lote de 20 pasaba los 5 s de tope contra Neon.
     const creadas = await tx.visita.createManyAndReturn({
       data: payload.fechas.map((fecha) => ({
-        clienteId: cliente.id,
+        clienteId,
         propiedadId,
         fechaProgramada: fecha,
         grupoId: payload.grupoId || null,
         suscripcionId,
         notas: payload.notas || null,
         reprogramadaDeId: payload.reprogramadaDeId || null,
+        solicitudId: solicitud?.id ?? null,
         createdById: viewer.id,
         updatedById: viewer.id,
         updatedByNombre: viewer.nombre,
@@ -1743,6 +1863,26 @@ export async function createVisitasBatch(
             addedById: viewer.id,
           })),
         ),
+      });
+    }
+
+    // Agendarla es atenderla: la solicitud deja de esperar en la lista. La
+    // de un invitado queda además de su cliente nuevo, y una con otra
+    // dirección, en la propiedad que nació de ella.
+    if (solicitud) {
+      await tx.solicitudCliente.update({
+        where: { id: solicitud.id },
+        data: {
+          ...(!solicitud.atendidaEl
+            ? {
+                atendidaEl: new Date(),
+                atendidaPorId: viewer.id,
+                atendidaPorNombre: viewer.nombre,
+              }
+            : {}),
+          ...(!solicitud.clienteId ? { clienteId } : {}),
+          ...(!solicitud.propiedadId && (nuevo || propiedadNueva) ? { propiedadId } : {}),
+        },
       });
     }
 
@@ -2074,9 +2214,9 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
     throw new ConflictError(
       `Esta visita está en ${
         numeros.length === 1
-          ? `la orden #${numeros[0]}`
-          : `las órdenes ${numeros.map((n) => `#${n}`).join(", ")}`
-      }. Anulá la orden primero.`,
+          ? `el pedido #${numeros[0]}`
+          : `los pedidos ${numeros.map((n) => `#${n}`).join(", ")}`
+      }. Anula el pedido primero.`,
     );
   }
 

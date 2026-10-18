@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { mapaDelPedido, textoDeEntrega } from "@/lib/services/pedido-app.service";
 import { prisma } from "@/lib/prisma";
 import {
   TAREAS_DE_VISITA_INCLUDE,
@@ -90,6 +91,17 @@ export default async function OrdenRoute({
           createdAt: orden.createdAt.toISOString(),
           estado: orden.estado,
           notas: orden.notas,
+          pedidoApp:
+            orden.origen === "APP"
+              ? {
+                  entrega: textoDeEntrega(orden),
+                  mapaUrl: mapaDelPedido(orden),
+                  // Lo hizo un invitado: con quién hablar por este pedido.
+                  contacto: orden.contactoNombre
+                    ? [orden.contactoNombre, orden.contactoTelefono].filter(Boolean).join(" · ")
+                    : null,
+                }
+              : null,
           datoFacturacionId: orden.datoFacturacionId,
           subtotal: Number(orden.subtotal),
           iva: Number(orden.iva),

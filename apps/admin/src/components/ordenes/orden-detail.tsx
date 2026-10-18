@@ -107,6 +107,11 @@ interface OrdenData {
   createdAt: string;
   estado: string;
   notas: string | null;
+  /**
+   * Si la pidió el cliente desde el carrito de la app: cómo se entrega y el
+   * punto en el mapa. Null en las del portal.
+   */
+  pedidoApp: { entrega: string; mapaUrl: string | null; contacto?: string | null } | null;
   /** Con qué se va a facturar; null = el predeterminado del cliente. */
   datoFacturacionId: string | null;
   subtotal: number;
@@ -427,7 +432,7 @@ export function OrdenDetail({
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
-      toast.success("Orden actualizada");
+      toast.success("Pedido actualizado");
       setEditando(false);
       router.refresh();
     } catch (e) {
@@ -560,7 +565,7 @@ export function OrdenDetail({
         body: JSON.stringify({ liberarTrabajo: true }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
-      toast.success("Orden anulada");
+      toast.success("Pedido anulado");
       setAnulando(false);
       router.refresh();
     } catch (e) {
@@ -585,7 +590,7 @@ export function OrdenDetail({
     : null;
   const estadoEnLaTarjeta =
     orden.estado === "ANULADA"
-      ? "Orden anulada"
+      ? "Pedido anulado"
       : cobro
         ? cobroLabel[cobro]
         : estadoLabel[orden.estado] ?? orden.estado;
@@ -622,7 +627,7 @@ export function OrdenDetail({
               Cancelar
             </button>
             <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
-              Orden #{orden.numero}
+              Pedido #{orden.numero}
             </h1>
             <button
               type="submit"
@@ -641,7 +646,7 @@ export function OrdenDetail({
           <>
             <VolverRedondo href={backHref} />
             <h1 className="min-w-0 flex-1 text-[22px] font-extrabold tracking-[-0.4px]">
-              Orden #{orden.numero}
+              Pedido #{orden.numero}
             </h1>
             {hayMenuMovil && (
               <DropdownMenu>
@@ -717,7 +722,7 @@ export function OrdenDetail({
                       onClick={() => setAnulando(true)}
                       className="text-destructive"
                     >
-                      Anular orden
+                      Anular pedido
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -742,7 +747,7 @@ export function OrdenDetail({
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">Orden #{orden.numero}</h1>
+            <h1 className="text-2xl font-bold">Pedido #{orden.numero}</h1>
             {/* Confirmada quiere decir "tiene factura", que ya se sabe con
                 solo ver la card. Lo que cambia con el tiempo es el cobro. */}
             {facturaVigente && orden.estado === "CONFIRMADA" ? (
@@ -849,7 +854,7 @@ export function OrdenDetail({
                       className="text-destructive"
                     >
                       <XCircle className="mr-2 h-4 w-4" />
-                      Anular orden
+                      Anular pedido
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -1094,6 +1099,12 @@ export function OrdenDetail({
             </SeccionFichaMovil>
           ) : null}
 
+          {orden.pedidoApp && (
+            <SeccionFichaMovil titulo="Pedido de la app">
+              <EntregaDelPedido pedido={orden.pedidoApp} />
+            </SeccionFichaMovil>
+          )}
+
           {orden.notas && (
             <SeccionFichaMovil titulo="Notas">
               <p className="py-2 text-sm leading-[21px] whitespace-pre-wrap text-ink-2">
@@ -1225,7 +1236,7 @@ export function OrdenDetail({
               marcadas={visitasEdit}
               onCambiar={cambiarVisitas}
               deshabilitado={lineasEdit.some((l) => l.suscripcionId)}
-              motivoDeshabilitado="Esta orden cubre un período de suscripción. Las visitas van en otra orden."
+              motivoDeshabilitado="Este pedido cubre un período de suscripción. Las visitas van en otro pedido."
             />
           </div>
         )}
@@ -1311,6 +1322,17 @@ export function OrdenDetail({
         <div className="space-y-6">
           {/* Editable solo en borrador: cambiar de cliente en una orden
               confirmada sería cambiar a quién se le cobra. */}
+          {orden.pedidoApp ? (
+            <Card>
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-base">Pedido de la app</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EntregaDelPedido pedido={orden.pedidoApp} />
+              </CardContent>
+            </Card>
+          ) : null}
+
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Cliente</CardTitle>
@@ -1761,7 +1783,7 @@ export function OrdenDetail({
                 <p>
                   Se emite al SRI una nota de crédito por{" "}
                   <strong>{money(facturaVigente?.total ?? 0)}</strong>, el total
-                  de la factura. Queda acreditada y la orden vuelve a borrador.
+                  de la factura. Queda acreditada y el pedido vuelve a borrador.
                 </p>
                 <div className="space-y-1.5">
                   <Label htmlFor="motivo" className="text-xs">
@@ -1808,14 +1830,14 @@ export function OrdenDetail({
           >
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Anular la orden #{orden.numero}</DialogTitle>
+                <DialogTitle>Anular el pedido #{orden.numero}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 text-sm">
                 {/* Con factura viva no se llega aquí: el menú apaga *Anular*
                     y el servicio la rechaza. Un comprobante que el SRI ya
                     autorizó se corrige con una nota de crédito, no borrándolo
                     de nuestra base. */}
-                <p>La orden queda anulada y no se puede reabrir.</p>
+                <p>El pedido queda anulado y no se puede reabrir.</p>
 
                 {/* Lo que no puede irse en silencio: si estas líneas se van con
                     la orden, su trabajo queda reservado por una orden muerta y
@@ -1833,7 +1855,7 @@ export function OrdenDetail({
                       ))}
                     </ul>
                     <p className="mt-1.5">
-                      Vas a poder meterlo en una orden nueva.
+                      Vas a poder meterlo en un pedido nuevo.
                     </p>
                   </div>
                 )}
@@ -1858,7 +1880,7 @@ export function OrdenDetail({
                     {cargando === "anular" && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Anular orden
+                    Anular pedido
                   </Button>
                 </div>
               </div>
@@ -1942,5 +1964,40 @@ function ValorCopiable({
         {copiado ? "Copiado" : "Copiar"}
       </span>
     </button>
+  );
+}
+
+/**
+ * Cómo se entrega un pedido del carrito, con el punto en Google Maps cuando
+ * hay uno. Las notas que escribió el cliente van en Notas, como cualquier otra.
+ */
+function EntregaDelPedido({
+  pedido,
+}: {
+  pedido: { entrega: string; mapaUrl: string | null; contacto?: string | null };
+}) {
+  return (
+    <div className="space-y-1 py-2 text-sm">
+      <p className="text-ink-2">
+        {pedido.contacto ? "Lo pidió como invitado" : "El cliente lo pidió"} desde el carrito.{" "}
+        {pedido.entrega}.
+      </p>
+      {pedido.contacto ? (
+        <p>
+          <span className="text-muted-foreground">Contacto: </span>
+          {pedido.contacto}
+        </p>
+      ) : null}
+      {pedido.mapaUrl ? (
+        <a
+          href={pedido.mapaUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-block font-medium text-primary hover:underline"
+        >
+          Ver el punto en el mapa
+        </a>
+      ) : null}
+    </div>
   );
 }

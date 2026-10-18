@@ -15,11 +15,14 @@ import { Card, CardContent } from "@/components/ui/card";
  */
 export function TarjetaSeccion({
   titulo,
+  subtitulo,
   accion,
   children,
   className,
 }: {
   titulo: string;
+  /** Una línea chica bajo el título: qué es o cómo se lee lo de abajo. */
+  subtitulo?: React.ReactNode;
   /** Lo que va a la derecha del título: un enlace, una píldora, un botón. */
   accion?: React.ReactNode;
   children: React.ReactNode;
@@ -32,6 +35,7 @@ export function TarjetaSeccion({
           <span className="text-[15.5px] font-extrabold">{titulo}</span>
           {accion}
         </div>
+        {subtitulo ? <p className="mt-0.5 text-xs text-muted-foreground">{subtitulo}</p> : null}
         <div className="mt-[14px]">{children}</div>
       </CardContent>
     </Card>

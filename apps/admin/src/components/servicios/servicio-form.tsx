@@ -479,7 +479,7 @@ export function ServicioForm({
                     {/* Es una propuesta: al armar la orden se ofrece este y se
                         puede cambiar ahí, y lo cobrado queda en la línea. */}
                     <p className="text-xs text-muted-foreground">
-                      Se propone al armar una orden y se puede cambiar ahí.
+                      Se propone al armar un pedido y se puede cambiar ahí.
                     </p>
                   </div>
                   {/* El costo al lado del precio, como en la ficha, y debajo
@@ -574,7 +574,7 @@ export function ServicioForm({
                   {
                     value: "BORRADOR",
                     label: "Borrador",
-                    hint: "No aparece al armar una orden",
+                    hint: "No aparece al armar un pedido",
                   },
                 ]}
               />

@@ -20,6 +20,8 @@ import {
 } from "@/lib/periodos";
 import { hoyEnEcuador } from "@/lib/fechas";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
+import { sincronizarReserva } from "./reserva.service";
+import { pushEstadoDePedido } from "@/lib/push/triggers";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { FACTURA_VIGENTE } from "./factura-vigente";
@@ -61,7 +63,7 @@ const DEC = (n: Prisma.Decimal | number | null | undefined) =>
   new Prisma.Decimal(n ?? 0);
 
 /** Redondeo a centavos, que es la precisión con la que se factura. */
-function centavos(d: Prisma.Decimal): Prisma.Decimal {
+export function centavos(d: Prisma.Decimal): Prisma.Decimal {
   return d.toDecimalPlaces(2);
 }
 
@@ -325,7 +327,7 @@ export async function crearOrden(viewer: Viewer, payload: CrearOrdenPayload) {
       error.code === "P2002"
     ) {
       throw new ConflictError(
-        "Parte de ese trabajo ya está en otra orden. Vuelve a armarla."
+        "Parte de ese trabajo ya está en otro pedido. Vuelve a armarlo."
       );
     }
     throw error;
@@ -353,7 +355,7 @@ async function ensureDatoDelCliente(
 }
 
 /** Calcula las líneas persistibles y los totales de la orden. */
-function armarLineas(entrada: LineaOrdenInput[]) {
+export function armarLineas(entrada: LineaOrdenInput[]) {
   const lineas = entrada.map((l, idx) => ({
     posicion: idx,
     ...calcularLinea(
@@ -386,7 +388,7 @@ async function validarLineas(
   visitaIds: string[]
 ): Promise<void> {
   if (lineas.length === 0) {
-    throw new ValidationError("La orden necesita al menos un producto.");
+    throw new ValidationError("El pedido necesita al menos un producto.");
   }
   for (const l of lineas) {
     if (!l.descripcion.trim()) {
@@ -517,7 +519,7 @@ export async function actualizarOrden(
   const actual = await getOrden(viewer, id);
   if (actual.estado !== "BORRADOR") {
     throw new ConflictError(
-      `Esta orden está ${actual.estado.toLowerCase()}: solo se puede editar un borrador.`
+      `Este pedido está ${actual.estado === "ANULADA" ? "anulado" : "confirmado"}: solo se puede editar un borrador.`
     );
   }
 
@@ -530,7 +532,7 @@ export async function actualizarOrden(
       const conProcedencia = actual.lineas.filter((l) => l.suscripcionId);
       if (conProcedencia.length > 0) {
         throw new ValidationError(
-          "Esta orden tiene productos que vienen del trabajo del cliente anterior. Quitalos antes de cambiar de cliente."
+          "Este pedido tiene productos que vienen del trabajo del cliente anterior. Quítalos antes de cambiar de cliente."
         );
       }
     }
@@ -598,6 +600,17 @@ export async function actualizarOrden(
         for (const l of armadas.lineas) {
           await tx.ordenLinea.create({ data: { ...l, ordenId: id } });
         }
+        // Un pedido de la app tiene stock apartado: se ajusta a las líneas
+        // nuevas, devolviendo lo que se quitó y apartando lo que se sumó.
+        if (actual.stockReservado) {
+          await sincronizarReserva(
+            tx,
+            id,
+            payload.lineas,
+            { id: viewer.id, nombre: viewer.nombre ?? null },
+            { validar: true }
+          );
+        }
       }
 
       if (origen) {
@@ -641,7 +654,7 @@ export async function actualizarOrden(
       error.code === "P2002"
     ) {
       throw new ConflictError(
-        "Parte de ese trabajo ya está en otra orden. Revisa los productos."
+        "Parte de ese trabajo ya está en otro pedido. Revisa los productos."
       );
     }
     throw error;
@@ -669,7 +682,7 @@ function ensureNoMezclaOrigenes(
   const conPeriodo = lineas.some((l) => l.suscripcionId);
   if (conPeriodo && visitaIds.length > 0) {
     throw new ValidationError(
-      "Una orden no puede cubrir un período de suscripción y visitas a la vez. Armá una orden para el plan y otra para las visitas."
+      "Un pedido no puede cubrir un período de suscripción y visitas a la vez. Arma un pedido para el plan y otro para las visitas."
     );
   }
 }
@@ -697,7 +710,7 @@ async function origenDeLaOrden(
   if (planes.length > 0) {
     if (planes.length > 1) {
       throw new ValidationError(
-        "Una orden es de una sola suscripción. Armá una orden por plan."
+        "Un pedido es de una sola suscripción. Arma un pedido por plan."
       );
     }
     return { visitaIds: [], suscripcionId: planes[0] ?? null };
@@ -1256,6 +1269,8 @@ export async function getOrden(viewer: Viewer, id: string) {
   const orden = await prisma.orden.findUnique({
     where: { id },
     include: {
+      entregaPropiedad: { select: { nombre: true } },
+      retiroUbicacion: { select: { nombre: true, direccion: true, ciudad: true, lat: true, lng: true } },
       cliente: {
         select: {
           id: true, nombre: true, apellido: true, empresa: true,
@@ -1317,7 +1332,7 @@ export async function getOrden(viewer: Viewer, id: string) {
       },
     },
   });
-  if (!orden) throw new NotFoundError("Orden no encontrada");
+  if (!orden) throw new NotFoundError("Pedido no encontrado");
   return orden;
 }
 
@@ -1360,7 +1375,7 @@ export async function anularOrden(
   const orden = await getOrden(viewer, id);
   if (orden.estado === "CONFIRMADA") {
     throw new ConflictError(
-      "Esta orden ya tiene factura. Hay que anular la factura primero."
+      "Este pedido ya tiene factura. Hay que anular la factura primero."
     );
   }
 
@@ -1384,15 +1399,27 @@ export async function anularOrden(
         : null,
     ].filter(Boolean);
     throw new ConflictError(
-      `Esta orden cubre ${partes.join(" y ")}. Hay que desenlazarlas antes de anular, o el período queda sin poder facturarse.`
+      `Este pedido cubre ${partes.join(" y ")}. Hay que desenlazarlas antes de anular, o el período queda sin poder facturarse.`
     );
   }
 
-  return prisma.$transaction(async (tx) => {
+  const anulada = await prisma.$transaction(async (tx) => {
     await liberarProcedencia(tx, id);
+    // Lo que un pedido de la app tenía apartado vuelve al estante.
+    if (orden.stockReservado) {
+      await sincronizarReserva(
+        tx,
+        id,
+        [],
+        { id: viewer.id, nombre: viewer.nombre ?? null },
+        { validar: false }
+      );
+    }
     return tx.orden.update({
       where: { id },
-      data: { estado: "ANULADA", updatedById: viewer.id },
+      data: { estado: "ANULADA", stockReservado: false, updatedById: viewer.id },
     });
   });
+  void pushEstadoDePedido(id);
+  return anulada;
 }

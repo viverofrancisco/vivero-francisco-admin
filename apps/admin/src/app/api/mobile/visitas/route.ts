@@ -83,8 +83,10 @@ export async function POST(request: Request) {
     const visitas = await createVisitasBatch(
       viewerFromMobileUser(userOrResponse),
       {
-        clienteId: parsed.data.clienteId,
-        propiedadId: parsed.data.propiedadId,
+        clienteId: parsed.data.clienteId ?? null,
+        clienteNuevo: parsed.data.clienteNuevo ?? null,
+        propiedadId: parsed.data.propiedadId ?? null,
+        propiedadNueva: parsed.data.propiedadNueva ?? null,
         tareasObligatoriasIds: parsed.data.tareasObligatoriasIds,
         // El asistente de la app la manda y se perdía acá: la visita
         // agendada desde un plan quedaba sin plan.
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
         grupoId: parsed.data.grupoId ?? null,
         notas: parsed.data.notas ?? null,
         personalIds: parsed.data.personalIds ?? [],
+        solicitudId: parsed.data.solicitudId ?? null,
       }
     );
     return NextResponse.json(visitas, { status: 201 });

@@ -11,7 +11,8 @@ import { Keyboard, Platform, useWindowDimensions } from "react-native";
  *
  * En iOS escucha `keyboardWillChangeFrame`, que cubre abrir, cerrar, cambiar
  * de teclado y la barrita del teclado físico —`screenY` es dónde empieza el
- * teclado, y al cerrarse queda en el borde y da cero—. En Android,
+ * teclado, y al cerrarse queda en el borde y da cero—, más `keyboardWillHide`
+ * por si ese último no llega en cero. En Android,
  * `keyboardDidShow`/`Hide`: con la app de borde a borde (`edgeToEdgeEnabled`)
  * el sistema **ya no achica la ventana** con el teclado, así que hay que
  * correr las cosas a mano igual que en iOS. Si alguna versión sí la achica,
@@ -29,7 +30,15 @@ export function useAltoDelTeclado(): number {
       const sub = Keyboard.addListener("keyboardWillChangeFrame", (e) => {
         setTeclado(Math.max(0, Math.round(height - e.endCoordinates.screenY)));
       });
-      return () => sub.remove();
+      // Con una barra encima del teclado (`InputAccessoryView`, la de *Listo*
+      // de la cantidad) el último cambio de marco al cerrar no siempre llega
+      // en cero, y la hoja quedaba levantada con un hueco abajo. Cerrar es
+      // cerrar.
+      const cierra = Keyboard.addListener("keyboardWillHide", () => setTeclado(0));
+      return () => {
+        sub.remove();
+        cierra.remove();
+      };
     }
     const abre = Keyboard.addListener("keyboardDidShow", (e) => {
       setTeclado(Math.round(e.endCoordinates.height));

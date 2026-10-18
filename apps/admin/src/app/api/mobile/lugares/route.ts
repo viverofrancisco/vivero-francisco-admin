@@ -7,7 +7,8 @@ import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
  *
  * La clave se queda en el servidor por lo mismo que el mapa: se protege por
  * dominio y una app nativa no tiene dominio que mandar. Además cada consulta se
- * factura, así que la ruta pide sesión de oficina —no es un buscador abierto—.
+ * factura, así que la ruta pide sesión —de la oficina, o del cliente que
+ * escribe adónde llevarle un pedido—: no es un buscador abierto.
  *
  * **El `sessionToken` lo manda la app y hay que respetarlo.** Google agrupa
  * todas las teclas de una misma búsqueda bajo ese token y las cobra como una
@@ -21,7 +22,7 @@ const consulta = z.object({
 });
 
 export async function GET(request: Request) {
-  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF", "CLIENTE");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const clave = process.env.GOOGLE_MAPS_SERVER_KEY;

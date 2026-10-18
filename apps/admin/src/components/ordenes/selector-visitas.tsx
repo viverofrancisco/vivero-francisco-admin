@@ -201,8 +201,8 @@ export function SelectorVisitas({
             {/* Arriba de la lista: explica cómo funciona lo que se está por
                 hacer, y abajo llegaba después de haberlo hecho. */}
             <p className="text-xs text-muted-foreground">
-              Deja dicho por qué existe esta orden y permite ir de una a la
-              otra. No carga productos: lo que se le cobra al cliente se elige
+              Deja dicho por qué existe este pedido y permite ir de la visita al
+              pedido y al revés. No carga productos: lo que se le cobra al cliente se elige
               abajo.
             </p>
 

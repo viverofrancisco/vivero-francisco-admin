@@ -4,8 +4,29 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { SolicitudItem } from "@vivero/shared";
+import {
+  CalendarDays,
+  ExternalLink,
+  MapPin,
+  MessageSquareText,
+  Paperclip,
+  Phone,
+  Play,
+  Search,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
+import {
+  coincideSolicitud,
+  fechaSola,
+  nombresDeServicios,
+  serviciosEnUnaLinea,
+  type SolicitudItem,
+} from "@vivero/shared";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { CustomSelect } from "@/components/ui/custom-select";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +73,7 @@ function cuando(iso: string): string {
 }
 
 function queEs(s: SolicitudItem): string {
-  return s.producto ? `Cotización · ${s.producto.nombre}` : "Solicitud";
+  return serviciosEnUnaLinea(s) ?? "Solicitud";
 }
 
 /**
@@ -63,16 +84,23 @@ function queEs(s: SolicitudItem): string {
 export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[] }) {
   const router = useRouter();
   const [estado, setEstado] = useFiltroUrl<Estado>("estado", "pendientes");
+  const [q, setQ] = useFiltroUrl("q", "");
   const [page, setPage] = useFiltroUrl("pagina", 1);
-  const [abierta, setAbierta] = useState<SolicitudItem | null>(null);
+  // La abierta va en la URL (`?abrir=`): así la búsqueda global puede llevar
+  // directo a una, que no tiene página propia.
+  const [abiertaId, setAbiertaId] = useFiltroUrl("abrir", "");
+  const abierta = solicitudes.find((s) => s.id === abiertaId) ?? null;
+  const setAbierta = (s: SolicitudItem | null) => setAbiertaId(s?.id ?? "");
   const [guardando, setGuardando] = useState(false);
 
   const filtradas = useMemo(
     () =>
-      solicitudes.filter((s) =>
-        estado === "todas" ? true : estado === "pendientes" ? !s.atendidaEl : !!s.atendidaEl
+      solicitudes.filter(
+        (s) =>
+          (estado === "todas" ? true : estado === "pendientes" ? !s.atendidaEl : !!s.atendidaEl) &&
+          coincideSolicitud(s, q)
       ),
-    [solicitudes, estado]
+    [solicitudes, estado, q]
   );
   const totalPages = Math.max(1, Math.ceil(filtradas.length / FILAS_POR_PAGINA));
   const pagina = Math.min(page, totalPages);
@@ -82,7 +110,7 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
   );
   const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
     filtradas.length,
-    estado
+    `${estado}|${q}`
   );
 
   async function marcar(s: SolicitudItem, atendida: boolean) {
@@ -107,33 +135,48 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
     }
   }
 
-  const mensajeVacio =
-    estado === "pendientes" ? "No hay solicitudes pendientes." : "No hay solicitudes.";
+  const mensajeVacio = q.trim()
+    ? "Ninguna solicitud coincide con la búsqueda."
+    : estado === "pendientes"
+      ? "No hay solicitudes pendientes."
+      : "No hay solicitudes.";
 
   return (
     <>
       <PageHeader title="Solicitudes" />
 
-      <div className="flex flex-none flex-wrap items-center gap-2">
-        {ESTADOS.map((e) => (
-          <button
-            key={e.clave}
-            type="button"
-            onClick={() => {
-              setEstado(e.clave);
-              setPage(1);
-            }}
-            className={cn(
-              "h-9 rounded-full border px-4 text-sm font-medium transition-colors",
-              estado === e.clave
-                ? "border-primary bg-primary/10 text-primary"
-                : "bg-card text-muted-foreground hover:bg-muted"
-            )}
-          >
-            {e.etiqueta}
-          </button>
-        ))}
-      </div>
+      <BarraFiltros
+        activos={estado === "pendientes" ? 0 : 1}
+        onLimpiar={() => {
+          setEstado("pendientes");
+          setPage(1);
+        }}
+        busqueda={
+          <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por cliente o por lo que pide..."
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+            />
+          </div>
+        }
+      >
+        <CustomSelect
+          value={estado}
+          onChange={(v) => {
+            setEstado((v || "pendientes") as Estado);
+            setPage(1);
+          }}
+          options={ESTADOS.map((e) => ({ value: e.clave, label: e.etiqueta }))}
+          placeholder="Pendientes"
+          className="w-44"
+        />
+      </BarraFiltros>
 
       <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
@@ -145,7 +188,8 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
                 <TableRow>
                   <TableHead className="w-20">N.º</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Qué pide</TableHead>
+                  <TableHead>Servicios</TableHead>
+                  <TableHead>Detalles</TableHead>
                   <TableHead>Recibida</TableHead>
                   <TableHead>Estado</TableHead>
                 </TableRow>
@@ -166,8 +210,12 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
                           .join(" · ")}
                       </span>
                     </TableCell>
-                    <TableCell className="max-w-md">
-                      <span className="block text-sm font-medium text-primary">{queEs(s)}</span>
+                    <TableCell className="max-w-xs">
+                      <span className="line-clamp-2 text-sm font-medium text-primary">
+                        {serviciosEnUnaLinea(s) ?? "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="max-w-sm">
                       <span className="block truncate text-sm text-muted-foreground">
                         {s.mensaje}
                       </span>
@@ -230,73 +278,207 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
       </ListaMovil>
 
       <Dialog open={abierta !== null} onOpenChange={(o) => !o && setAbierta(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg" pantallaCompletaEnMovil>
           {abierta ? (
             <>
-              <DialogHeader>
-                <DialogTitle>
-                  Solicitud #{abierta.numero} · {abierta.contacto.nombre}
+              {/* La ficha de la app en el portal: quién y en qué estado arriba,
+                  y debajo un renglón por cosa —servicios, detalles, dónde,
+                  contacto, visitas— con su rótulo, en vez de un párrafo
+                  corrido donde cada dato había que buscarlo. */}
+              <DialogHeader className="gap-1 border-b px-5 pb-4 pt-5">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-semibold tabular-nums">Solicitud #{abierta.numero}</span>
+                  <span>·</span>
+                  <span>{cuando(abierta.createdAt)}</span>
+                  <EstadoSolicitud atendida={!!abierta.atendidaEl} />
+                </div>
+                <DialogTitle className="text-lg">
+                  {abierta.contacto.nombre}
+                  {abierta.cliente ? null : (
+                    <span className="ml-2 align-middle text-xs font-normal text-muted-foreground">
+                      Sin cuenta
+                    </span>
+                  )}
                 </DialogTitle>
               </DialogHeader>
-              <div className="space-y-3 text-sm">
-                <p className="text-muted-foreground">
-                  {queEs(abierta)} · {cuando(abierta.createdAt)}
-                  {abierta.cliente ? "" : " · Sin cuenta: la mandó desde el modo invitado"}
-                </p>
-                <p className="whitespace-pre-wrap text-base">{abierta.mensaje}</p>
-                {abierta.direccion ? (
-                  <p>
-                    <span className="text-muted-foreground">Dirección: </span>
-                    {abierta.direccion}
-                  </p>
+
+              <div className="min-h-0 flex-1 divide-y overflow-y-auto">
+                {nombresDeServicios(abierta).length ? (
+                  <Renglon icono={Wrench} rotulo="Servicios">
+                    <div className="flex flex-wrap gap-1.5">
+                      {nombresDeServicios(abierta).map((nombre) => (
+                        <span
+                          key={nombre}
+                          className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                        >
+                          {nombre}
+                        </span>
+                      ))}
+                    </div>
+                  </Renglon>
                 ) : null}
-                <div className="flex flex-col gap-1">
-                  {abierta.contacto.telefono ? (
-                    <a
-                      href={`tel:${abierta.contacto.telefono}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {abierta.contacto.telefono}
-                    </a>
-                  ) : null}
-                  {abierta.contacto.email ? (
-                    <a
-                      href={`mailto:${abierta.contacto.email}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {abierta.contacto.email}
-                    </a>
-                  ) : null}
-                </div>
-                {abierta.atendidaEl ? (
-                  <p className="text-muted-foreground">
-                    Atendida {cuando(abierta.atendidaEl)}
-                    {abierta.atendidaPorNombre ? ` por ${abierta.atendidaPorNombre}` : ""}
-                  </p>
+
+                {abierta.contacto.telefono || abierta.contacto.email ? (
+                  <Renglon icono={Phone} rotulo="Contacto">
+                    {abierta.contacto.telefono ? (
+                      <a
+                        href={`tel:${abierta.contacto.telefono}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {abierta.contacto.telefono}
+                      </a>
+                    ) : null}
+                    {abierta.contacto.email ? (
+                      <a
+                        href={`mailto:${abierta.contacto.email}`}
+                        className="block text-muted-foreground hover:underline"
+                      >
+                        {abierta.contacto.email}
+                      </a>
+                    ) : null}
+                  </Renglon>
                 ) : null}
+
+                <Renglon icono={MessageSquareText} rotulo="Detalles">
+                  <p className="whitespace-pre-wrap">{abierta.mensaje}</p>
+                </Renglon>
+
+                {abierta.adjuntos.length ? (
+                  <Renglon icono={Paperclip} rotulo="Fotos o videos">
+                    <div className="flex flex-wrap gap-2">
+                      {abierta.adjuntos.map((a) => (
+                        <a
+                          key={a.id}
+                          href={a.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="relative block h-20 w-20 overflow-hidden rounded-lg bg-muted ring-1 ring-foreground/10 hover:opacity-90"
+                          title={a.nombre ?? undefined}
+                        >
+                          {a.tipo === "video" ? (
+                            <span className="flex h-full w-full items-center justify-center bg-neutral-800">
+                              <Play className="h-6 w-6 fill-white text-white" />
+                            </span>
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={a.url} alt={a.nombre ?? "Foto"} className="h-full w-full object-cover" />
+                          )}
+                        </a>
+                      ))}
+                    </div>
+                  </Renglon>
+                ) : null}
+
+                {abierta.direccion || abierta.propiedad ? (
+                  <Renglon icono={MapPin} rotulo="Dónde">
+                    {abierta.propiedad ? (
+                      <p className="font-medium">{abierta.propiedad.nombre}</p>
+                    ) : null}
+                    {abierta.direccion ? (
+                      <p className="text-muted-foreground">{abierta.direccion}</p>
+                    ) : null}
+                    {abierta.lat !== null && abierta.lng !== null ? (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${abierta.lat},${abierta.lng}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-1 inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                      >
+                        Ver en el mapa
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    ) : null}
+                  </Renglon>
+                ) : null}
+
+                {abierta.visitas.length > 0 ? (
+                  <Renglon
+                    icono={CalendarDays}
+                    rotulo={abierta.visitas.length === 1 ? "Visita" : "Visitas"}
+                  >
+                    {abierta.visitas.map((v) => (
+                      <Link
+                        key={v.id}
+                        href={`/dashboard/visitas/${v.id}`}
+                        className="block font-medium text-primary hover:underline"
+                      >
+                        #{v.numero} · {fechaSola(v.fechaProgramada)}
+                      </Link>
+                    ))}
+                  </Renglon>
+                ) : null}
+
+                {abierta.cliente ? null : (
+                  <p className="px-5 py-3 text-sm text-muted-foreground">
+                    La mandó sin cuenta: al crear la visita se le crea su ficha con
+                    estos datos.
+                  </p>
+                )}
               </div>
-              <DialogFooter className="gap-2">
-                {abierta.cliente ? (
+
+              <DialogFooter className="mx-0 mb-0 items-stretch gap-2 px-5 py-3 sm:items-center sm:justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {abierta.atendidaEl
+                    ? `Atendida ${cuando(abierta.atendidaEl)}${
+                        abierta.atendidaPorNombre ? ` por ${abierta.atendidaPorNombre}` : ""
+                      }`
+                    : null}
+                </p>
+                <div className="flex flex-wrap justify-end gap-2">
+                  {abierta.cliente ? (
+                    <Button
+                      variant="outline"
+                      nativeButton={false}
+                      render={<Link href={`/dashboard/clientes/${abierta.cliente.id}`} />}
+                    >
+                      Ver cliente
+                    </Button>
+                  ) : null}
                   <Button
                     variant="outline"
                     nativeButton={false}
-                    render={<Link href={`/dashboard/clientes/${abierta.cliente.id}`} />}
+                    render={
+                      <Link href={`/dashboard/visitas/nueva?solicitud=${abierta.id}`} />
+                    }
                   >
-                    Ver cliente
+                    Crear visita
                   </Button>
-                ) : null}
-                <Button
-                  disabled={guardando}
-                  onClick={() => marcar(abierta, !abierta.atendidaEl)}
-                >
-                  {abierta.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
-                </Button>
+                  <Button
+                    disabled={guardando}
+                    onClick={() => marcar(abierta, !abierta.atendidaEl)}
+                  >
+                    {abierta.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
+                  </Button>
+                </div>
               </DialogFooter>
             </>
           ) : null}
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/** Un dato de la solicitud: su ícono y su rótulo a la izquierda, el valor debajo. */
+function Renglon({
+  icono: Icono,
+  rotulo,
+  children,
+}: {
+  icono: LucideIcon;
+  rotulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex gap-3 px-5 py-3 text-sm">
+      <Icono className="mt-0.5 h-4 w-4 flex-none text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {rotulo}
+        </p>
+        {children}
+      </div>
+    </div>
   );
 }
 

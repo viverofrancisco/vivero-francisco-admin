@@ -25,8 +25,8 @@ export const loginSchema = z.object({
 });
 export type LoginBody = z.infer<typeof loginSchema>;
 
-// Clientes inician sesión con su teléfono o su correo (lo que tengan en su
-// ficha) + una contraseña que ellos mismos establecen vía un enlace de invitación.
+// Clientes inician sesión con el correo de su ficha (el teléfono, cuando haya
+// cómo verificarlo) + una contraseña que ellos mismos establecen vía un enlace de invitación.
 export const clienteLoginSchema = z.object({
   identifier: z.string().min(5).max(60),
   password: z.string().min(1),

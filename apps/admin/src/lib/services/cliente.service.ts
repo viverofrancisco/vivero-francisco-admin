@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { filtroClientePorTexto } from "./busqueda";
 import { ForbiddenError, NotFoundError, ValidationError, ServiceError } from "./errors";
+import { ensureCorreoLibre, normalizarCorreo } from "./correo-unico";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { formatForWhatsApp } from "@/lib/whatsapp/phone";
@@ -265,13 +266,15 @@ export async function createCliente(
   if (!payload.nombre?.trim() && !payload.empresa?.trim()) {
     throw new ValidationError("Se requiere un nombre o una empresa.");
   }
+  const email = normalizarCorreo(payload.email);
+  await ensureCorreoLibre(email, "cliente");
 
   return prisma.cliente.create({
     data: {
       nombre: payload.nombre ?? "",
       apellido: payload.apellido ?? null,
       empresa: payload.empresa ?? null,
-      email: payload.email ?? null,
+      email,
       telefono: payload.telefono ?? null,
       notas: payload.notas ?? null,
       createdById: viewer.id,
@@ -363,6 +366,12 @@ export async function importClientes(
   // la DB —red de seguridad ante una reimportación—, no dentro del archivo.
   const seenEmails = new Set<string>();
   const dbPhones = new Set<string>();
+  // Las cuentas del equipo también: un correo es de una sola persona.
+  const delEquipo = await prisma.user.findMany({
+    where: { role: { not: "CLIENTE" }, email: { not: null } },
+    select: { email: true },
+  });
+  for (const u of delEquipo) if (u.email) seenEmails.add(u.email.toLowerCase());
   for (const c of existentes) {
     if (c.email) seenEmails.add(c.email.toLowerCase());
     if (c.telefono) dbPhones.add(formatForWhatsApp(c.telefono));
@@ -399,7 +408,7 @@ export async function importClientes(
         fila,
         estado: "omitido",
         nombre: nombreCliente(data),
-        mensaje: "Ya existe un cliente con ese correo o teléfono.",
+        mensaje: "Ese correo ya es de alguien, o ya hay un cliente con ese teléfono.",
       });
       continue;
     }
@@ -448,22 +457,44 @@ export async function updateCliente(
   // Make sure the viewer can already see this cliente (sector check).
   await getClienteForStaff(clienteId, viewer);
 
-  try {
-    return await prisma.cliente.update({
+  const actual = await prisma.cliente.findUnique({
+    where: { id: clienteId },
+    select: { userId: true, email: true },
+  });
+  if (!actual) throw new NotFoundError("Cliente no encontrado");
+
+  // El correo es de una sola persona, y el de una ficha con cuenta es además
+  // con lo que entra a la app: va también a su `User`, en la misma
+  // transacción, y no se puede borrar (se quedaría sin forma de entrar).
+  const cambiaCorreo = payload.email !== undefined;
+  const email = cambiaCorreo ? normalizarCorreo(payload.email) : actual.email;
+  if (cambiaCorreo && email !== actual.email) {
+    if (!email && actual.userId) {
+      throw new ValidationError(
+        "Este cliente tiene cuenta en la app y entra con su correo: cámbialo por otro, no lo borres."
+      );
+    }
+    await ensureCorreoLibre(email, "cliente", { clienteId, userId: actual.userId });
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const cliente = await tx.cliente.update({
       where: { id: clienteId },
       data: {
         ...(payload.nombre !== undefined ? { nombre: payload.nombre ?? "" } : {}),
         ...(payload.apellido !== undefined ? { apellido: payload.apellido } : {}),
         ...(payload.empresa !== undefined ? { empresa: payload.empresa } : {}),
-        ...(payload.email !== undefined ? { email: payload.email } : {}),
+        ...(cambiaCorreo ? { email } : {}),
         ...(payload.telefono !== undefined ? { telefono: payload.telefono } : {}),
         ...(payload.notas !== undefined ? { notas: payload.notas } : {}),
         updatedById: viewer.id,
       },
     });
-  } catch {
-    throw new NotFoundError("Cliente no encontrado");
-  }
+    if (cambiaCorreo && email && actual.userId && email !== actual.email) {
+      await tx.user.update({ where: { id: actual.userId }, data: { email } });
+    }
+    return cliente;
+  });
 }
 
 /**

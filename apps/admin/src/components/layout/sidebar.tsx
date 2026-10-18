@@ -11,12 +11,10 @@ import {
   LayoutDashboard,
   Users,
   Tag,
-  UserCheck,
-  UsersRound,
   CalendarDays,
   FileText,
   Settings,
-  MapPin,
+  Inbox,
   ChevronDown,
   Receipt,
   Construction,
@@ -48,14 +46,10 @@ const mainItems: NavItem[] = [
   // Sin el jardinero: su panel era una lista de sus visitas con otro nombre,
   // y `/dashboard` ahora lo manda directo a Visitas.
   { label: "Panel", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "STAFF"] },
-  {
-    label: "Clientes",
-    href: "/dashboard/clientes",
-    icon: Users,
-    roles: ["ADMIN", "STAFF"],
-    // Lo que los clientes piden desde la app: visitas y cotizaciones.
-    children: [{ label: "Solicitudes", href: "/dashboard/clientes/solicitudes" }],
-  },
+  { label: "Clientes", href: "/dashboard/clientes", icon: Users, roles: ["ADMIN", "STAFF"] },
+  // Lo que los clientes piden desde la app: visitas y cotizaciones. Ítem
+  // propio y no colgado de Clientes: es una bandeja que se revisa a diario.
+  { label: "Solicitudes", href: "/dashboard/solicitudes", icon: Inbox, roles: ["ADMIN", "STAFF"] },
   {
     label: "Productos",
     href: "/dashboard/productos",
@@ -95,7 +89,7 @@ const mainItems: NavItem[] = [
     roles: ["ADMIN", "STAFF"],
   },
   {
-    label: "Órdenes",
+    label: "Pedidos",
     href: "/dashboard/ordenes",
     icon: Receipt,
     roles: ["ADMIN", "STAFF"],
@@ -117,19 +111,23 @@ const mainItems: NavItem[] = [
       { label: "Centros de costo", href: "/dashboard/contabilidad/centros-costo" },
     ],
   },
-  { label: "Personal", href: "/dashboard/personal", icon: UserCheck, roles: ["ADMIN", "STAFF"] },
-  { label: "Grupos", href: "/dashboard/grupos", icon: UsersRound, roles: ["ADMIN", "STAFF"] },
-  { label: "Sectores", href: "/dashboard/sectores", icon: MapPin, roles: ["ADMIN"] },
+  // Personal, Grupos y Sectores se arman una vez y se tocan poco: viven
+  // dentro de Configuración, con sus URLs de siempre. Staff ve Configuración
+  // solo por Personal y Grupos; el resto es del administrador.
   {
     label: "Configuración",
     href: "/dashboard/configuracion",
     icon: Settings,
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "STAFF"],
     children: [
-      { label: "Empresa", href: "/dashboard/configuracion/empresa" },
-      { label: "Usuarios", href: "/dashboard/configuracion/usuarios" },
-      { label: "Notificaciones", href: "/dashboard/configuracion/notificaciones" },
-      { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion" },
+      { label: "Personal", href: "/dashboard/personal" },
+      { label: "Grupos", href: "/dashboard/grupos" },
+      { label: "Sectores", href: "/dashboard/sectores", roles: ["ADMIN"] },
+      { label: "Empresa", href: "/dashboard/configuracion/empresa", roles: ["ADMIN"] },
+      { label: "Usuarios", href: "/dashboard/configuracion/usuarios", roles: ["ADMIN"] },
+      { label: "Notificaciones", href: "/dashboard/configuracion/notificaciones", roles: ["ADMIN"] },
+      { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion", roles: ["ADMIN"] },
+      { label: "Ubicaciones", href: "/dashboard/configuracion/ubicaciones", roles: ["ADMIN"] },
     ],
   },
   // Cuenta no está acá: en el escritorio es el bloque con el nombre al pie
@@ -191,9 +189,12 @@ export function Sidebar({ branding, role }: BrandingProps) {
   const abierta = seccionAbierta(pathname, mainItems);
 
   const renderItem = (item: NavItem) => {
-    const isActive =
-      pathname === item.href ||
-      (item.href !== "/dashboard" && pathname.startsWith(item.href));
+    // Con hijos, manda la sección abierta: así Configuración queda marcada en
+    // Personal (que vive en otra URL) y no en Firmantes (que cuelga de Informes).
+    const isActive = item.children?.length
+      ? abierta === item.href
+      : pathname === item.href ||
+        (item.href !== "/dashboard" && pathname.startsWith(item.href));
     const isExpanded = abierta === item.href;
     // Solo cuentan los hijos que este rol puede ver: "Tareas" es de oficina, y
     // al jardinero le quedaba una flechita en Visitas sin nada debajo.

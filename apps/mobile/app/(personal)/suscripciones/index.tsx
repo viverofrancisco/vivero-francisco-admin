@@ -94,11 +94,11 @@ export default function SuscripcionesListScreen() {
       setError(
         r.creadas === 0
           ? "No había períodos por generar."
-          : `${r.creadas} ${r.creadas === 1 ? "orden creada" : "órdenes creadas"} en borrador.`
+          : `${r.creadas} ${r.creadas === 1 ? "pedido creado" : "pedidos creados"} en borrador.`
       );
       await cargar();
     } catch (e) {
-      setError(mensajeDeError(e, "No pudimos generar las órdenes"));
+      setError(mensajeDeError(e, "No pudimos generar los pedidos"));
     } finally {
       setGenerando(false);
     }
@@ -143,12 +143,12 @@ export default function SuscripcionesListScreen() {
       ? [
           {
             id: "pendientes",
-            titulo: "Períodos sin orden",
+            titulo: "Períodos sin pedido",
             valor: pendientes,
             onElegir: setPendientes,
             opciones: [
               { clave: "", etiqueta: "Todas" },
-              { clave: "1", etiqueta: `Con períodos sin orden (${conPendientes})` },
+              { clave: "1", etiqueta: `Con períodos sin pedido (${conPendientes})` },
             ],
           },
         ]
@@ -168,7 +168,7 @@ export default function SuscripcionesListScreen() {
           onPress: () => router.push("/(personal)/suscripciones/nueva"),
         },
         ...(conPendientes > 0 && !generando
-          ? [{ etiqueta: "Generar órdenes", onPress: generarOrdenes }]
+          ? [{ etiqueta: "Generar pedidos", onPress: generarOrdenes }]
           : []),
       ]}
     >
@@ -240,7 +240,7 @@ export default function SuscripcionesListScreen() {
                   {item.periodosPendientes > 0 ? (
                     <Text variant="bodySmall" style={styles.pendiente}>
                       {item.periodosPendientes} período
-                      {item.periodosPendientes === 1 ? "" : "s"} sin orden
+                      {item.periodosPendientes === 1 ? "" : "s"} sin pedido
                     </Text>
                   ) : null}
                 </View>

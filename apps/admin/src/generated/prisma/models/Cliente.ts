@@ -41,6 +41,7 @@ export type ClienteMinAggregateOutputType = {
   updatedAt: Date | null
   deletedAt: Date | null
   inactivoDesde: Date | null
+  fusionadoEnId: string | null
   createdById: string | null
   updatedById: string | null
   userId: string | null
@@ -63,6 +64,7 @@ export type ClienteMaxAggregateOutputType = {
   updatedAt: Date | null
   deletedAt: Date | null
   inactivoDesde: Date | null
+  fusionadoEnId: string | null
   createdById: string | null
   updatedById: string | null
   userId: string | null
@@ -85,6 +87,7 @@ export type ClienteCountAggregateOutputType = {
   updatedAt: number
   deletedAt: number
   inactivoDesde: number
+  fusionadoEnId: number
   createdById: number
   updatedById: number
   userId: number
@@ -109,6 +112,7 @@ export type ClienteMinAggregateInputType = {
   updatedAt?: true
   deletedAt?: true
   inactivoDesde?: true
+  fusionadoEnId?: true
   createdById?: true
   updatedById?: true
   userId?: true
@@ -131,6 +135,7 @@ export type ClienteMaxAggregateInputType = {
   updatedAt?: true
   deletedAt?: true
   inactivoDesde?: true
+  fusionadoEnId?: true
   createdById?: true
   updatedById?: true
   userId?: true
@@ -153,6 +158,7 @@ export type ClienteCountAggregateInputType = {
   updatedAt?: true
   deletedAt?: true
   inactivoDesde?: true
+  fusionadoEnId?: true
   createdById?: true
   updatedById?: true
   userId?: true
@@ -248,6 +254,7 @@ export type ClienteGroupByOutputType = {
   updatedAt: Date
   deletedAt: Date | null
   inactivoDesde: Date | null
+  fusionadoEnId: string | null
   createdById: string | null
   updatedById: string | null
   userId: string | null
@@ -291,12 +298,15 @@ export type ClienteWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
   inactivoDesde?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
+  fusionadoEnId?: Prisma.StringNullableFilter<"Cliente"> | string | null
   createdById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   userId?: Prisma.StringNullableFilter<"Cliente"> | string | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  fusionadoEn?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
+  fusionados?: Prisma.ClienteListRelationFilter
   propiedades?: Prisma.PropiedadListRelationFilter
   suscripciones?: Prisma.SuscripcionListRelationFilter
   datosFacturacion?: Prisma.DatoFacturacionListRelationFilter
@@ -326,12 +336,15 @@ export type ClienteOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   inactivoDesde?: Prisma.SortOrderInput | Prisma.SortOrder
+  fusionadoEnId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdBy?: Prisma.UserOrderByWithRelationInput
   updatedBy?: Prisma.UserOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
+  fusionadoEn?: Prisma.ClienteOrderByWithRelationInput
+  fusionados?: Prisma.ClienteOrderByRelationAggregateInput
   propiedades?: Prisma.PropiedadOrderByRelationAggregateInput
   suscripciones?: Prisma.SuscripcionOrderByRelationAggregateInput
   datosFacturacion?: Prisma.DatoFacturacionOrderByRelationAggregateInput
@@ -365,11 +378,14 @@ export type ClienteWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
   inactivoDesde?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
+  fusionadoEnId?: Prisma.StringNullableFilter<"Cliente"> | string | null
   createdById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  fusionadoEn?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
+  fusionados?: Prisma.ClienteListRelationFilter
   propiedades?: Prisma.PropiedadListRelationFilter
   suscripciones?: Prisma.SuscripcionListRelationFilter
   datosFacturacion?: Prisma.DatoFacturacionListRelationFilter
@@ -399,6 +415,7 @@ export type ClienteOrderByWithAggregationInput = {
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   inactivoDesde?: Prisma.SortOrderInput | Prisma.SortOrder
+  fusionadoEnId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -427,6 +444,7 @@ export type ClienteScalarWhereWithAggregatesInput = {
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Cliente"> | Date | string | null
   inactivoDesde?: Prisma.DateTimeNullableWithAggregatesFilter<"Cliente"> | Date | string | null
+  fusionadoEnId?: Prisma.StringNullableWithAggregatesFilter<"Cliente"> | string | null
   createdById?: Prisma.StringNullableWithAggregatesFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableWithAggregatesFilter<"Cliente"> | string | null
   userId?: Prisma.StringNullableWithAggregatesFilter<"Cliente"> | string | null
@@ -452,6 +470,8 @@ export type ClienteCreateInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -481,9 +501,11 @@ export type ClienteUncheckedCreateInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -516,6 +538,8 @@ export type ClienteUpdateInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -545,9 +569,11 @@ export type ClienteUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -577,6 +603,7 @@ export type ClienteCreateManyInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -618,6 +645,7 @@ export type ClienteUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -655,6 +683,7 @@ export type ClienteCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   inactivoDesde?: Prisma.SortOrder
+  fusionadoEnId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -677,6 +706,7 @@ export type ClienteMaxOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   inactivoDesde?: Prisma.SortOrder
+  fusionadoEnId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -699,6 +729,7 @@ export type ClienteMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   inactivoDesde?: Prisma.SortOrder
+  fusionadoEnId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -825,12 +856,70 @@ export type ClienteUncheckedUpdateOneWithoutUserNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ClienteUpdateToOneWithWhereWithoutUserInput, Prisma.ClienteUpdateWithoutUserInput>, Prisma.ClienteUncheckedUpdateWithoutUserInput>
 }
 
+export type ClienteCreateNestedOneWithoutFusionadosInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadosInput, Prisma.ClienteUncheckedCreateWithoutFusionadosInput>
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutFusionadosInput
+  connect?: Prisma.ClienteWhereUniqueInput
+}
+
+export type ClienteCreateNestedManyWithoutFusionadoEnInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadoEnInput, Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput> | Prisma.ClienteCreateWithoutFusionadoEnInput[] | Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput[]
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput | Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput[]
+  createMany?: Prisma.ClienteCreateManyFusionadoEnInputEnvelope
+  connect?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+}
+
+export type ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadoEnInput, Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput> | Prisma.ClienteCreateWithoutFusionadoEnInput[] | Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput[]
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput | Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput[]
+  createMany?: Prisma.ClienteCreateManyFusionadoEnInputEnvelope
+  connect?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+}
+
 export type NullableEnumTipoPersonaFieldUpdateOperationsInput = {
   set?: $Enums.TipoPersona | null
 }
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type ClienteUpdateOneWithoutFusionadosNestedInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadosInput, Prisma.ClienteUncheckedCreateWithoutFusionadosInput>
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutFusionadosInput
+  upsert?: Prisma.ClienteUpsertWithoutFusionadosInput
+  disconnect?: Prisma.ClienteWhereInput | boolean
+  delete?: Prisma.ClienteWhereInput | boolean
+  connect?: Prisma.ClienteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClienteUpdateToOneWithWhereWithoutFusionadosInput, Prisma.ClienteUpdateWithoutFusionadosInput>, Prisma.ClienteUncheckedUpdateWithoutFusionadosInput>
+}
+
+export type ClienteUpdateManyWithoutFusionadoEnNestedInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadoEnInput, Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput> | Prisma.ClienteCreateWithoutFusionadoEnInput[] | Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput[]
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput | Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput[]
+  upsert?: Prisma.ClienteUpsertWithWhereUniqueWithoutFusionadoEnInput | Prisma.ClienteUpsertWithWhereUniqueWithoutFusionadoEnInput[]
+  createMany?: Prisma.ClienteCreateManyFusionadoEnInputEnvelope
+  set?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  disconnect?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  delete?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  connect?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  update?: Prisma.ClienteUpdateWithWhereUniqueWithoutFusionadoEnInput | Prisma.ClienteUpdateWithWhereUniqueWithoutFusionadoEnInput[]
+  updateMany?: Prisma.ClienteUpdateManyWithWhereWithoutFusionadoEnInput | Prisma.ClienteUpdateManyWithWhereWithoutFusionadoEnInput[]
+  deleteMany?: Prisma.ClienteScalarWhereInput | Prisma.ClienteScalarWhereInput[]
+}
+
+export type ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadoEnInput, Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput> | Prisma.ClienteCreateWithoutFusionadoEnInput[] | Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput[]
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput | Prisma.ClienteCreateOrConnectWithoutFusionadoEnInput[]
+  upsert?: Prisma.ClienteUpsertWithWhereUniqueWithoutFusionadoEnInput | Prisma.ClienteUpsertWithWhereUniqueWithoutFusionadoEnInput[]
+  createMany?: Prisma.ClienteCreateManyFusionadoEnInputEnvelope
+  set?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  disconnect?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  delete?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  connect?: Prisma.ClienteWhereUniqueInput | Prisma.ClienteWhereUniqueInput[]
+  update?: Prisma.ClienteUpdateWithWhereUniqueWithoutFusionadoEnInput | Prisma.ClienteUpdateWithWhereUniqueWithoutFusionadoEnInput[]
+  updateMany?: Prisma.ClienteUpdateManyWithWhereWithoutFusionadoEnInput | Prisma.ClienteUpdateManyWithWhereWithoutFusionadoEnInput[]
+  deleteMany?: Prisma.ClienteScalarWhereInput | Prisma.ClienteScalarWhereInput[]
 }
 
 export type ClienteCreateNestedOneWithoutPropiedadesInput = {
@@ -1000,6 +1089,8 @@ export type ClienteCreateWithoutCreatedByInput = {
   inactivoDesde?: Date | string | null
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -1029,8 +1120,10 @@ export type ClienteUncheckedCreateWithoutCreatedByInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -1072,6 +1165,8 @@ export type ClienteCreateWithoutUpdatedByInput = {
   inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -1101,8 +1196,10 @@ export type ClienteUncheckedCreateWithoutUpdatedByInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -1144,6 +1241,8 @@ export type ClienteCreateWithoutUserInput = {
   inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -1173,8 +1272,10 @@ export type ClienteUncheckedCreateWithoutUserInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -1228,6 +1329,7 @@ export type ClienteScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
   inactivoDesde?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
+  fusionadoEnId?: Prisma.StringNullableFilter<"Cliente"> | string | null
   createdById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   userId?: Prisma.StringNullableFilter<"Cliente"> | string | null
@@ -1279,6 +1381,8 @@ export type ClienteUpdateWithoutUserInput = {
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -1308,8 +1412,10 @@ export type ClienteUncheckedUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -1320,6 +1426,246 @@ export type ClienteUncheckedUpdateWithoutUserInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
   solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
   obras?: Prisma.ObraUncheckedUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteCreateWithoutFusionadosInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  empresa?: string | null
+  email?: string | null
+  telefono?: string | null
+  notas?: string | null
+  cedula?: string | null
+  ruc?: string | null
+  tipoPersona?: $Enums.TipoPersona | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
+  createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
+  user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
+  suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
+  datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
+  visitas?: Prisma.VisitaCreateNestedManyWithoutClienteInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
+  obras?: Prisma.ObraCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteUncheckedCreateWithoutFusionadosInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  empresa?: string | null
+  email?: string | null
+  telefono?: string | null
+  notas?: string | null
+  cedula?: string | null
+  ruc?: string | null
+  tipoPersona?: $Enums.TipoPersona | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
+  createdById?: string | null
+  updatedById?: string | null
+  userId?: string | null
+  propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
+  suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
+  datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
+  visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutClienteInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
+  obras?: Prisma.ObraUncheckedCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteCreateOrConnectWithoutFusionadosInput = {
+  where: Prisma.ClienteWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadosInput, Prisma.ClienteUncheckedCreateWithoutFusionadosInput>
+}
+
+export type ClienteCreateWithoutFusionadoEnInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  empresa?: string | null
+  email?: string | null
+  telefono?: string | null
+  notas?: string | null
+  cedula?: string | null
+  ruc?: string | null
+  tipoPersona?: $Enums.TipoPersona | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
+  createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
+  user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
+  propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
+  suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
+  datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
+  visitas?: Prisma.VisitaCreateNestedManyWithoutClienteInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
+  obras?: Prisma.ObraCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteUncheckedCreateWithoutFusionadoEnInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  empresa?: string | null
+  email?: string | null
+  telefono?: string | null
+  notas?: string | null
+  cedula?: string | null
+  ruc?: string | null
+  tipoPersona?: $Enums.TipoPersona | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
+  propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
+  suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
+  datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
+  visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutClienteInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
+  obras?: Prisma.ObraUncheckedCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteCreateOrConnectWithoutFusionadoEnInput = {
+  where: Prisma.ClienteWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadoEnInput, Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput>
+}
+
+export type ClienteCreateManyFusionadoEnInputEnvelope = {
+  data: Prisma.ClienteCreateManyFusionadoEnInput | Prisma.ClienteCreateManyFusionadoEnInput[]
+  skipDuplicates?: boolean
+}
+
+export type ClienteUpsertWithoutFusionadosInput = {
+  update: Prisma.XOR<Prisma.ClienteUpdateWithoutFusionadosInput, Prisma.ClienteUncheckedUpdateWithoutFusionadosInput>
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadosInput, Prisma.ClienteUncheckedCreateWithoutFusionadosInput>
+  where?: Prisma.ClienteWhereInput
+}
+
+export type ClienteUpdateToOneWithWhereWithoutFusionadosInput = {
+  where?: Prisma.ClienteWhereInput
+  data: Prisma.XOR<Prisma.ClienteUpdateWithoutFusionadosInput, Prisma.ClienteUncheckedUpdateWithoutFusionadosInput>
+}
+
+export type ClienteUpdateWithoutFusionadosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cedula?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoPersona?: Prisma.NullableEnumTipoPersonaFieldUpdateOperationsInput | $Enums.TipoPersona | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
+  user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
+  suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
+  datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
+  visitas?: Prisma.VisitaUpdateManyWithoutClienteNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
+  obras?: Prisma.ObraUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteUncheckedUpdateWithoutFusionadosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cedula?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoPersona?: Prisma.NullableEnumTipoPersonaFieldUpdateOperationsInput | $Enums.TipoPersona | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
+  suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
+  datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
+  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutClienteNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
+  obras?: Prisma.ObraUncheckedUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteUpsertWithWhereUniqueWithoutFusionadoEnInput = {
+  where: Prisma.ClienteWhereUniqueInput
+  update: Prisma.XOR<Prisma.ClienteUpdateWithoutFusionadoEnInput, Prisma.ClienteUncheckedUpdateWithoutFusionadoEnInput>
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutFusionadoEnInput, Prisma.ClienteUncheckedCreateWithoutFusionadoEnInput>
+}
+
+export type ClienteUpdateWithWhereUniqueWithoutFusionadoEnInput = {
+  where: Prisma.ClienteWhereUniqueInput
+  data: Prisma.XOR<Prisma.ClienteUpdateWithoutFusionadoEnInput, Prisma.ClienteUncheckedUpdateWithoutFusionadoEnInput>
+}
+
+export type ClienteUpdateManyWithWhereWithoutFusionadoEnInput = {
+  where: Prisma.ClienteScalarWhereInput
+  data: Prisma.XOR<Prisma.ClienteUpdateManyMutationInput, Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnInput>
 }
 
 export type ClienteCreateWithoutPropiedadesInput = {
@@ -1342,6 +1688,8 @@ export type ClienteCreateWithoutPropiedadesInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutClienteInput
@@ -1370,9 +1718,11 @@ export type ClienteUncheckedCreateWithoutPropiedadesInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutClienteInput
@@ -1420,6 +1770,8 @@ export type ClienteUpdateWithoutPropiedadesInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutClienteNestedInput
@@ -1448,9 +1800,11 @@ export type ClienteUncheckedUpdateWithoutPropiedadesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutClienteNestedInput
@@ -1482,6 +1836,8 @@ export type ClienteCreateWithoutSuscripcionesInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutClienteInput
@@ -1510,9 +1866,11 @@ export type ClienteUncheckedCreateWithoutSuscripcionesInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutClienteInput
@@ -1560,6 +1918,8 @@ export type ClienteUpdateWithoutSuscripcionesInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutClienteNestedInput
@@ -1588,9 +1948,11 @@ export type ClienteUncheckedUpdateWithoutSuscripcionesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutClienteNestedInput
@@ -1622,6 +1984,8 @@ export type ClienteCreateWithoutVisitasInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -1650,9 +2014,11 @@ export type ClienteUncheckedCreateWithoutVisitasInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -1700,6 +2066,8 @@ export type ClienteUpdateWithoutVisitasInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -1728,9 +2096,11 @@ export type ClienteUncheckedUpdateWithoutVisitasInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -1762,6 +2132,8 @@ export type ClienteCreateWithoutSetPasswordTokensInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -1790,9 +2162,11 @@ export type ClienteUncheckedCreateWithoutSetPasswordTokensInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -1840,6 +2214,8 @@ export type ClienteUpdateWithoutSetPasswordTokensInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -1868,9 +2244,11 @@ export type ClienteUncheckedUpdateWithoutSetPasswordTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -1902,6 +2280,8 @@ export type ClienteCreateWithoutInformesInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -1930,9 +2310,11 @@ export type ClienteUncheckedCreateWithoutInformesInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -1980,6 +2362,8 @@ export type ClienteUpdateWithoutInformesInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -2008,9 +2392,11 @@ export type ClienteUncheckedUpdateWithoutInformesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -2042,6 +2428,8 @@ export type ClienteCreateWithoutInformeBorradoresInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -2070,9 +2458,11 @@ export type ClienteUncheckedCreateWithoutInformeBorradoresInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -2120,6 +2510,8 @@ export type ClienteUpdateWithoutInformeBorradoresInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -2148,9 +2540,11 @@ export type ClienteUncheckedUpdateWithoutInformeBorradoresInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -2182,6 +2576,8 @@ export type ClienteCreateWithoutOrdenesInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -2210,9 +2606,11 @@ export type ClienteUncheckedCreateWithoutOrdenesInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -2260,6 +2658,8 @@ export type ClienteUpdateWithoutOrdenesInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -2288,9 +2688,11 @@ export type ClienteUncheckedUpdateWithoutOrdenesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -2322,6 +2724,8 @@ export type ClienteCreateWithoutDatosFacturacionInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutClienteInput
@@ -2350,9 +2754,11 @@ export type ClienteUncheckedCreateWithoutDatosFacturacionInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutClienteInput
@@ -2400,6 +2806,8 @@ export type ClienteUpdateWithoutDatosFacturacionInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutClienteNestedInput
@@ -2428,9 +2836,11 @@ export type ClienteUncheckedUpdateWithoutDatosFacturacionInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutClienteNestedInput
@@ -2462,6 +2872,8 @@ export type ClienteCreateWithoutSolicitudesInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -2490,9 +2902,11 @@ export type ClienteUncheckedCreateWithoutSolicitudesInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -2540,6 +2954,8 @@ export type ClienteUpdateWithoutSolicitudesInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -2568,9 +2984,11 @@ export type ClienteUncheckedUpdateWithoutSolicitudesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -2602,6 +3020,8 @@ export type ClienteCreateWithoutObrasInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  fusionadoEn?: Prisma.ClienteCreateNestedOneWithoutFusionadosInput
+  fusionados?: Prisma.ClienteCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
@@ -2630,9 +3050,11 @@ export type ClienteUncheckedCreateWithoutObrasInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
+  fusionados?: Prisma.ClienteUncheckedCreateNestedManyWithoutFusionadoEnInput
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
   suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
@@ -2680,6 +3102,8 @@ export type ClienteUpdateWithoutObrasInput = {
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -2708,9 +3132,11 @@ export type ClienteUncheckedUpdateWithoutObrasInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -2739,6 +3165,7 @@ export type ClienteCreateManyCreatedByInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   updatedById?: string | null
   userId?: string | null
 }
@@ -2760,6 +3187,7 @@ export type ClienteCreateManyUpdatedByInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   inactivoDesde?: Date | string | null
+  fusionadoEnId?: string | null
   createdById?: string | null
   userId?: string | null
 }
@@ -2783,6 +3211,8 @@ export type ClienteUpdateWithoutCreatedByInput = {
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -2812,8 +3242,10 @@ export type ClienteUncheckedUpdateWithoutCreatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -2843,6 +3275,7 @@ export type ClienteUncheckedUpdateManyWithoutCreatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -2866,6 +3299,8 @@ export type ClienteUpdateWithoutUpdatedByInput = {
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionadoEn?: Prisma.ClienteUpdateOneWithoutFusionadosNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
@@ -2895,8 +3330,10 @@ export type ClienteUncheckedUpdateWithoutUpdatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
   datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
@@ -2926,7 +3363,118 @@ export type ClienteUncheckedUpdateManyWithoutUpdatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fusionadoEnId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type ClienteCreateManyFusionadoEnInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  empresa?: string | null
+  email?: string | null
+  telefono?: string | null
+  notas?: string | null
+  cedula?: string | null
+  ruc?: string | null
+  tipoPersona?: $Enums.TipoPersona | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  userId?: string | null
+}
+
+export type ClienteUpdateWithoutFusionadoEnInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cedula?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoPersona?: Prisma.NullableEnumTipoPersonaFieldUpdateOperationsInput | $Enums.TipoPersona | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
+  user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  fusionados?: Prisma.ClienteUpdateManyWithoutFusionadoEnNestedInput
+  propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
+  suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
+  datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
+  visitas?: Prisma.VisitaUpdateManyWithoutClienteNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
+  obras?: Prisma.ObraUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteUncheckedUpdateWithoutFusionadoEnInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cedula?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoPersona?: Prisma.NullableEnumTipoPersonaFieldUpdateOperationsInput | $Enums.TipoPersona | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fusionados?: Prisma.ClienteUncheckedUpdateManyWithoutFusionadoEnNestedInput
+  propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
+  suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
+  datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
+  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutClienteNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
+  obras?: Prisma.ObraUncheckedUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteUncheckedUpdateManyWithoutFusionadoEnInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cedula?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoPersona?: Prisma.NullableEnumTipoPersonaFieldUpdateOperationsInput | $Enums.TipoPersona | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -2936,6 +3484,7 @@ export type ClienteUncheckedUpdateManyWithoutUpdatedByInput = {
  */
 
 export type ClienteCountOutputType = {
+  fusionados: number
   propiedades: number
   suscripciones: number
   datosFacturacion: number
@@ -2949,6 +3498,7 @@ export type ClienteCountOutputType = {
 }
 
 export type ClienteCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  fusionados?: boolean | ClienteCountOutputTypeCountFusionadosArgs
   propiedades?: boolean | ClienteCountOutputTypeCountPropiedadesArgs
   suscripciones?: boolean | ClienteCountOutputTypeCountSuscripcionesArgs
   datosFacturacion?: boolean | ClienteCountOutputTypeCountDatosFacturacionArgs
@@ -2969,6 +3519,13 @@ export type ClienteCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
    * Select specific fields to fetch from the ClienteCountOutputType
    */
   select?: Prisma.ClienteCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ClienteCountOutputType without action
+ */
+export type ClienteCountOutputTypeCountFusionadosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClienteWhereInput
 }
 
 /**
@@ -3059,12 +3616,15 @@ export type ClienteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   deletedAt?: boolean
   inactivoDesde?: boolean
+  fusionadoEnId?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
   createdBy?: boolean | Prisma.Cliente$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Cliente$updatedByArgs<ExtArgs>
   user?: boolean | Prisma.Cliente$userArgs<ExtArgs>
+  fusionadoEn?: boolean | Prisma.Cliente$fusionadoEnArgs<ExtArgs>
+  fusionados?: boolean | Prisma.Cliente$fusionadosArgs<ExtArgs>
   propiedades?: boolean | Prisma.Cliente$propiedadesArgs<ExtArgs>
   suscripciones?: boolean | Prisma.Cliente$suscripcionesArgs<ExtArgs>
   datosFacturacion?: boolean | Prisma.Cliente$datosFacturacionArgs<ExtArgs>
@@ -3095,12 +3655,14 @@ export type ClienteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updatedAt?: boolean
   deletedAt?: boolean
   inactivoDesde?: boolean
+  fusionadoEnId?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
   createdBy?: boolean | Prisma.Cliente$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Cliente$updatedByArgs<ExtArgs>
   user?: boolean | Prisma.Cliente$userArgs<ExtArgs>
+  fusionadoEn?: boolean | Prisma.Cliente$fusionadoEnArgs<ExtArgs>
 }, ExtArgs["result"]["cliente"]>
 
 export type ClienteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -3120,12 +3682,14 @@ export type ClienteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updatedAt?: boolean
   deletedAt?: boolean
   inactivoDesde?: boolean
+  fusionadoEnId?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
   createdBy?: boolean | Prisma.Cliente$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Cliente$updatedByArgs<ExtArgs>
   user?: boolean | Prisma.Cliente$userArgs<ExtArgs>
+  fusionadoEn?: boolean | Prisma.Cliente$fusionadoEnArgs<ExtArgs>
 }, ExtArgs["result"]["cliente"]>
 
 export type ClienteSelectScalar = {
@@ -3145,16 +3709,19 @@ export type ClienteSelectScalar = {
   updatedAt?: boolean
   deletedAt?: boolean
   inactivoDesde?: boolean
+  fusionadoEnId?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
 }
 
-export type ClienteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "apellido" | "empresa" | "email" | "telefono" | "notas" | "cedula" | "ruc" | "tipoPersona" | "recibirRecordatorios" | "recibirConfirmaciones" | "createdAt" | "updatedAt" | "deletedAt" | "inactivoDesde" | "createdById" | "updatedById" | "userId", ExtArgs["result"]["cliente"]>
+export type ClienteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "apellido" | "empresa" | "email" | "telefono" | "notas" | "cedula" | "ruc" | "tipoPersona" | "recibirRecordatorios" | "recibirConfirmaciones" | "createdAt" | "updatedAt" | "deletedAt" | "inactivoDesde" | "fusionadoEnId" | "createdById" | "updatedById" | "userId", ExtArgs["result"]["cliente"]>
 export type ClienteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   createdBy?: boolean | Prisma.Cliente$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Cliente$updatedByArgs<ExtArgs>
   user?: boolean | Prisma.Cliente$userArgs<ExtArgs>
+  fusionadoEn?: boolean | Prisma.Cliente$fusionadoEnArgs<ExtArgs>
+  fusionados?: boolean | Prisma.Cliente$fusionadosArgs<ExtArgs>
   propiedades?: boolean | Prisma.Cliente$propiedadesArgs<ExtArgs>
   suscripciones?: boolean | Prisma.Cliente$suscripcionesArgs<ExtArgs>
   datosFacturacion?: boolean | Prisma.Cliente$datosFacturacionArgs<ExtArgs>
@@ -3171,11 +3738,13 @@ export type ClienteIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   createdBy?: boolean | Prisma.Cliente$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Cliente$updatedByArgs<ExtArgs>
   user?: boolean | Prisma.Cliente$userArgs<ExtArgs>
+  fusionadoEn?: boolean | Prisma.Cliente$fusionadoEnArgs<ExtArgs>
 }
 export type ClienteIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   createdBy?: boolean | Prisma.Cliente$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Cliente$updatedByArgs<ExtArgs>
   user?: boolean | Prisma.Cliente$userArgs<ExtArgs>
+  fusionadoEn?: boolean | Prisma.Cliente$fusionadoEnArgs<ExtArgs>
 }
 
 export type $ClientePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3184,6 +3753,8 @@ export type $ClientePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     createdBy: Prisma.$UserPayload<ExtArgs> | null
     updatedBy: Prisma.$UserPayload<ExtArgs> | null
     user: Prisma.$UserPayload<ExtArgs> | null
+    fusionadoEn: Prisma.$ClientePayload<ExtArgs> | null
+    fusionados: Prisma.$ClientePayload<ExtArgs>[]
     propiedades: Prisma.$PropiedadPayload<ExtArgs>[]
     suscripciones: Prisma.$SuscripcionPayload<ExtArgs>[]
     datosFacturacion: Prisma.$DatoFacturacionPayload<ExtArgs>[]
@@ -3222,6 +3793,12 @@ export type $ClientePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
      * archivar (`deletedAt`), que lo saca de todos lados.
      */
     inactivoDesde: Date | null
+    /**
+     * En qué cliente se fusionó este, si era un duplicado. La ficha queda
+     * archivada (`deletedAt`) y todo lo suyo pasó al otro; esto deja que un
+     * enlace viejo lleve a la ficha que quedó. Ver `cliente-fusion.service.ts`.
+     */
+    fusionadoEnId: string | null
     createdById: string | null
     updatedById: string | null
     userId: string | null
@@ -3622,6 +4199,8 @@ export interface Prisma__ClienteClient<T, Null = never, ExtArgs extends runtime.
   createdBy<T extends Prisma.Cliente$createdByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$createdByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   updatedBy<T extends Prisma.Cliente$updatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$updatedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.Cliente$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  fusionadoEn<T extends Prisma.Cliente$fusionadoEnArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$fusionadoEnArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  fusionados<T extends Prisma.Cliente$fusionadosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$fusionadosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   propiedades<T extends Prisma.Cliente$propiedadesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$propiedadesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PropiedadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   suscripciones<T extends Prisma.Cliente$suscripcionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$suscripcionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   datosFacturacion<T extends Prisma.Cliente$datosFacturacionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$datosFacturacionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DatoFacturacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3677,6 +4256,7 @@ export interface ClienteFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"Cliente", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Cliente", 'DateTime'>
   readonly inactivoDesde: Prisma.FieldRef<"Cliente", 'DateTime'>
+  readonly fusionadoEnId: Prisma.FieldRef<"Cliente", 'String'>
   readonly createdById: Prisma.FieldRef<"Cliente", 'String'>
   readonly updatedById: Prisma.FieldRef<"Cliente", 'String'>
   readonly userId: Prisma.FieldRef<"Cliente", 'String'>
@@ -4135,6 +4715,49 @@ export type Cliente$userArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * Cliente.fusionadoEn
+ */
+export type Cliente$fusionadoEnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Cliente
+   */
+  select?: Prisma.ClienteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Cliente
+   */
+  omit?: Prisma.ClienteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClienteInclude<ExtArgs> | null
+  where?: Prisma.ClienteWhereInput
+}
+
+/**
+ * Cliente.fusionados
+ */
+export type Cliente$fusionadosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Cliente
+   */
+  select?: Prisma.ClienteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Cliente
+   */
+  omit?: Prisma.ClienteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClienteInclude<ExtArgs> | null
+  where?: Prisma.ClienteWhereInput
+  orderBy?: Prisma.ClienteOrderByWithRelationInput | Prisma.ClienteOrderByWithRelationInput[]
+  cursor?: Prisma.ClienteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClienteScalarFieldEnum | Prisma.ClienteScalarFieldEnum[]
 }
 
 /**

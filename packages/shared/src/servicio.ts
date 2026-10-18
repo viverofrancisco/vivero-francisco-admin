@@ -291,3 +291,125 @@ export function compararProductos(
     return texto(a.id, b.id);
   };
 }
+
+// ──────────────────────────────────────────────
+// Editar variantes en lote (el *Bulk edit* de Shopify)
+// ──────────────────────────────────────────────
+
+/** Los datos que se escriben uno por variante, en una tabla. */
+export type CampoDeVarianteEnLote = "precio" | "costo" | "sku" | "peso" | "stock";
+
+/** Los interruptores que se ponen igual a todas las elegidas. */
+export type InterruptorDeVariante = "cobraIva" | "manejaInventario" | "permiteNegativo";
+
+export type AccionDeVariantesEnLote =
+  | { tipo: "campo"; campo: CampoDeVarianteEnLote; etiqueta: string }
+  | { tipo: "interruptor"; campo: InterruptorDeVariante; valor: boolean; etiqueta: string };
+
+/**
+ * Lo que se puede hacer con varias variantes a la vez, **las mismas en el
+ * portal y en la app**. De las de Shopify quedan las que aplican acá: no hay
+ * código de barras, ni paquete, ni país de origen, ni canales de venta, y
+ * borrar una variante es sacar el valor de su opción, no una acción suelta.
+ */
+export const ACCIONES_DE_VARIANTES_EN_LOTE: AccionDeVariantesEnLote[] = [
+  { tipo: "campo", campo: "precio", etiqueta: "Editar precios" },
+  { tipo: "campo", campo: "costo", etiqueta: "Editar costos" },
+  { tipo: "campo", campo: "sku", etiqueta: "Editar SKU" },
+  { tipo: "campo", campo: "peso", etiqueta: "Editar pesos" },
+  { tipo: "campo", campo: "stock", etiqueta: "Editar stock" },
+  { tipo: "interruptor", campo: "cobraIva", valor: true, etiqueta: "Cobrar IVA" },
+  { tipo: "interruptor", campo: "cobraIva", valor: false, etiqueta: "No cobrar IVA" },
+  { tipo: "interruptor", campo: "manejaInventario", valor: true, etiqueta: "Llevar inventario" },
+  { tipo: "interruptor", campo: "manejaInventario", valor: false, etiqueta: "No llevar inventario" },
+  { tipo: "interruptor", campo: "permiteNegativo", valor: true, etiqueta: "Vender sin stock" },
+  { tipo: "interruptor", campo: "permiteNegativo", valor: false, etiqueta: "No vender sin stock" },
+];
+
+/** El título del diálogo de un campo: "Editar precios" → "Precios". */
+export const TITULO_DE_CAMPO_EN_LOTE: Record<CampoDeVarianteEnLote, string> = {
+  precio: "Precio",
+  costo: "Costo por unidad",
+  sku: "SKU",
+  peso: "Peso",
+  stock: "En stock",
+};
+
+/** Lo que una pantalla de *Editar en lote* necesita saber de cada variante. */
+export interface VarianteParaLote {
+  id: string;
+  precio: number;
+  costo: number | null;
+  sku: string | null;
+  peso: number | null;
+  pesoUnidad: UnidadPeso;
+  stock: number;
+  manejaInventario: boolean;
+}
+
+/** Con qué arranca la caja de una variante: lo que tiene hoy, como texto. */
+export function valorInicialEnLote(v: VarianteParaLote, campo: CampoDeVarianteEnLote): string {
+  const x =
+    campo === "precio" ? v.precio
+    : campo === "costo" ? v.costo
+    : campo === "sku" ? v.sku
+    : campo === "peso" ? v.peso
+    : v.stock;
+  return x === null || x === undefined ? "" : String(x);
+}
+
+/** El stock solo se edita donde se cuenta. */
+export function editableEnLote(v: VarianteParaLote, campo: CampoDeVarianteEnLote): boolean {
+  return campo !== "stock" || v.manejaInventario;
+}
+
+/**
+ * De lo escrito en las cajas, **solo lo que cambió**, con la forma del
+ * `PATCH …/variantes` en lote. Vaciar el costo o el peso es "no se sabe"
+ * (`null`); vaciar el precio o el stock no cambia nada. El stock va como
+ * `contado`: es un conteo, no un movimiento a mano.
+ */
+export function cambiosDelLote(
+  campo: CampoDeVarianteEnLote,
+  variantes: VarianteParaLote[],
+  textos: Record<string, string>,
+  pesoUnidad?: UnidadPeso
+): ({ id: string } & Record<string, string | number | null>)[] {
+  const salida: ({ id: string } & Record<string, string | number | null>)[] = [];
+  for (const v of variantes) {
+    if (!editableEnLote(v, campo)) continue;
+    const t = (textos[v.id] ?? "").trim();
+    const unidadCambia = campo === "peso" && !!pesoUnidad && pesoUnidad !== v.pesoUnidad;
+    if (t === valorInicialEnLote(v, campo) && !unidadCambia) continue;
+    if (campo === "sku") {
+      salida.push({ id: v.id, sku: t || null });
+      continue;
+    }
+    let n: number | null = null;
+    if (t !== "") {
+      const x = Number(t.replace(",", "."));
+      if (!Number.isFinite(x) || x < 0) continue;
+      n = campo === "stock" ? Math.trunc(x) : x;
+    } else if (campo !== "costo" && campo !== "peso") {
+      continue;
+    }
+    if (campo === "stock") salida.push({ id: v.id, contado: n });
+    else if (campo === "peso") salida.push({ id: v.id, peso: n, ...(pesoUnidad ? { pesoUnidad } : {}) });
+    else salida.push({ id: v.id, [campo]: n });
+  }
+  return salida;
+}
+
+/** "3 variantes actualizadas" y, si algo no salió, cuál y por qué. */
+export function resumenDelLote(r: {
+  editadas: number;
+  errores: { nombre: string | null; motivo: string }[];
+}): { titulo: string; detalle: string | null } {
+  const titulo =
+    r.editadas === 1 ? "1 variante actualizada" : `${r.editadas} variantes actualizadas`;
+  if (r.errores.length === 0) return { titulo, detalle: null };
+  return {
+    titulo: r.editadas === 0 ? "No se pudo guardar" : titulo,
+    detalle: r.errores.map((e) => `${e.nombre ?? "Una variante"}: ${e.motivo}`).join("\n"),
+  };
+}

@@ -138,8 +138,13 @@ function useAuthGate() {
       return;
     }
 
-    if (user.role === "CLIENTE" && !inCliente) {
-      router.replace("/(cliente)/visitas");
+    // El cliente va a lo suyo y **se queda ahí**: con un solo `if`, el cliente
+    // que ya estaba en `(cliente)` caía en la rama de abajo, lo mandaba a
+    // `(personal)`, y de ahí esta lo devolvía — un rebote sin fin que React
+    // cortaba con "Maximum update depth exceeded" (desde el 14-sep-2026; nadie
+    // lo vio porque ningún cliente entraba todavía a la app).
+    if (user.role === "CLIENTE") {
+      if (!inCliente) router.replace("/(cliente)/visitas");
     } else if (!inPersonal) {
       // Todo el resto —oficina y jardineros— entra por acá. **El jardinero
       // ahora sí usa la app**: es donde carga lo que hizo en cada visita, que

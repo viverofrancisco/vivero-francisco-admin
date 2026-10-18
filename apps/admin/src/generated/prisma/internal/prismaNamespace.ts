@@ -442,6 +442,7 @@ export const ModelName = {
   InformeVisita: 'InformeVisita',
   InformeSeccion: 'InformeSeccion',
   InformeSeccionFoto: 'InformeSeccionFoto',
+  Ubicacion: 'Ubicacion',
   EmpresaConfig: 'EmpresaConfig',
   Emisor: 'Emisor',
   SecuencialSri: 'SecuencialSri',
@@ -459,7 +460,10 @@ export const ModelName = {
   ChatLectura: 'ChatLectura',
   ChatAdjunto: 'ChatAdjunto',
   RegistroPendiente: 'RegistroPendiente',
+  CambioDeCorreoPendiente: 'CambioDeCorreoPendiente',
   SolicitudCliente: 'SolicitudCliente',
+  SolicitudAdjunto: 'SolicitudAdjunto',
+  SolicitudServicio: 'SolicitudServicio',
   CuentaContable: 'CuentaContable',
   CentroCosto: 'CentroCosto',
   Obra: 'Obra'
@@ -478,7 +482,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "personal" | "grupo" | "tarea" | "visita" | "visitaNovedad" | "visitaNovedadFoto" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto" | "registroPendiente" | "solicitudCliente" | "cuentaContable" | "centroCosto" | "obra"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "personal" | "grupo" | "tarea" | "visita" | "visitaNovedad" | "visitaNovedadFoto" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "ubicacion" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto" | "registroPendiente" | "cambioDeCorreoPendiente" | "solicitudCliente" | "solicitudAdjunto" | "solicitudServicio" | "cuentaContable" | "centroCosto" | "obra"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3812,6 +3816,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Ubicacion: {
+      payload: Prisma.$UbicacionPayload<ExtArgs>
+      fields: Prisma.UbicacionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UbicacionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UbicacionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>
+        }
+        findFirst: {
+          args: Prisma.UbicacionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UbicacionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>
+        }
+        findMany: {
+          args: Prisma.UbicacionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>[]
+        }
+        create: {
+          args: Prisma.UbicacionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>
+        }
+        createMany: {
+          args: Prisma.UbicacionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UbicacionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>[]
+        }
+        delete: {
+          args: Prisma.UbicacionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>
+        }
+        update: {
+          args: Prisma.UbicacionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>
+        }
+        deleteMany: {
+          args: Prisma.UbicacionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UbicacionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UbicacionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>[]
+        }
+        upsert: {
+          args: Prisma.UbicacionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UbicacionPayload>
+        }
+        aggregate: {
+          args: Prisma.UbicacionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUbicacion>
+        }
+        groupBy: {
+          args: Prisma.UbicacionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UbicacionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UbicacionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UbicacionCountAggregateOutputType> | number
+        }
+      }
+    }
     EmpresaConfig: {
       payload: Prisma.$EmpresaConfigPayload<ExtArgs>
       fields: Prisma.EmpresaConfigFieldRefs
@@ -5070,6 +5148,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CambioDeCorreoPendiente: {
+      payload: Prisma.$CambioDeCorreoPendientePayload<ExtArgs>
+      fields: Prisma.CambioDeCorreoPendienteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CambioDeCorreoPendienteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CambioDeCorreoPendienteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>
+        }
+        findFirst: {
+          args: Prisma.CambioDeCorreoPendienteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CambioDeCorreoPendienteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>
+        }
+        findMany: {
+          args: Prisma.CambioDeCorreoPendienteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>[]
+        }
+        create: {
+          args: Prisma.CambioDeCorreoPendienteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>
+        }
+        createMany: {
+          args: Prisma.CambioDeCorreoPendienteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CambioDeCorreoPendienteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>[]
+        }
+        delete: {
+          args: Prisma.CambioDeCorreoPendienteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>
+        }
+        update: {
+          args: Prisma.CambioDeCorreoPendienteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>
+        }
+        deleteMany: {
+          args: Prisma.CambioDeCorreoPendienteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CambioDeCorreoPendienteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CambioDeCorreoPendienteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>[]
+        }
+        upsert: {
+          args: Prisma.CambioDeCorreoPendienteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CambioDeCorreoPendientePayload>
+        }
+        aggregate: {
+          args: Prisma.CambioDeCorreoPendienteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCambioDeCorreoPendiente>
+        }
+        groupBy: {
+          args: Prisma.CambioDeCorreoPendienteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CambioDeCorreoPendienteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CambioDeCorreoPendienteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CambioDeCorreoPendienteCountAggregateOutputType> | number
+        }
+      }
+    }
     SolicitudCliente: {
       payload: Prisma.$SolicitudClientePayload<ExtArgs>
       fields: Prisma.SolicitudClienteFieldRefs
@@ -5141,6 +5293,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SolicitudClienteCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SolicitudClienteCountAggregateOutputType> | number
+        }
+      }
+    }
+    SolicitudAdjunto: {
+      payload: Prisma.$SolicitudAdjuntoPayload<ExtArgs>
+      fields: Prisma.SolicitudAdjuntoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SolicitudAdjuntoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SolicitudAdjuntoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>
+        }
+        findFirst: {
+          args: Prisma.SolicitudAdjuntoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SolicitudAdjuntoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>
+        }
+        findMany: {
+          args: Prisma.SolicitudAdjuntoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>[]
+        }
+        create: {
+          args: Prisma.SolicitudAdjuntoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>
+        }
+        createMany: {
+          args: Prisma.SolicitudAdjuntoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SolicitudAdjuntoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>[]
+        }
+        delete: {
+          args: Prisma.SolicitudAdjuntoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>
+        }
+        update: {
+          args: Prisma.SolicitudAdjuntoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>
+        }
+        deleteMany: {
+          args: Prisma.SolicitudAdjuntoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SolicitudAdjuntoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SolicitudAdjuntoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>[]
+        }
+        upsert: {
+          args: Prisma.SolicitudAdjuntoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudAdjuntoPayload>
+        }
+        aggregate: {
+          args: Prisma.SolicitudAdjuntoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSolicitudAdjunto>
+        }
+        groupBy: {
+          args: Prisma.SolicitudAdjuntoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SolicitudAdjuntoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SolicitudAdjuntoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SolicitudAdjuntoCountAggregateOutputType> | number
+        }
+      }
+    }
+    SolicitudServicio: {
+      payload: Prisma.$SolicitudServicioPayload<ExtArgs>
+      fields: Prisma.SolicitudServicioFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SolicitudServicioFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SolicitudServicioFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>
+        }
+        findFirst: {
+          args: Prisma.SolicitudServicioFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SolicitudServicioFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>
+        }
+        findMany: {
+          args: Prisma.SolicitudServicioFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>[]
+        }
+        create: {
+          args: Prisma.SolicitudServicioCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>
+        }
+        createMany: {
+          args: Prisma.SolicitudServicioCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SolicitudServicioCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>[]
+        }
+        delete: {
+          args: Prisma.SolicitudServicioDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>
+        }
+        update: {
+          args: Prisma.SolicitudServicioUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>
+        }
+        deleteMany: {
+          args: Prisma.SolicitudServicioDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SolicitudServicioUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SolicitudServicioUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>[]
+        }
+        upsert: {
+          args: Prisma.SolicitudServicioUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudServicioPayload>
+        }
+        aggregate: {
+          args: Prisma.SolicitudServicioAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSolicitudServicio>
+        }
+        groupBy: {
+          args: Prisma.SolicitudServicioGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SolicitudServicioGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SolicitudServicioCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SolicitudServicioCountAggregateOutputType> | number
         }
       }
     }
@@ -5477,6 +5777,7 @@ export const ClienteScalarFieldEnum = {
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
   inactivoDesde: 'inactivoDesde',
+  fusionadoEnId: 'fusionadoEnId',
   createdById: 'createdById',
   updatedById: 'updatedById',
   userId: 'userId'
@@ -5633,6 +5934,7 @@ export const MovimientoInventarioScalarFieldEnum = {
   motivo: 'motivo',
   nota: 'nota',
   facturaId: 'facturaId',
+  ordenId: 'ordenId',
   createdAt: 'createdAt',
   createdById: 'createdById',
   createdByNombre: 'createdByNombre'
@@ -5740,7 +6042,8 @@ export const VisitaScalarFieldEnum = {
   deletedById: 'deletedById',
   deletedByNombre: 'deletedByNombre',
   motivoNoRealizada: 'motivoNoRealizada',
-  reprogramadaDeId: 'reprogramadaDeId'
+  reprogramadaDeId: 'reprogramadaDeId',
+  solicitudId: 'solicitudId'
 } as const
 
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]
@@ -6109,6 +6412,26 @@ export const InformeSeccionFotoScalarFieldEnum = {
 export type InformeSeccionFotoScalarFieldEnum = (typeof InformeSeccionFotoScalarFieldEnum)[keyof typeof InformeSeccionFotoScalarFieldEnum]
 
 
+export const UbicacionScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  direccion: 'direccion',
+  ciudad: 'ciudad',
+  referencia: 'referencia',
+  lat: 'lat',
+  lng: 'lng',
+  telefono: 'telefono',
+  horarios: 'horarios',
+  retiro: 'retiro',
+  activa: 'activa',
+  posicion: 'posicion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UbicacionScalarFieldEnum = (typeof UbicacionScalarFieldEnum)[keyof typeof UbicacionScalarFieldEnum]
+
+
 export const EmpresaConfigScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
@@ -6181,11 +6504,21 @@ export const OrdenScalarFieldEnum = {
   fecha: 'fecha',
   estado: 'estado',
   notas: 'notas',
+  origen: 'origen',
+  stockReservado: 'stockReservado',
+  entrega: 'entrega',
+  retiroUbicacionId: 'retiroUbicacionId',
+  entregaPropiedadId: 'entregaPropiedadId',
+  entregaDireccion: 'entregaDireccion',
+  entregaLat: 'entregaLat',
+  entregaLng: 'entregaLng',
   subtotal: 'subtotal',
   iva: 'iva',
   total: 'total',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  contactoNombre: 'contactoNombre',
+  contactoTelefono: 'contactoTelefono',
   createdById: 'createdById',
   updatedById: 'updatedById'
 } as const
@@ -6398,23 +6731,65 @@ export const RegistroPendienteScalarFieldEnum = {
 export type RegistroPendienteScalarFieldEnum = (typeof RegistroPendienteScalarFieldEnum)[keyof typeof RegistroPendienteScalarFieldEnum]
 
 
+export const CambioDeCorreoPendienteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  emailNuevo: 'emailNuevo',
+  codigoHash: 'codigoHash',
+  expiresAt: 'expiresAt',
+  intentos: 'intentos',
+  createdAt: 'createdAt'
+} as const
+
+export type CambioDeCorreoPendienteScalarFieldEnum = (typeof CambioDeCorreoPendienteScalarFieldEnum)[keyof typeof CambioDeCorreoPendienteScalarFieldEnum]
+
+
 export const SolicitudClienteScalarFieldEnum = {
   id: 'id',
   numero: 'numero',
   clienteId: 'clienteId',
-  productoId: 'productoId',
   mensaje: 'mensaje',
   direccion: 'direccion',
+  calle: 'calle',
+  numeroCasa: 'numeroCasa',
+  ciudad: 'ciudad',
+  referencia: 'referencia',
+  propiedadId: 'propiedadId',
+  lat: 'lat',
+  lng: 'lng',
   contactoNombre: 'contactoNombre',
   contactoTelefono: 'contactoTelefono',
   contactoEmail: 'contactoEmail',
   createdAt: 'createdAt',
   atendidaEl: 'atendidaEl',
   atendidaPorId: 'atendidaPorId',
-  atendidaPorNombre: 'atendidaPorNombre'
+  atendidaPorNombre: 'atendidaPorNombre',
+  otroServicio: 'otroServicio'
 } as const
 
 export type SolicitudClienteScalarFieldEnum = (typeof SolicitudClienteScalarFieldEnum)[keyof typeof SolicitudClienteScalarFieldEnum]
+
+
+export const SolicitudAdjuntoScalarFieldEnum = {
+  id: 'id',
+  solicitudId: 'solicitudId',
+  key: 'key',
+  url: 'url',
+  tipo: 'tipo',
+  contentType: 'contentType',
+  nombre: 'nombre',
+  createdAt: 'createdAt'
+} as const
+
+export type SolicitudAdjuntoScalarFieldEnum = (typeof SolicitudAdjuntoScalarFieldEnum)[keyof typeof SolicitudAdjuntoScalarFieldEnum]
+
+
+export const SolicitudServicioScalarFieldEnum = {
+  solicitudId: 'solicitudId',
+  productoId: 'productoId'
+} as const
+
+export type SolicitudServicioScalarFieldEnum = (typeof SolicitudServicioScalarFieldEnum)[keyof typeof SolicitudServicioScalarFieldEnum]
 
 
 export const CuentaContableScalarFieldEnum = {
@@ -6869,6 +7244,34 @@ export type ListEnumEstadoOrdenFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'OrigenOrden'
+ */
+export type EnumOrigenOrdenFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrigenOrden'>
+    
+
+
+/**
+ * Reference to a field of type 'OrigenOrden[]'
+ */
+export type ListEnumOrigenOrdenFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrigenOrden[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoEntrega'
+ */
+export type EnumTipoEntregaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoEntrega'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoEntrega[]'
+ */
+export type ListEnumTipoEntregaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoEntrega[]'>
+    
+
+
+/**
  * Reference to a field of type 'TipoIdentificacion'
  */
 export type EnumTipoIdentificacionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoIdentificacion'>
@@ -7147,6 +7550,7 @@ export type GlobalOmitConfig = {
   informeVisita?: Prisma.InformeVisitaOmit
   informeSeccion?: Prisma.InformeSeccionOmit
   informeSeccionFoto?: Prisma.InformeSeccionFotoOmit
+  ubicacion?: Prisma.UbicacionOmit
   empresaConfig?: Prisma.EmpresaConfigOmit
   emisor?: Prisma.EmisorOmit
   secuencialSri?: Prisma.SecuencialSriOmit
@@ -7164,7 +7568,10 @@ export type GlobalOmitConfig = {
   chatLectura?: Prisma.ChatLecturaOmit
   chatAdjunto?: Prisma.ChatAdjuntoOmit
   registroPendiente?: Prisma.RegistroPendienteOmit
+  cambioDeCorreoPendiente?: Prisma.CambioDeCorreoPendienteOmit
   solicitudCliente?: Prisma.SolicitudClienteOmit
+  solicitudAdjunto?: Prisma.SolicitudAdjuntoOmit
+  solicitudServicio?: Prisma.SolicitudServicioOmit
   cuentaContable?: Prisma.CuentaContableOmit
   centroCosto?: Prisma.CentroCostoOmit
   obra?: Prisma.ObraOmit

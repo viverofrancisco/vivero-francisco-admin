@@ -11,7 +11,9 @@ export type SearchType =
   | "visita"
   | "orden"
   | "suscripcion"
-  | "informe";
+  | "informe"
+  | "producto"
+  | "solicitud";
 
 export interface SearchResultItem {
   type: SearchType;
@@ -40,6 +42,8 @@ export interface GlobalSearchResult {
   ordenes: SearchGroup;
   suscripciones: SearchGroup;
   informes: SearchGroup;
+  productos: SearchGroup;
+  solicitudes: SearchGroup;
   total: number;
 }
 
@@ -55,8 +59,8 @@ function fmtDate(d: Date): string {
 }
 
 /**
- * Cross-entity search over clientes, visitas, órdenes, suscripciones and
- * informes, scoped to what the viewer is allowed to see (ADMIN/STAFF:
+ * Cross-entity search over clientes, visitas, órdenes, suscripciones,
+ * informes and productos, scoped to what the viewer is allowed to see (ADMIN/STAFF:
  * everything; PERSONAL: only the visitas they are assigned to, and no money at
  * all).
  *
@@ -94,6 +98,8 @@ export async function globalSearch(
       ordenes: EMPTY,
       suscripciones: EMPTY,
       informes: EMPTY,
+      productos: EMPTY,
+      solicitudes: EMPTY,
       total: 0,
     };
   }
@@ -177,6 +183,58 @@ export async function globalSearch(
         };
   }
 
+  /**
+   * Productos del catálogo, **solo la oficina** (su ficha es de la oficina,
+   * como la de un cliente): cada palabra en el nombre o en el SKU de alguna de
+   * sus variantes, así "jardinera fibra" y "fibra jardinera" dan lo mismo, y
+   * el código que se lee en la etiqueta también lo encuentra. Archivados no.
+   */
+  const palabras = term.split(/\s+/).filter(Boolean);
+  const productoWhere: Prisma.ProductoWhereInput | null =
+    staff && !soloNumero
+      ? {
+          deletedAt: null,
+          AND: palabras.map((w) => ({
+            OR: [
+              { nombre: { contains: w, ...insensitive } },
+              { variantes: { some: { sku: { contains: w, ...insensitive } } } },
+            ],
+          })),
+        }
+      : null;
+
+  /**
+   * Solicitudes, **solo la oficina**: por su número, o con cada palabra en
+   * quién la mandó (su ficha o lo que escribió el invitado), su teléfono, lo
+   * que pide, los servicios que marcó o el lugar.
+   */
+  const solicitudWhere: Prisma.SolicitudClienteWhereInput | null = staff
+    ? soloNumero
+      ? { numero: numero! }
+      : {
+          OR: [
+            ...(numero !== null ? [{ numero }] : []),
+            {
+              AND: palabras.map((w) => ({
+                OR: [
+                  { contactoNombre: { contains: w, ...insensitive } },
+                  { contactoTelefono: { contains: w } },
+                  { mensaje: { contains: w, ...insensitive } },
+                  { direccion: { contains: w, ...insensitive } },
+                  {
+                    servicios: {
+                      some: { producto: { nombre: { contains: w, ...insensitive } } },
+                    },
+                  },
+                  { cliente: filtroClientePorTexto(w) ?? {} },
+                  { cliente: { telefono: { contains: w } } },
+                ],
+              })),
+            },
+          ],
+        }
+    : null;
+
   const [
     clientes,
     clientesTotal,
@@ -186,6 +244,10 @@ export async function globalSearch(
     suscripciones,
     informes,
     informesTotal,
+    productos,
+    productosTotal,
+    solicitudes,
+    solicitudesTotal,
   ] = await Promise.all([
     clienteWhere
       ? prisma.cliente.findMany({
@@ -284,6 +346,44 @@ export async function globalSearch(
     informeWhere
       ? prisma.informe.count({ where: informeWhere })
       : Promise.resolve(0),
+    productoWhere
+      ? prisma.producto.findMany({
+          where: productoWhere,
+          select: {
+            id: true,
+            nombre: true,
+            tipo: true,
+            estado: true,
+            _count: { select: { variantes: true } },
+          },
+          orderBy: { nombre: "asc" },
+          take,
+        })
+      : Promise.resolve([]),
+    productoWhere
+      ? prisma.producto.count({ where: productoWhere })
+      : Promise.resolve(0),
+    solicitudWhere
+      ? prisma.solicitudCliente.findMany({
+          where: solicitudWhere,
+          select: {
+            id: true,
+            numero: true,
+            mensaje: true,
+            createdAt: true,
+            atendidaEl: true,
+            contactoNombre: true,
+            servicios: { select: { producto: { select: { nombre: true } } } },
+            otroServicio: true,
+            cliente: { select: { nombre: true, apellido: true, empresa: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          take,
+        })
+      : Promise.resolve([]),
+    solicitudWhere
+      ? prisma.solicitudCliente.count({ where: solicitudWhere })
+      : Promise.resolve(0),
   ]);
 
   const clientesGroup: SearchGroup = {
@@ -319,7 +419,7 @@ export async function globalSearch(
     items: ordenes.map((o) => ({
       type: "orden",
       id: o.id,
-      title: `Orden #${o.numero}`,
+      title: `Pedido #${o.numero}`,
       subtitle: `${nombreCliente(o.cliente)} · ${fmtDate(o.fecha)} · ${
         o.estado.charAt(0) + o.estado.slice(1).toLowerCase()
       }`,
@@ -354,17 +454,60 @@ export async function globalSearch(
     })),
   };
 
+  const productosGroup: SearchGroup = {
+    total: productosTotal,
+    items: productos.map((p) => ({
+      type: "producto",
+      id: p.id,
+      title: p.nombre,
+      subtitle: [
+        p.tipo === "SERVICIO" ? "Servicio" : "Producto",
+        p._count.variantes > 1 ? `${p._count.variantes} variantes` : null,
+        p.estado === "BORRADOR" ? "Borrador" : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      href: `/dashboard/productos/${p.id}`,
+    })),
+  };
+
+  const solicitudesGroup: SearchGroup = {
+    total: solicitudesTotal,
+    items: solicitudes.map((r) => ({
+      type: "solicitud",
+      id: r.id,
+      title: `Solicitud #${r.numero}`,
+      subtitle: [
+        r.cliente ? nombreCliente(r.cliente) : (r.contactoNombre ?? "Sin nombre"),
+        fmtDate(r.createdAt),
+        r.atendidaEl ? "Atendida" : "Pendiente",
+      ].join(" · "),
+      detalle: [
+        [...r.servicios.map((x) => x.producto.nombre), ...(r.otroServicio ? ["Otros"] : [])].join(", "),
+        r.mensaje,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      // No tiene página propia: la lista la abre en su diálogo.
+      href: `/dashboard/solicitudes?estado=todas&abrir=${r.id}`,
+    })),
+  };
+
   return {
     clientes: clientesGroup,
     visitas: visitasGroup,
     ordenes: ordenesGroup,
     suscripciones: suscripcionesGroup,
     informes: informesGroup,
+    productos: productosGroup,
+    solicitudes: solicitudesGroup,
     total:
       clientesTotal +
       visitasTotal +
       ordenesGroup.total +
       suscripcionesGroup.total +
-      informesTotal,
+      informesTotal +
+      productosTotal +
+      solicitudesTotal,
   };
 }

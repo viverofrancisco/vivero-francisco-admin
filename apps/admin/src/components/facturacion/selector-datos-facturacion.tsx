@@ -141,7 +141,7 @@ export function SelectorDatosFacturacion({
       toast.success(
         nuevo.guardarEnFicha
           ? "Datos guardados en la ficha del cliente"
-          : "Datos usados solo para esta orden"
+          : "Datos usados solo para este pedido"
       );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al guardar");
@@ -188,7 +188,7 @@ export function SelectorDatosFacturacion({
       ) : (
         <p className="text-sm text-muted-foreground">
           El cliente todavía no tiene datos de facturación cargados. Sin ellos
-          la orden se confirma pero no se puede facturar.
+          el pedido se confirma pero no se puede facturar.
         </p>
       )}
 
@@ -320,7 +320,7 @@ export function SelectorDatosFacturacion({
               <span className="text-xs leading-snug">
                 Guardar en la ficha del cliente
                 <span className="block text-muted-foreground">
-                  Para poder reusarlos. Sin esto se usan solo en esta orden.
+                  Para poder reusarlos. Sin esto se usan solo en este pedido.
                 </span>
               </span>
             </label>

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
-import { CIUDADES_ECUADOR } from "@/lib/constants/ciudades-ecuador";
+import { SelectorCiudad } from "@/components/shared/selector-ciudad";
 
 /**
  * El SDK de Google Maps toca `window` al importarse, así que el mapa no puede
@@ -101,15 +101,7 @@ export function DondeEsta({
             name={campo("ciudad")}
             control={control}
             render={({ field }) => (
-              <CustomSelect
-                value={field.value}
-                onChange={field.onChange}
-                options={CIUDADES_ECUADOR.map((c) => ({ value: c, label: c }))}
-                placeholder="Seleccionar ciudad"
-                searchable
-                searchPlaceholder="Buscar ciudad..."
-                clearable
-              />
+              <SelectorCiudad value={field.value} onChange={field.onChange} />
             )}
           />
         </div>

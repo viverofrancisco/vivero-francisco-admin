@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { estadoColor, estadoLabel, visitaTerminada } from "@/lib/estado-visita";
 import {
   FlatList,
@@ -8,36 +8,54 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, Button, Text } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { apiRequest } from "@/lib/api";
 import { PantallaLista } from "@/components/ui/PantallaLista";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
 import { resumenTareas } from "@/lib/types";
-import { hoyEnEcuador } from "@/lib/hora";
-import { diaISO, fechaSola, sumarDias } from "@vivero/shared";
+import { diaEnEcuador, hoyEnEcuador } from "@/lib/hora";
+import {
+  diaISO,
+  fechaSola,
+  serviciosEnUnaLinea,
+  sumarDias,
+  type SolicitudItem,
+} from "@vivero/shared";
+import { EstadoSolicitud } from "@/components/solicitudes/FichaDeSolicitud";
+import { tema } from "@/lib/tema";
 
 type Group = "Hoy" | "Mañana" | "Esta semana" | "Más adelante" | "Historial";
 
-interface Section {
-  label: Group;
-  visitas: VisitaDetail[];
-}
+/**
+ * Una sección de la lista: visitas agrupadas por cuándo, o las solicitudes de
+ * visita —arriba las pendientes, que es lo que el cliente está esperando; al
+ * final las atendidas, por si quiere volver a ver qué pidió—.
+ */
+type Section =
+  | { label: Group; visitas: VisitaDetail[] }
+  | { label: "Solicitudes" | "Solicitudes atendidas"; solicitudes: SolicitudItem[] };
 
 export default function ClienteVisitasListScreen() {
   const router = useRouter();
   const [items, setItems] = useState<VisitaDetail[]>([]);
+  const [solicitudes, setSolicitudes] = useState<SolicitudItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async (initial = false) => {
-    if (initial) setLoading(true);
-    else setRefreshing(true);
+  /** `silencioso`: al volver a la pestaña, sin spinner de ningún tipo. */
+  const load = useCallback(async (modo: "tirar" | "silencioso" = "tirar") => {
+    if (modo === "tirar") setRefreshing(true);
     try {
-      const res = await apiRequest<VisitasListResponse>(
-        "/api/mobile/visitas",
-        { query: { limit: 100 } }
-      );
+      const [res, sol] = await Promise.all([
+        apiRequest<VisitasListResponse>("/api/mobile/visitas", {
+          query: { limit: 100 },
+        }),
+        apiRequest<{ items: SolicitudItem[] }>("/api/mobile/solicitudes", {
+          query: { limit: 100 },
+        }).catch(() => ({ items: [] as SolicitudItem[] })),
+      ]);
       setItems(res.items);
+      setSolicitudes(sol.items);
     } catch {
       // ignore
     } finally {
@@ -46,11 +64,23 @@ export default function ClienteVisitasListScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    load(true);
-  }, [load]);
+  // Cada vez que se vuelve a la pestaña —la primera incluida—: así la
+  // solicitud recién enviada aparece sin tener que arrastrar.
+  useFocusEffect(
+    useCallback(() => {
+      load("silencioso");
+    }, [load])
+  );
 
-  const sections = groupVisitas(items);
+  const pendientes = solicitudes.filter((s) => !s.atendidaEl);
+  const atendidas = solicitudes.filter((s) => s.atendidaEl);
+  const sections: Section[] = [
+    ...(pendientes.length ? [{ label: "Solicitudes" as const, solicitudes: pendientes }] : []),
+    ...groupVisitas(items),
+    ...(atendidas.length
+      ? [{ label: "Solicitudes atendidas" as const, solicitudes: atendidas }]
+      : []),
+  ];
   const solicitar = () => router.push("/(cliente)/solicitudes/nueva");
 
   return (
@@ -58,10 +88,6 @@ export default function ClienteVisitasListScreen() {
       titulo="Mis visitas"
       acciones={[
         { etiqueta: "Solicitar una visita", onPress: solicitar },
-        {
-          etiqueta: "Mis solicitudes",
-          onPress: () => router.push("/(cliente)/solicitudes"),
-        },
       ]}
     >
       {loading ? (
@@ -96,7 +122,13 @@ export default function ClienteVisitasListScreen() {
               {item.label.toUpperCase()}
             </Text>
             <View style={styles.list}>
-              {item.visitas.map((v) => (
+              {"solicitudes" in item ? item.solicitudes.map((s) => (
+                <SolicitudRow
+                  key={s.id}
+                  solicitud={s}
+                  onPress={() => router.push(`/(cliente)/visitas/solicitud/${s.id}`)}
+                />
+              )) : item.visitas.map((v) => (
                 <VisitaRow
                   key={v.id}
                   visita={v}
@@ -166,6 +198,50 @@ function VisitaRow({
 
 
 
+function SolicitudRow({
+  solicitud: s,
+  onPress,
+}: {
+  solicitud: SolicitudItem;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.row,
+        pressed && styles.rowPressed,
+        !!s.atendidaEl && styles.rowMuted,
+      ]}
+    >
+      <View
+        style={[
+          styles.indicator,
+          { backgroundColor: s.atendidaEl ? tema.verde : tema.ambar },
+        ]}
+      />
+      <View style={styles.rowText}>
+        <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
+          {serviciosEnUnaLinea(s) ?? s.mensaje}
+        </Text>
+        <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
+          {s.atendidaEl
+            ? s.visitas.length > 0
+              ? "Visita agendada"
+              : "Atendida"
+            : "Un asesor te contactará pronto"}
+        </Text>
+      </View>
+      <View style={styles.meta}>
+        <EstadoSolicitud atendida={!!s.atendidaEl} />
+        <Text variant="bodySmall" style={styles.metaSecondary}>
+          {formatShortDate(diaEnEcuador(s.createdAt))}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
 function formatShortDate(iso: string): string {
   return fechaSola(iso, { day: "numeric", month: "short" });
 }
@@ -179,7 +255,7 @@ function formatShortDate(iso: string): string {
  * `YYYY-MM-DD` en crudo no depende de ninguna zona, y en ese formato el texto
  * ordena igual que la fecha.
  */
-function groupVisitas(visitas: VisitaDetail[]): Section[] {
+function groupVisitas(visitas: VisitaDetail[]): { label: Group; visitas: VisitaDetail[] }[] {
   const hoy = hoyEnEcuador();
   const manana = sumarDias(hoy, 1);
   const finDeSemana = sumarDias(hoy, 7);

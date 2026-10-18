@@ -4,12 +4,15 @@ import { productoDelCatalogo } from "@/lib/services/catalogo.service";
 
 /** La ficha de un producto, sin sesión. Ver `../route.ts`. */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   try {
-    return NextResponse.json(await productoDelCatalogo(id));
+    return NextResponse.json(await productoDelCatalogo(id, {
+        // El drawer de *Elegir opciones* no muestra recomendaciones.
+        ligero: new URL(request.url).searchParams.get("ligero") === "1",
+      }));
   } catch (error) {
     return serviceErrorResponse(error);
   }

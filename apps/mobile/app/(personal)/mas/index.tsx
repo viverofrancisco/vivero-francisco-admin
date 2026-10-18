@@ -15,6 +15,8 @@ interface Item {
   icon: keyof typeof Ionicons.glyphMap;
   href: string;
   visible: boolean;
+  /** Va bajo el rótulo *Configuración*, como en el menú del portal. */
+  configuracion?: boolean;
 }
 
 /**
@@ -80,30 +82,42 @@ export default function MasMenuScreen() {
       icon: "people-circle-outline",
       href: "/(personal)/personal",
       visible: isAdminOrStaff,
+      configuracion: true,
     },
     {
       label: "Grupos",
       icon: "git-merge-outline",
       href: "/(personal)/grupos",
       visible: isAdminOrStaff,
+      configuracion: true,
     },
     {
       label: "Empresa",
       icon: "business-outline",
       href: "/(personal)/empresa",
       visible: isAdmin,
+      configuracion: true,
+    },
+    {
+      label: "Ubicaciones",
+      icon: "location-outline",
+      href: "/(personal)/ubicaciones",
+      visible: isAdmin,
+      configuracion: true,
     },
     {
       label: "Facturación electrónica",
       icon: "document-lock-outline",
       href: "/(personal)/facturacion",
       visible: isAdmin,
+      configuracion: true,
     },
     {
       label: "Usuarios",
       icon: "person-add-outline",
       href: "/(personal)/usuarios",
       visible: isAdmin,
+      configuracion: true,
     },
     {
       label: "Cuenta",
@@ -112,6 +126,8 @@ export default function MasMenuScreen() {
       visible: true,
     },
   ];
+
+  const visibles = items.filter((i) => i.visible);
 
   const nombre =
     `${user?.name ?? ""} ${user?.apellido ?? ""}`.trim() || "Mi cuenta";
@@ -152,21 +168,29 @@ export default function MasMenuScreen() {
         ) : null}
       </View>
       <ScrollView contentContainerStyle={styles.lista}>
-        {items
-          .filter((i) => i.visible)
-          .map((item) => (
-            <PressableScale
-              key={item.href}
-              onPress={() => router.push(item.href as never)}
-              style={styles.fila}
-            >
-              <Ionicons name={item.icon} size={22} color={tema.texto2} />
-              <Text variant="bodyLarge" style={styles.etiqueta}>
-                {item.label}
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
-            </PressableScale>
-          ))}
+        {[
+          visibles.filter((i) => !i.configuracion),
+          visibles.filter((i) => i.configuracion),
+        ].map((grupo, g) =>
+          grupo.length === 0 ? null : (
+            <View key={g}>
+              {g === 1 ? <Text style={styles.rotulo}>CONFIGURACIÓN</Text> : null}
+              {grupo.map((item) => (
+                <PressableScale
+                  key={item.href}
+                  onPress={() => router.push(item.href as never)}
+                  style={styles.fila}
+                >
+                  <Ionicons name={item.icon} size={22} color={tema.texto2} />
+                  <Text variant="bodyLarge" style={styles.etiqueta}>
+                    {item.label}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+                </PressableScale>
+              ))}
+            </View>
+          )
+        )}
       </ScrollView>
 
       {/* Quién está adentro y cómo salir, al pie: lo mismo que el portal pone
@@ -217,6 +241,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   etiqueta: { flex: 1, color: tema.texto, fontWeight: "500" },
+  rotulo: {
+    color: tema.texto3,
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.8,
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
 
   pie: {
     padding: 12,

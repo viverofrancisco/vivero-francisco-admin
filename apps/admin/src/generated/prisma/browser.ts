@@ -400,6 +400,14 @@ export type InformeSeccion = Prisma.InformeSeccionModel
  */
 export type InformeSeccionFoto = Prisma.InformeSeccionFotoModel
 /**
+ * Model Ubicacion
+ * **Una ubicación del vivero**, como las *Locations* de Shopify: un local con
+ * su nombre, su dirección y su pin. Hoy sirven para que el cliente **retire**
+ * un pedido de la app (`retiro`); el stock sigue siendo uno solo, no por
+ * ubicación. Se desactiva en vez de borrarse cuando un pedido la cita.
+ */
+export type Ubicacion = Prisma.UbicacionModel
+/**
  * Model EmpresaConfig
  * 
  */
@@ -574,6 +582,12 @@ export type ChatAdjunto = Prisma.ChatAdjuntoModel
  */
 export type RegistroPendiente = Prisma.RegistroPendienteModel
 /**
+ * Model CambioDeCorreoPendiente
+ * Un cliente cambiando su correo desde la app: el nuevo espera acá hasta que
+ * el código que se le mandó vuelve. Uno por cuenta; pedir otro lo reemplaza.
+ */
+export type CambioDeCorreoPendiente = Prisma.CambioDeCorreoPendienteModel
+/**
  * Model SolicitudCliente
  * Lo que un cliente le pide al vivero desde la app: una visita, una
  * cotización de un producto o lo que haga falta, en sus palabras.
@@ -588,6 +602,22 @@ export type RegistroPendiente = Prisma.RegistroPendienteModel
  * convierte en uno, lo carga el vivero.
  */
 export type SolicitudCliente = Prisma.SolicitudClienteModel
+/**
+ * Model SolicitudAdjunto
+ * Una foto o un video que el cliente adjuntó a su solicitud, para que el
+ * vivero vea el jardín antes de ir. Prefijo propio en R2
+ * (`solicitudes/<clienteId>/`), nunca `VisitaMedia` ni la biblioteca: no es
+ * el trabajo hecho ni algo del catálogo.
+ */
+export type SolicitudAdjunto = Prisma.SolicitudAdjuntoModel
+/**
+ * Model SolicitudServicio
+ * Un servicio del catálogo marcado en una solicitud. Los servicios no se
+ * venden desde el catálogo de la app —una poda se cotiza cada vez—: se piden
+ * así, en la solicitud de visita. `Restrict`: un servicio se archiva, nunca
+ * se borra, y la solicitud tiene que seguir diciendo qué pidió.
+ */
+export type SolicitudServicio = Prisma.SolicitudServicioModel
 /**
  * Model CuentaContable
  * El plan de cuentas: un árbol de códigos punteados (`1`, `1.1`, `1.1.1`…).

@@ -85,7 +85,7 @@ export function PorCobrarPage({ ordenes }: { ordenes: OrdenRow[] }) {
         title="Por cobrar"
         actions={[
           {
-            label: "Nueva orden",
+            label: "Nuevo pedido",
             href: "/dashboard/ordenes/nueva",
             icon: "plus",
           },
@@ -161,7 +161,7 @@ export function PorCobrarPage({ ordenes }: { ordenes: OrdenRow[] }) {
                       {o.factura.numero}
                     </span>
                     <span className="block text-xs text-muted-foreground">
-                      Orden #{o.numero} ·{" "}
+                      Pedido #{o.numero} ·{" "}
                       {ESTADO_FACTURA_LABEL[o.factura.estado] ??
                         o.factura.estado}
                     </span>

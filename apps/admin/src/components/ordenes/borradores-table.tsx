@@ -84,7 +84,7 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
         title="Borradores"
         actions={[
           {
-            label: "Nueva orden",
+            label: "Nuevo pedido",
             href: "/dashboard/ordenes/nueva",
             icon: "plus",
             primary: true,

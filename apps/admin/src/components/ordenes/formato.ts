@@ -48,8 +48,8 @@ export const mismoDia = (fechaIso: string, instanteIso: string) =>
 
 export const estadoLabel: Record<string, string> = {
   BORRADOR: "Borrador",
-  CONFIRMADA: "Confirmada",
-  ANULADA: "Anulada",
+  CONFIRMADA: "Confirmado",
+  ANULADA: "Anulado",
 };
 
 export const estadoVariant: Record<

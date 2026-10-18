@@ -50,6 +50,23 @@ export const varianteSchema = z.object({
 });
 
 /**
+ * *Editar en lote*: cada variante con lo suyo. `contado` es un conteo —cuántas
+ * hay en el estante—, no un movimiento a mano: lo que la gente edita en una
+ * tabla de stock es el número que ve.
+ */
+export const variantesEnLoteSchema = z.object({
+  cambios: z
+    .array(
+      varianteSchema.extend({
+        id: z.string().min(1),
+        contado: z.number().int().min(0).optional(),
+      })
+    )
+    .min(1, "Elige al menos una variante")
+    .max(200),
+});
+
+/**
  * Un movimiento de stock.
  *
  * `AJUSTE` e `INGRESO` mandan **cuánto se movió**; `CONTEO` manda **cuánto

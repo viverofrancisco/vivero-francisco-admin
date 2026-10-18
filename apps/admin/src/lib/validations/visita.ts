@@ -1,13 +1,17 @@
 import { z } from "zod/v4";
+import { clienteNuevoDeVisitaSchema, propiedadNuevaDeVisitaSchema } from "@vivero/shared";
 
 /**
  * Agendar. **Sin productos**: lo que se hace en una visita son tareas, y las
  * carga cada jardinero al terminar. Acá solo se puede exigir alguna.
  */
 export const crearVisitasSchema = z.object({
-  clienteId: z.string().min(1, "Selecciona un cliente"),
-  /** Dónde. Una visita pasa en un lugar; con una sola, la pantalla la elige. */
-  propiedadId: z.string().min(1, "Selecciona la propiedad"),
+  /// Un cliente que ya está, o `clienteNuevo` (ver `createVisitasSchema`).
+  clienteId: z.string().min(1).optional(),
+  clienteNuevo: clienteNuevoDeVisitaSchema.optional(),
+  /** Dónde: una de sus propiedades, o `propiedadNueva`. */
+  propiedadId: z.string().min(1).optional(),
+  propiedadNueva: propiedadNuevaDeVisitaSchema.optional(),
   fechas: z.array(z.string().min(1)).min(1, "Selecciona al menos una fecha"),
   /// Lo que esta visita exige que se haga. Opcional: la mayoría no exige nada.
   tareasObligatoriasIds: z.array(z.string().min(1)).default([]),
@@ -16,6 +20,8 @@ export const crearVisitasSchema = z.object({
   suscripcionId: z.string().nullable().optional().or(z.literal("")),
   personalIds: z.array(z.string()).default([]),
   notas: z.string().optional().or(z.literal("")),
+  /// La solicitud del cliente de donde sale, si se agenda desde ella.
+  solicitudId: z.string().nullable().optional(),
 });
 
 /**

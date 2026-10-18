@@ -79,7 +79,7 @@ export default function OrdenesListScreen() {
         setTotal(res.total);
         setError(null);
       } catch (e) {
-        setError(mensajeDeError(e, "No pudimos cargar las órdenes"));
+        setError(mensajeDeError(e, "No pudimos cargar los pedidos"));
       } finally {
         setCargando(false);
         setCargandoMas(false);
@@ -122,25 +122,25 @@ export default function OrdenesListScreen() {
       valor: cobro,
       onElegir: setCobro,
       opciones: [
-        { clave: "", etiqueta: "Todas" },
+        { clave: "", etiqueta: "Todos" },
         { clave: "SIN_COBRAR", etiqueta: "Sin cobrar" },
         { clave: "PARCIAL", etiqueta: "Parciales" },
-        { clave: "COBRADO", etiqueta: "Cobradas" },
-        { clave: "ANULADA", etiqueta: "Anuladas" },
+        { clave: "COBRADO", etiqueta: "Cobrados" },
+        { clave: "ANULADA", etiqueta: "Anulados" },
       ],
     },
   ];
 
   return (
     <PantallaLista
-      titulo="Órdenes"
+      titulo="Pedidos"
       busqueda={busqueda}
       onBuscar={setBusqueda}
       placeholder="Buscar por cliente o número..."
       grupos={grupos}
       acciones={[
         {
-          etiqueta: "Nueva orden",
+          etiqueta: "Nuevo pedido",
           onPress: () => router.push("/(personal)/ordenes/nueva"),
         },
       ]}
@@ -162,7 +162,7 @@ export default function OrdenesListScreen() {
           ListEmptyComponent={
             <View style={styles.vacio}>
               <Text variant="titleMedium" style={styles.vacioTitulo}>
-                {busqueda || cobro ? "Sin coincidencias" : "No hay órdenes"}
+                {busqueda || cobro ? "Sin coincidencias" : "No hay pedidos"}
               </Text>
               <Text variant="bodyMedium" style={styles.vacioTexto}>
                 Crea la primera desde el menú de arriba.
@@ -216,7 +216,7 @@ export default function OrdenesListScreen() {
                         { color: anulada ? tema.rojo : color.texto },
                       ]}
                     >
-                      {anulada ? "Anulada" : cobroLabel[estado]}
+                      {anulada ? "Anulado" : cobroLabel[estado]}
                     </Text>
                   </View>
                 </View>

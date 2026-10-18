@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requestInviteSchema } from "@vivero/shared";
 import { enforceLoginLimit } from "@/lib/mobile/rate-limit";
 import {
-  resolveClienteByIdentifier,
+  clientesPorIdentificador,
   createAndSendInvite,
 } from "@/lib/services/cliente-invite.service";
 
@@ -28,9 +28,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const resolved = await resolveClienteByIdentifier(identifier);
-  if (resolved.status === "ok") {
-    await createAndSendInvite(resolved.cliente.id);
+  // Solo por correo (ver `clientesPorIdentificador`). Con varias fichas con el
+  // mismo correo, el enlace sale a cada una: es el mismo buzón.
+  const fichas = await clientesPorIdentificador(identifier);
+  for (const ficha of fichas.slice(0, 5)) {
+    await createAndSendInvite(ficha.id);
   }
 
   // Siempre 200 genérico (incluye not_found y ambiguous).

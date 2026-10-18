@@ -12,6 +12,9 @@ import type { VarianteFila } from "../producto-variantes";
 import type { ImagenProducto } from "../producto-imagenes";
 import { SelectorFotoDeVariante } from "../selector-foto-de-variante";
 import { VisorDeFotosDeProducto } from "./visor-fotos-producto";
+import { BarraSeleccionMovil, ACCION_BARRA_MOVIL } from "@/components/shared/barra-seleccion-movil";
+import type { CampoDeVarianteEnLote } from "@vivero/shared";
+import { AccionesDeVariantesEnLoteMovil, EditarVariantesEnLoteMovil } from "./variantes-en-lote-movil";
 import type { MediaItem } from "../media-library";
 import {
   CabeceraDeHoja,
@@ -369,6 +372,13 @@ export function ListaDeVariantesMovil({
 }) {
   const [filtro, setFiltro] = useState("");
   const [abiertaId, setAbiertaId] = useState<string | null>(null);
+  // *Seleccionar* → casillas y la barra oscura con *Editar*: el lote de la app.
+  const [seleccionando, setSeleccionando] = useState(false);
+  const [marcadas, setMarcadas] = useState<string[]>([]);
+  const [acciones, setAcciones] = useState(false);
+  const [editandoCampo, setEditandoCampo] = useState<CampoDeVarianteEnLote | null>(null);
+  const alternar = (id: string) =>
+    setMarcadas((m) => (m.includes(id) ? m.filter((x) => x !== id) : [...m, id]));
   const q = filtro.trim().toLowerCase();
   const filas = q
     ? variantes.filter((v) => nombreDeVariante(v.valores, producto.nombre).toLowerCase().includes(q) || (v.sku ?? "").toLowerCase().includes(q))
@@ -378,7 +388,23 @@ export function ListaDeVariantesMovil({
 
   return (
     <HojaCompleta onCerrar={onCerrar}>
-      <CabeceraDeHoja titulo="Variantes" subtitulo={`${variantes.length} ${variantes.length === 1 ? "variante" : "variantes"}`} onCerrar={onCerrar} />
+      <CabeceraDeHoja
+        titulo="Variantes"
+        subtitulo={`${variantes.length} ${variantes.length === 1 ? "variante" : "variantes"}`}
+        onCerrar={onCerrar}
+        derecha={
+          variantes.length > 1 ? (
+            seleccionando ? (
+              <PastillaDeHoja
+                texto={marcadas.length === filas.length ? "Ninguna" : "Todas"}
+                onClick={() => setMarcadas(marcadas.length === filas.length ? [] : filas.map((v) => v.id))}
+              />
+            ) : (
+              <PastillaDeHoja texto="Seleccionar" onClick={() => setSeleccionando(true)} />
+            )
+          ) : undefined
+        }
+      />
       <div className="flex-none px-3 py-2">
         <div className="flex h-10 items-center gap-2 rounded-xl bg-muted px-3">
           <Search className="h-4 w-4 text-muted-foreground" />
@@ -390,7 +416,23 @@ export function ListaDeVariantesMovil({
         {filas.map((v) => {
           const foto = fotoDe(v);
           return (
-            <button key={v.id} type="button" onClick={() => setAbiertaId(v.id)} className="flex w-full items-center gap-3.5 border-b px-4 py-3 text-left active:bg-muted">
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => (seleccionando ? alternar(v.id) : setAbiertaId(v.id))}
+              role={seleccionando ? "checkbox" : undefined}
+              aria-checked={seleccionando ? marcadas.includes(v.id) : undefined}
+              className="flex w-full items-center gap-3.5 border-b px-4 py-3 text-left active:bg-muted"
+            >
+              {seleccionando ? (
+                <span
+                  className={`flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-[1.5px] ${
+                    marcadas.includes(v.id) ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground"
+                  }`}
+                >
+                  {marcadas.includes(v.id) ? <Check className="h-[15px] w-[15px]" /> : null}
+                </span>
+              ) : null}
               <span className="relative h-[52px] w-[52px] flex-none overflow-hidden rounded-[10px] border bg-muted">
                 {foto ? <Image src={foto.url} alt="" fill sizes="52px" className="object-cover" unoptimized /> : <span className="flex h-full items-center justify-center text-muted-foreground"><ImagePlus className="h-5 w-5" /></span>}
               </span>
@@ -401,11 +443,48 @@ export function ListaDeVariantesMovil({
                 </span>
                 <span className="block truncate text-sm text-muted-foreground">{v.sku ? `SKU ${v.sku}` : "Sin SKU"}</span>
               </span>
-              <ChevronRight className="h-[18px] w-[18px] flex-none text-muted-foreground" />
+              {seleccionando ? null : <ChevronRight className="h-[18px] w-[18px] flex-none text-muted-foreground" />}
             </button>
           );
         })}
+        {/* La barra flota sobre la última fila: un hueco de su alto al pie. */}
+        {seleccionando ? <div className="h-24" /> : null}
       </div>
+      {seleccionando ? (
+        <BarraSeleccionMovil
+          cuantas={marcadas.length}
+          onSalir={() => {
+            setSeleccionando(false);
+            setMarcadas([]);
+          }}
+          className="bottom-[calc(env(safe-area-inset-bottom)+1rem)]"
+        >
+          <button
+            type="button"
+            disabled={marcadas.length === 0}
+            onClick={() => setAcciones(true)}
+            className={`rounded-xl px-3.5 py-1.5 text-sm font-semibold ${ACCION_BARRA_MOVIL}`}
+          >
+            Editar
+          </button>
+        </BarraSeleccionMovil>
+      ) : null}
+      <AccionesDeVariantesEnLoteMovil
+        abierta={acciones}
+        productoId={producto.id}
+        ids={marcadas}
+        onCerrar={() => setAcciones(false)}
+        onCampo={setEditandoCampo}
+      />
+      {editandoCampo ? (
+        <EditarVariantesEnLoteMovil
+          campo={editandoCampo}
+          productoId={producto.id}
+          productoNombre={producto.nombre}
+          variantes={variantes.filter((v) => marcadas.includes(v.id))}
+          onCerrar={() => setEditandoCampo(null)}
+        />
+      ) : null}
       {abierta ? <FichaDeVarianteMovil variante={abierta} producto={producto} onCerrar={() => setAbiertaId(null)} /> : null}
     </HojaCompleta>
   );

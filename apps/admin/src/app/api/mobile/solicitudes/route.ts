@@ -20,11 +20,13 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const estado = url.searchParams.get("estado") as FiltroSolicitudes | null;
   const offset = Number(url.searchParams.get("offset") ?? 0);
+  const limit = Number(url.searchParams.get("limit") ?? 25);
   try {
     return NextResponse.json(
       await listarSolicitudes(viewerFromMobileUser(user), {
         estado: estado && ESTADOS.includes(estado) ? estado : undefined,
         offset: Number.isFinite(offset) ? offset : 0,
+        limit: Number.isFinite(limit) ? limit : 25,
       })
     );
   } catch (error) {

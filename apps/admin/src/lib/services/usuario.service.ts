@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Viewer } from "./viewer";
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
+import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
+import { ensureCorreoLibre as ensureCorreoUnico, normalizarCorreo } from "./correo-unico";
 import {
   crearEnlaceParaUsuario,
   restaurarAcceso,
@@ -105,11 +106,13 @@ export async function getUsuarioDelEquipo(viewer: Viewer, id: string): Promise<U
   return aUsuario(u);
 }
 
+/**
+ * Un correo es de una sola persona **del equipo**: el de un cliente no choca,
+ * porque son lados aparte (`correo-unico.ts`) —alguien del staff puede ser
+ * también cliente con su mismo correo—.
+ */
 async function ensureCorreoLibre(email: string, exceptoId?: string) {
-  const otro = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (otro && otro.id !== exceptoId) {
-    throw new ConflictError("Ya existe un usuario con ese correo");
-  }
+  await ensureCorreoUnico(normalizarCorreo(email), "equipo", { userId: exceptoId });
 }
 
 /**

@@ -40,6 +40,11 @@ contesta en segundos. Cuando no contesta enseguida la factura queda en
 `ENVIADO` y hay dos formas de resolverla: el botón *Consultar al SRI* de la
 ficha de la orden, y el cron diario `/api/cron/facturas`
 (`sincronizarPendientesSri()`), que barre todo lo que todavía puede cambiar.
+Los tres caminos que terminan en `AUTORIZADO` llaman a la misma
+`alAutorizarLaFactura()` (`reserva.service.ts`): anota la `VENTA`, convierte en
+venta el stock que un pedido de la app tenía apartado y confirma la orden. El
+cron y la consulta antes solo confirmaban la orden, y el stock de lo vendido no
+bajaba (ver [el inventario](./catalogo-e-inventario.md)).
 
 > **El ambiente de pruebas autoriza de verdad.** Un comprobante emitido en
 > `PRUEBAS` sale `AUTORIZADO` y se ve idéntico a uno real en el portal, pero

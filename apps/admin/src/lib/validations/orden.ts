@@ -45,7 +45,7 @@ export const actualizarOrdenSchema = z.object({
   datoFacturacionId: z.string().min(1).nullable().optional(),
   fecha: z.string().min(1).optional(),
   notas: z.string().max(1000).nullable().optional(),
-  lineas: z.array(ordenLineaSchema).min(1, "La orden necesita al menos un producto").optional(),
+  lineas: z.array(ordenLineaSchema).min(1, "El pedido necesita al menos un producto").optional(),
 });
 
 export const generarOrdenSchema = z.object({

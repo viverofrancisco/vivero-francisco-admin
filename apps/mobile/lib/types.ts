@@ -559,6 +559,9 @@ export interface OrdenDetalle {
   fecha: string;
   estado: string;
   notas: string | null;
+  /** Si la pidió el cliente desde el carrito: cómo se entrega y el punto en el mapa. */
+  /** `contacto`: lo hizo un invitado; con quién hablar por este pedido. */
+  pedidoApp: { entrega: string; mapaUrl: string | null; contacto?: string | null } | null;
   cliente: {
     id: string;
     nombre: string;

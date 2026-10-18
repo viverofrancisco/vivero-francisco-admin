@@ -25,7 +25,7 @@ export const ESTADO_FACTURA_AYUDA: Record<string, string> = {
   AUTORIZADO:
     "El SRI la aceptó. Es un comprobante válido y ya no se anula desde el portal: se corrige con una nota de crédito.",
   RECHAZADO:
-    "El SRI la rechazó, casi siempre por un dato del cliente. El motivo exacto está en la ficha de la orden. Hay que corregir y volver a emitir.",
+    "El SRI la rechazó, casi siempre por un dato del cliente. El motivo exacto está en la ficha del pedido. Hay que corregir y volver a emitir.",
 };
 
 export const ESTADO_FACTURA_VARIANT: Record<

@@ -194,7 +194,7 @@ export function SuscripcionDetail({
       toast.success(
         body.creadas === 0
           ? "No había períodos por generar"
-          : `${body.creadas} ${body.creadas === 1 ? "orden creada" : "órdenes creadas"} en borrador`
+          : `${body.creadas} ${body.creadas === 1 ? "pedido creado" : "pedidos creados"} en borrador`
       );
       router.refresh();
     } catch (e) {
@@ -493,7 +493,7 @@ export function SuscripcionDetail({
                tiene factura, y era justo lo que no se veía desde aquí. */
             <Card>
               <CardHeader className="border-b">
-                <CardTitle className="text-base">Órdenes</CardTitle>
+                <CardTitle className="text-base">Pedidos</CardTitle>
                 <CardAction>
                   {/* Lo hace el cron todas las noches; esto es la salida de
                       emergencia. Idempotente: apretarlo de más no duplica. */}
@@ -508,14 +508,14 @@ export function SuscripcionDetail({
                     ) : (
                       <RefreshCw className="mr-2 h-3.5 w-3.5" />
                     )}
-                    Generar órdenes
+                    Generar pedidos
                   </Button>
                 </CardAction>
               </CardHeader>
               <CardContent>
                 {ordenes.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
-                    Todavía no se generó ninguna orden de este plan.
+                    Todavía no se generó ningún pedido de este plan.
                   </p>
                 ) : (
                   <ul className="divide-y">
@@ -527,7 +527,7 @@ export function SuscripcionDetail({
                         >
                           <span className="min-w-0">
                             <span className="block font-medium">
-                              Orden #{o.numero}
+                              Pedido #{o.numero}
                               {o.factura && (
                                 <span className="ml-2 font-normal text-muted-foreground tabular-nums">
                                   {o.factura.numero}
@@ -558,9 +558,9 @@ export function SuscripcionDetail({
                               {o.estado === "BORRADOR"
                                 ? "Borrador"
                                 : o.estado === "ANULADA"
-                                  ? "Anulada"
+                                  ? "Anulado"
                                   : !o.factura || o.factura.saldo === null
-                                    ? "Facturada"
+                                    ? "Facturado"
                                     : o.factura.saldo <= 0.001
                                       ? "Cobrado"
                                       : "Por cobrar"}

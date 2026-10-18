@@ -12,15 +12,19 @@ import {
   DollarSign,
   FileText,
   RefreshCw,
+  Inbox,
+  Tag,
   Users,
 } from "lucide-react";
 
 const groupMeta = {
   clientes: { label: "Clientes", icon: Users },
   visitas: { label: "Visitas", icon: CalendarDays },
-  ordenes: { label: "Órdenes", icon: DollarSign },
+  ordenes: { label: "Pedidos", icon: DollarSign },
   suscripciones: { label: "Suscripciones", icon: RefreshCw },
   informes: { label: "Informes", icon: FileText },
+  productos: { label: "Productos", icon: Tag },
+  solicitudes: { label: "Solicitudes", icon: Inbox },
 } as const;
 
 function ResultRow({ item }: { item: SearchResultItem }) {
@@ -111,7 +115,9 @@ export default async function BuscarPage({
           <Section groupKey="visitas" group={result.visitas} />
           <Section groupKey="ordenes" group={result.ordenes} />
           <Section groupKey="suscripciones" group={result.suscripciones} />
+          <Section groupKey="productos" group={result.productos} />
           <Section groupKey="informes" group={result.informes} />
+          <Section groupKey="solicitudes" group={result.solicitudes} />
         </div>
       )}
     </div>

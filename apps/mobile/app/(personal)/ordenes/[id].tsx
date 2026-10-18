@@ -66,7 +66,7 @@ export default function OrdenScreen() {
   const cargar = useCallback(() => {
     apiRequest<OrdenDetalle>(`/api/mobile/ordenes/${id}`)
       .then(setOrden)
-      .catch((e) => setError(mensajeDeError(e, "No pudimos cargar la orden")));
+      .catch((e) => setError(mensajeDeError(e, "No pudimos cargar el pedido")));
   }, [id]);
 
   useFocusEffect(
@@ -78,7 +78,7 @@ export default function OrdenScreen() {
   if (error && !orden) {
     return (
       <View style={styles.flex}>
-        <EncabezadoDeFicha titulo="Orden" />
+        <EncabezadoDeFicha titulo="Pedido" />
         <View style={styles.centro}>
           <Text style={styles.apagado}>{error}</Text>
         </View>
@@ -88,7 +88,7 @@ export default function OrdenScreen() {
   if (!orden) {
     return (
       <View style={styles.flex}>
-        <EncabezadoDeFicha titulo="Orden" />
+        <EncabezadoDeFicha titulo="Pedido" />
         <View style={styles.centro}>
           <ActivityIndicator size="large" />
         </View>
@@ -220,7 +220,7 @@ export default function OrdenScreen() {
     {/* La flecha al lado del número, y fija: es el encabezado de toda ficha
         en la app. A la derecha, el ⋯ con lo que se le hace a la factura. */}
     <EncabezadoDeFicha
-      titulo={`Orden #${orden.numero}`}
+      titulo={`Pedido #${orden.numero}`}
       derecha={opciones.length > 0 ? <MenuDeEncabezado opciones={opciones} /> : undefined}
     />
     <ScrollView style={styles.contenedor} contentContainerStyle={styles.scroll}>
@@ -247,7 +247,7 @@ export default function OrdenScreen() {
             "sin sincronizar", que es lo que dice de una factura vieja, no de
             un borrador que todavía no se emitió. */}
         <Text style={styles.plataEstado}>
-          {anulada ? "Orden anulada" : !factura ? "Borrador" : cobroLabel[cobro]}
+          {anulada ? "Pedido anulado" : !factura ? "Borrador" : cobroLabel[cobro]}
         </Text>
         {!anulada && orden.factura?.saldo ? (
           <Text style={styles.plataSaldo}>
@@ -330,6 +330,28 @@ export default function OrdenScreen() {
         </Seccion>
       ) : null}
 
+      {orden.pedidoApp ? (
+        <Seccion titulo="Pedido de la app">
+          <Text variant="bodyMedium" style={styles.notas}>
+            {orden.pedidoApp.contacto ? "Lo pidió como invitado" : "El cliente lo pidió"} desde el
+            carrito. {orden.pedidoApp.entrega}.
+          </Text>
+          {orden.pedidoApp.contacto ? (
+            <Text variant="bodyMedium" style={styles.notas}>
+              Contacto: {orden.pedidoApp.contacto}
+            </Text>
+          ) : null}
+          {orden.pedidoApp.mapaUrl ? (
+            <PressableScale
+              onPress={() => void WebBrowser.openBrowserAsync(orden.pedidoApp!.mapaUrl!)}
+              style={styles.enlaceMapa}
+            >
+              <Text style={styles.enlaceMapaTexto}>Ver el punto en el mapa</Text>
+            </PressableScale>
+          ) : null}
+        </Seccion>
+      ) : null}
+
       {orden.notas ? (
         <Seccion titulo="Notas">
           <Text variant="bodyMedium" style={styles.notas}>
@@ -359,7 +381,7 @@ export default function OrdenScreen() {
         <HojaDeTexto
           visible={acreditando}
           titulo={`Nota de crédito de la factura ${factura.numero}`}
-          detalle={`Se emite al SRI una nota de crédito por ${plata(orden.total)}, el total de la factura. Queda acreditada y la orden vuelve a borrador.`}
+          detalle={`Se emite al SRI una nota de crédito por ${plata(orden.total)}, el total de la factura. Queda acreditada y el pedido vuelve a borrador.`}
           label="Motivo"
           confirmar="Emitir nota de crédito"
           peligro
@@ -717,5 +739,7 @@ const styles = StyleSheet.create({
   },
 
   notas: { color: tema.texto2, paddingVertical: 8, lineHeight: 21 },
+  enlaceMapa: { paddingBottom: 10 },
+  enlaceMapaTexto: { color: tema.verde, fontWeight: "600" },
   pie: { color: tema.texto3, textAlign: "center", marginTop: 24 },
 });

@@ -7,6 +7,7 @@
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "ios:sim": "bash ./scripts/ios-sim.sh",
     "web": "expo start --web",
     "lint": "expo lint",
     "editor:build": "vite --config ./editor-web/vite.config.mts build && node ../../node_modules/@10play/tentap-editor/scripts/buildEditor.js ./editor-web/build/index.html ./editor-web/editorHtml.js"

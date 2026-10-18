@@ -69,8 +69,8 @@ export default function SolicitarAccesoScreen() {
           ) : (
             <>
               <Text variant="bodyLarge" style={styles.subtitle}>
-                Ingresa tu teléfono o correo y te enviaremos un enlace a tu
-                correo para elegir una contraseña nueva.
+                Ingresa tu correo y te enviaremos un enlace para elegir una
+                contraseña nueva.
               </Text>
               {/* Esto es para el cliente: el enlace sale de su ficha. Quien
                   trabaja en el vivero no tiene por dónde recibirlo —el
@@ -83,8 +83,8 @@ export default function SolicitarAccesoScreen() {
               </Text>
               <TextInput
                 mode="outlined"
-                label="Teléfono o correo"
-                placeholder="0991234567 o tu@correo.com"
+                label="Correo"
+                placeholder="tu@correo.com"
                 value={identifier}
                 onChangeText={setIdentifier}
                 autoCapitalize="none"

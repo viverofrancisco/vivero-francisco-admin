@@ -9,16 +9,20 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const hashedPassword = await bcrypt.hash("admin123", 12);
 
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@viverofrancisco.com" },
-    update: {},
-    create: {
-      name: "Administrador",
-      email: "admin@viverofrancisco.com",
-      password: hashedPassword,
-      role: "ADMIN",
-    },
-  });
+  // Sin `upsert`: el correo es único por lado, no en toda la tabla, así que
+  // no sirve de clave para Prisma.
+  const admin =
+    (await prisma.user.findFirst({
+      where: { email: "admin@viverofrancisco.com", role: "ADMIN" },
+    })) ??
+    (await prisma.user.create({
+      data: {
+        name: "Administrador",
+        email: "admin@viverofrancisco.com",
+        password: hashedPassword,
+        role: "ADMIN",
+      },
+    }));
 
   console.log("Usuario admin creado:", admin.email);
 

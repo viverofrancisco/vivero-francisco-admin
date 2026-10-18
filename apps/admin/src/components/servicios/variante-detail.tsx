@@ -111,6 +111,8 @@ const MOTIVO_LABEL: Record<string, string> = {
   CONTEO: "Conteo",
   VENTA: "Venta",
   DEVOLUCION: "Devolución",
+  RESERVA: "Apartado por un pedido",
+  LIBERACION: "Devuelto por un pedido",
 };
 
 /**

@@ -223,6 +223,29 @@ el equipo entra con la cuenta de prueba.
 el revisor se registra contra el portal publicado, y un 404 en
 `/api/mobile/publico/catalogo` es otro rechazo.
 
+## El simulador con Xcode 27
+
+Xcode 27 ya no trae *Simulator.app*: el simulador ahora se abre desde **DeviceHub**
+(Xcode → *Open Developer Tool → DeviceHub*, o
+`open -a /Applications/Xcode.app/Contents/Applications/DeviceHub.app`). La CLI de
+Expo SDK 54 busca una app llamada "Simulator" antes de compilar y se detiene con
+*Can't determine id of Simulator app* aunque el simulador esté abierto, así que
+`npm run ios` y la tecla `i` de `expo start` no sirven. Además Xcode 27 rechaza los
+pods con *deployment target* 13.x/14.x (*supported range is 15.0 to 27.0*). Hasta que
+Expo lo soporte, la versión de desarrollo se compila e instala con
+`npm run ios:sim` (en `apps/mobile`; `scripts/ios-sim.sh`): carga las claves de
+Google Maps del `.env`, elige el simulador encendido (o el que le pases por nombre:
+`npm run ios:sim -- "iPhone 17 Pro Max"`, si no un iPhone 17 Pro), compila con
+`xcodebuild … IPHONEOS_DEPLOYMENT_TARGET=15.1`, instala con `simctl` y abre la app. El
+log de la compilación queda en `ios/build/ios-sim.log`.
+
+Con `npx expo start` corriendo, la app se conecta sola a Metro. Solo hay que volver a
+compilar cuando cambia algo nativo. La carpeta `ios/` no está en git y se genera de `app.config.ts`:
+si quedó de antes del cambio de identidad compila como `com.jorgefco95.mobile`, otra
+app al lado de la de verdad, y el simulador sigue abriendo una compilación vieja (con el
+JS adentro, sin conectarse a Metro). Se regenera con `npx expo prebuild -p ios --clean`;
+el script instala los pods solo cuando hacen falta.
+
 ## Android, después
 
 1. Google Play Console (US$ 25 una vez) a nombre del negocio.
