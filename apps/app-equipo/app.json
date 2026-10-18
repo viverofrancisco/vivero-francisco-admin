@@ -103,7 +103,10 @@
     },
     "extra": {
       "router": {},
-      "app": "equipo"
+      "app": "equipo",
+      "eas": {
+        "projectId": "3f2087df-b5d7-48f6-9342-b91279ca4de0"
+      }
     }
   }
 }

@@ -15,6 +15,55 @@ lo sube a App Store Connect o a Google Play. La máquina de desarrollo no
 necesita Xcode para eso; sí para `npx expo run:ios --device`, que es cómo se
 prueba el dev client en el teléfono propio.
 
+## Las dos apps (desde el 17-oct-2026)
+
+| | Vivero Francisco | Vivero Francisco Admin |
+|---|---|---|
+| Para | clientes e invitados | administración, staff y jardineros |
+| Carpeta | `apps/app-clientes` | `apps/app-equipo` |
+| Bundle id / paquete | `com.viverofrancisco.app` | `com.viverofrancisco.admin` |
+| Slug / scheme | `vivero-francisco` / `viverofrancisco` | `vivero-francisco-admin` / `viverofrancisco-admin` |
+| Proyecto de EAS | `@vivero-francisco/vivero-francisco` (`223ffdcd…`) | `@vivero-francisco/vivero-francisco-admin` (`3f2087df…`, creado con `eas init` el 18-oct) |
+| En las tiendas | **pública** (la ficha de siempre, ASC `6817389110`) | **no listada** en las dos |
+| Enlace de contraseña | `/establecer-contrasena` | `/equipo/establecer-contrasena` |
+| `extra.app` (push) | `clientes` | `equipo` |
+
+Las variables de EAS (`EXPO_PUBLIC_API_BASE_URL` y las dos claves de Maps)
+están en los dos proyectos, en *production* y *preview*: las del equipo se
+copiaron de las de clientes el 18-oct.
+
+### Lo que falta para publicar la del equipo (lo hace el dueño de las cuentas)
+
+1. **Claves de Google Maps**: en Google Cloud › APIs y servicios › Credenciales,
+   a la clave de iOS agregarle el bundle id `com.viverofrancisco.admin` en
+   *Restricciones de aplicaciones*, y a la de Android el paquete
+   `com.viverofrancisco.admin` con la huella SHA-1 de su keystore (sale de
+   `eas credentials -p android` en `apps/app-equipo` una vez que exista, o del
+   primer build). Hasta entonces el mapa de la app del equipo sale gris y el
+   resto funciona.
+2. **iOS**: el primer `eas build -p ios --profile production` desde
+   `apps/app-equipo` crea el App ID con *Associated Domains* y el perfil (pide
+   el Apple ID, es interactivo). Después, en App Store Connect, **Mis apps › +
+   › Nueva app** con ese bundle id y el nombre *Vivero Francisco Admin*; subir el
+   build (`eas submit -p ios`, que la primera vez pregunta el `ascAppId`: anotarlo
+   en `eas.json` como en la de clientes), y pedir la **distribución no listada**
+   en <https://developer.apple.com/contact/request/unlisted-app/>. Apple la
+   revisa igual; en las notas de revisión va una cuenta de prueba **del equipo**
+   (staff) y que es la app interna del vivero para su personal. Una vez
+   aprobada, se instala con el enlace que da App Store Connect.
+3. **Android**: Google Play no tiene apps "no listadas" públicas. Lo práctico:
+   una **pista de prueba interna** en Play Console (hasta 100 correos, se
+   instala desde un enlace) o un **APK** del perfil `preview`
+   (`eas build -p android --profile preview`) que se manda por WhatsApp. Con el
+   primer build de Android, poner su SHA-256 en `APP_EQUIPO_ANDROID_SHA256`
+   (`apps/admin/src/lib/enlaces-a-la-app.ts`) para que sus enlaces abran en la
+   app.
+4. **La de clientes** sigue con su ficha. Lo que cambia en su próximo envío:
+   la cuenta de prueba para Apple tiene que ser **de un cliente** (la de staff
+   ya no entra en esa app), los textos de `apps/app-clientes/tienda/textos.md`
+   y capturas nuevas de pantallas de cliente (las de `capturas/` son de la app
+   unida, con pantallas del equipo).
+
 ## Identidad
 
 - **Nombre**: *Vivero Francisco*; **slug** `vivero-francisco`; **scheme**
