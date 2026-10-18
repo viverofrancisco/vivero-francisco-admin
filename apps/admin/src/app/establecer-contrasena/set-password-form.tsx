@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
+import { TIENDA_APP_CLIENTES } from "@/lib/enlaces-a-la-app";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +45,23 @@ function useEsTelefono() {
   );
 }
 
-const ESQUEMA_DE_LA_APP = "viverofrancisco://";
+/**
+ * Cada app con su esquema y su ruta: la de clientes abre Vivero Francisco; la
+ * del equipo, Vivero Francisco Admin (ver `enlaces-a-la-app.ts`).
+ */
+const APPS = {
+  clientes: {
+    nombre: "Vivero Francisco",
+    esquema: "viverofrancisco://",
+    ruta: "establecer-contrasena",
+  },
+  equipo: {
+    nombre: "Vivero Francisco Admin",
+    esquema: "viverofrancisco-admin://",
+    ruta: "equipo/establecer-contrasena",
+  },
+} as const;
+type App = keyof typeof APPS;
 
 export function SetPasswordForm() {
   const searchParams = useSearchParams();
@@ -55,6 +72,13 @@ export function SetPasswordForm() {
   );
   const [nombre, setNombre] = useState<string | null>(null);
   const [destino, setDestino] = useState<Destino | null>(null);
+  // Hasta que el servidor conteste, lo dice la ruta: `/equipo/...` es del equipo.
+  const [app, setApp] = useState<App>(() =>
+    typeof window !== "undefined" && window.location.pathname.startsWith("/equipo/")
+      ? "equipo"
+      : "clientes"
+  );
+  const laApp = APPS[app];
   const [motivo, setMotivo] = useState<Motivo>("desconocido");
   const [password, setPassword] = useState("");
   const [confirmar, setConfirmar] = useState("");
@@ -71,10 +95,12 @@ export function SetPasswordForm() {
           valid: boolean;
           nombre?: string;
           destino?: Destino;
+          app?: App;
           motivo?: Motivo;
         }) => {
           setNombre(data.nombre ?? null);
           setDestino(data.destino ?? null);
+          if (data.app) setApp(data.app);
           if (data.valid) {
             setEstado("valido");
           } else {
@@ -208,17 +234,38 @@ export function SetPasswordForm() {
             ) : (
               <div className="space-y-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  ¡Listo! Ya puedes abrir la app de Vivero Francisco e iniciar
-                  sesión con tu nueva contraseña.
+                  ¡Listo! Ya puedes abrir la app {laApp.nombre} en tu teléfono e
+                  iniciar sesión con tu nueva contraseña.
                 </p>
                 {esTelefono ? (
                   <Button
                     className="w-full"
                     nativeButton={false}
-                    render={<a href={ESQUEMA_DE_LA_APP} />}
+                    render={<a href={laApp.esquema} />}
                   >
-                    Abrir la app
+                    Abrir {laApp.nombre}
                   </Button>
+                ) : app === "clientes" ? (
+                  // En la computadora: lo del cliente vive solo en la app, así
+                  // que se le dice dónde bajarla.
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      nativeButton={false}
+                      render={<a href={TIENDA_APP_CLIENTES.ios} target="_blank" rel="noreferrer" />}
+                    >
+                      Descargar en la App Store
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      nativeButton={false}
+                      render={<a href={TIENDA_APP_CLIENTES.android} target="_blank" rel="noreferrer" />}
+                    >
+                      Descargar en Google Play
+                    </Button>
+                  </div>
                 ) : null}
               </div>
             ))}
@@ -271,7 +318,7 @@ export function SetPasswordForm() {
                   nativeButton={false}
                   render={
                     <a
-                      href={`${ESQUEMA_DE_LA_APP}establecer-contrasena?token=${encodeURIComponent(token)}`}
+                      href={`${laApp.esquema}${laApp.ruta}?token=${encodeURIComponent(token)}`}
                     />
                   }
                 >

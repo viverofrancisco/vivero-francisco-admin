@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     valid: info.valido,
     nombre: info.nombre,
     destino: info.destino,
+    app: info.app,
     motivo: info.motivo,
   });
 }

@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { APP_IOS_APP_ID, RUTA_ENLACE_DE_ACCESO } from "@/lib/enlaces-a-la-app";
+import {
+  APP_EQUIPO_IOS_APP_ID,
+  APP_IOS_APP_ID,
+  RUTA_ENLACE_DE_ACCESO,
+  RUTA_ENLACE_DEL_EQUIPO,
+} from "@/lib/enlaces-a-la-app";
 
 /**
  * Universal Links de iOS: Apple lee este archivo (a través de su CDN, al
@@ -19,7 +24,17 @@ export function GET() {
               {
                 "/": RUTA_ENLACE_DE_ACCESO,
                 "?": { token: "?*" },
-                comment: "Invitación y restablecer contraseña",
+                comment: "Invitación y restablecer contraseña de un cliente",
+              },
+            ],
+          },
+          {
+            appIDs: [APP_EQUIPO_IOS_APP_ID],
+            components: [
+              {
+                "/": RUTA_ENLACE_DEL_EQUIPO,
+                "?": { token: "?*" },
+                comment: "Invitación y restablecer contraseña de alguien del equipo",
               },
             ],
           },

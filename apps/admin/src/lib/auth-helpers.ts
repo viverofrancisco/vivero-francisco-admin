@@ -115,12 +115,15 @@ export function viewerFromUser(user: {
 
 export async function validateCredentials(
   identificador: string,
-  password: string
+  password: string,
+  /** Solo cuentas con estos roles: el lado de la app que pregunta. */
+  roles?: readonly string[]
 ): Promise<User | null> {
   // Con un correo puede haber dos cuentas, la del equipo y la de cliente
   // (un correo es único por lado): entra a la que coincida la contraseña,
   // probando primero la del equipo.
   for (const user of await buscarCuentasPorIdentificador(identificador)) {
+    if (roles && !roles.includes(user.role)) continue;
     if (!user.password) continue;
     // Con el acceso revocado la contraseña deja de importar.
     if (user.accesoRevocadoEl) continue;

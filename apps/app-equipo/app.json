@@ -36,7 +36,7 @@
             {
               "scheme": "https",
               "host": "admin.viverofrancisco.com",
-              "pathPrefix": "/establecer-contrasena"
+              "pathPrefix": "/equipo/establecer-contrasena"
             }
           ],
           "category": [
@@ -102,7 +102,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "app": "equipo"
     }
   }
 }

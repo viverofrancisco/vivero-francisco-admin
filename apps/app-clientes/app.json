@@ -105,7 +105,8 @@
       "router": {},
       "eas": {
         "projectId": "223ffdcd-fa35-4bc2-9864-c7eef7a74aa9"
-      }
+      },
+      "app": "clientes"
     }
   }
 }

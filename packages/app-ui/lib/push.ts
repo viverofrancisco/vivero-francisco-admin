@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
@@ -44,6 +45,9 @@ export async function registerForPushNotifications(): Promise<string | null> {
       token,
       platform: Platform.OS === "ios" ? "ios" : "android",
       deviceName: Device.deviceName ?? undefined,
+      // Cada app lo declara en su `app.json` (`extra.app`): el servidor manda
+      // las notificaciones agrupadas por app (`PushToken.app`).
+      app: appDeEstaInstalacion(),
     };
     await apiRequest<PushRegisterResponse>("/api/mobile/push/register", {
       method: "POST",
@@ -54,4 +58,10 @@ export async function registerForPushNotifications(): Promise<string | null> {
     console.warn("Push registration failed:", error);
     return null;
   }
+}
+
+/** Qué app es esta instalación, según su `app.json` (`extra.app`). */
+function appDeEstaInstalacion(): "clientes" | "equipo" | undefined {
+  const app = (Constants.expoConfig?.extra as { app?: string } | undefined)?.app;
+  return app === "clientes" || app === "equipo" ? app : undefined;
 }

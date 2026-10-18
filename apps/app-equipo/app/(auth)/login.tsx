@@ -26,7 +26,8 @@ export default function LoginScreen() {
         "/api/mobile/auth/login",
         {
           method: "POST",
-          body: { email, password },
+          // Solo cuentas de este lado (ver `loginSchema`).
+          body: { email, password, app: "equipo" },
           authenticated: false,
         }
       );

@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  const { token, platform, deviceName } = parsed.data;
+  const { token, platform, deviceName, app } = parsed.data;
   if (!isValidExpoToken(token)) {
     return NextResponse.json(
       { error: "Formato de token Expo inválido" },
@@ -29,11 +29,13 @@ export async function POST(request: Request) {
       token,
       platform,
       deviceName: deviceName ?? null,
+      app: app ?? null,
       userId: user.id,
     },
     update: {
       platform,
       deviceName: deviceName ?? null,
+      app: app ?? null,
       userId: user.id,
       lastUsedAt: new Date(),
     },

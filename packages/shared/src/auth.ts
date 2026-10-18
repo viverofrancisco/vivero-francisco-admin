@@ -19,9 +19,21 @@ export const ETIQUETA_DE_ROL: Record<UserRole, string> = {
 // quien trabaja en el jardín no tiene correo y entra con un nombre corto que le
 // dictó un administrador. Por eso no se valida como dirección — el servidor
 // decide por dónde buscar según tenga arroba o no.
+/**
+ * De qué app viene el login: **Vivero Francisco** (clientes) o **Vivero
+ * Francisco Admin** (el equipo). Cada una solo busca cuentas de su lado, así
+ * que el mismo correo en los dos —alguien del equipo que también es cliente—
+ * entra a la cuenta que corresponde a la app que abrió, sin adivinar por la
+ * contraseña. Sin `app` (una versión de antes de separarlas), se busca en los
+ * dos lados como siempre.
+ */
+export const APPS_MOVILES = ["clientes", "equipo"] as const;
+export type AppMovil = (typeof APPS_MOVILES)[number];
+
 export const loginSchema = z.object({
   email: z.string().min(3).max(120),
   password: z.string().min(1),
+  app: z.enum(APPS_MOVILES).optional(),
 });
 export type LoginBody = z.infer<typeof loginSchema>;
 

@@ -87,8 +87,20 @@ export async function sendPushToUsers(
   });
   if (tokens.length === 0) return;
 
-  const all = tokens.map((t) => t.token);
-  const results = await sendBatch(all, payload);
+  // Un envío por app —Expo rechaza entero un lote que mezcla tokens de dos
+  // proyectos (`PushToken.app`)— y de a 100, que es su tope por pedido. Los
+  // de antes de separar las apps (`null`) son del proyecto de la de clientes.
+  const porApp = new Map<string, string[]>();
+  for (const t of tokens) {
+    const clave = t.app ?? "clientes";
+    porApp.set(clave, [...(porApp.get(clave) ?? []), t.token]);
+  }
+  const results: Array<{ token: string; ticket: ExpoTicket }> = [];
+  for (const lote of porApp.values()) {
+    for (let i = 0; i < lote.length; i += 100) {
+      results.push(...(await sendBatch(lote.slice(i, i + 100), payload)));
+    }
+  }
 
   const toDelete: string[] = [];
   const toTouch: string[] = [];

@@ -6252,6 +6252,7 @@ export const PushTokenScalarFieldEnum = {
   userId: 'userId',
   token: 'token',
   platform: 'platform',
+  app: 'app',
   deviceName: 'deviceName',
   lastUsedAt: 'lastUsedAt',
   createdAt: 'createdAt'

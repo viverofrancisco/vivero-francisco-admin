@@ -1436,6 +1436,12 @@ model PushToken {
   userId     String
   token      String   @unique
   platform   String
+  /// De qué app es el token: "clientes" (Vivero Francisco) o "equipo"
+  /// (Vivero Francisco Admin). Cada una es un proyecto distinto de Expo, y
+  /// Expo rechaza entero un envío que mezcla tokens de dos proyectos, así
+  /// que se mandan agrupados por esto. `null` en los de antes de separar las
+  /// apps: eran todos del proyecto de la de clientes.
+  app        String?
   deviceName String?
   lastUsedAt DateTime @default(now())
   createdAt  DateTime @default(now())

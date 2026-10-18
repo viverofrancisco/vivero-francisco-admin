@@ -123,7 +123,9 @@ function useAuthGate() {
     if (!hydrated) return;
     // El enlace de acceso abierto en la app: vale con o sin sesión, y para
     // cualquier rol, así que no se lo manda a ningún lado. Ver la pantalla.
-    if (segments[0] === "establecer-contrasena") return;
+    // En esta app vive en `equipo/establecer-contrasena`: es la ruta que
+    // reclama para que el teléfono no la confunda con la de clientes.
+    if (segments[0] === "equipo") return;
     const inAuth = segments[0] === "(auth)";
     const inPersonal = segments[0] === "(personal)";
 
@@ -157,7 +159,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(personal)" />
-          <Stack.Screen name="establecer-contrasena" />
+          <Stack.Screen name="equipo/establecer-contrasena" />
         </Stack>
         {/* Oscuro y no "auto": la app es clara siempre —`tema.ts` no tiene
             paleta oscura— y "auto" seguía al sistema, así que en un iPhone

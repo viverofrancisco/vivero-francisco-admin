@@ -2,6 +2,8 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
+import type { AppMovil } from "@vivero/shared";
+import { RUTA_ENLACE_DE_ACCESO, RUTA_ENLACE_DEL_EQUIPO } from "@/lib/enlaces-a-la-app";
 import type { UserRole } from "@/generated/prisma/client";
 import { sha256 } from "@/lib/mobile/jwt";
 import { sendEnlacePortalEmail } from "@/lib/email";
@@ -128,7 +130,11 @@ async function emitir(
     }),
   ]);
 
-  return { url: `${baseUrl()}/establecer-contrasena?token=${token}`, expiraEl: expiresAt };
+  // La ruta dice qué app abre el enlace en el teléfono: la de clientes o la
+  // del equipo (`enlaces-a-la-app.ts`). Una cuenta del equipo es un `userId`;
+  // la de un cliente, su ficha.
+  const ruta = "clienteId" in dueno ? RUTA_ENLACE_DE_ACCESO : RUTA_ENLACE_DEL_EQUIPO;
+  return { url: `${baseUrl()}${ruta}?token=${token}`, expiraEl: expiresAt };
 }
 
 /** Enlace para un usuario del portal (staff, admin de sector). */
@@ -167,6 +173,8 @@ export interface InfoDeEnlace {
    * token muerto no revela nada que valga la pena esconder.
    */
   destino?: DestinoAcceso;
+  /** De qué app es: la de clientes o la del equipo. Para el botón *Abrir la app*. */
+  app?: AppMovil;
   motivo?: MotivoInvalido;
 }
 
@@ -194,19 +202,24 @@ export async function infoDeEnlace(token: string): Promise<InfoDeEnlace> {
     return { valido: false, motivo: "desconocido" };
   }
 
+  // La app de un cliente es la de clientes; cualquier cuenta del equipo, la
+  // del equipo (aunque un administrador entre por el portal).
+  const app: AppMovil =
+    record.cliente || record.user?.role === "CLIENTE" ? "clientes" : "equipo";
+
   const nombre = record.cliente
     ? nombreCliente(record.cliente)
     : [record.user?.name, record.user?.apellido].filter(Boolean).join(" ") ||
       undefined;
 
-  if (record.usedAt) return { valido: false, motivo: "usado", destino, nombre };
+  if (record.usedAt) return { valido: false, motivo: "usado", destino, app, nombre };
   if (record.anuladoEl) {
-    return { valido: false, motivo: "anulado", destino, nombre };
+    return { valido: false, motivo: "anulado", destino, app, nombre };
   }
   if (record.expiresAt.getTime() < Date.now()) {
-    return { valido: false, motivo: "vencido", destino, nombre };
+    return { valido: false, motivo: "vencido", destino, app, nombre };
   }
-  return { valido: true, destino, nombre };
+  return { valido: true, destino, app, nombre };
 }
 
 export type ResultadoEstablecer =

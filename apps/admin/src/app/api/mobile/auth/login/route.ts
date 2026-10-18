@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  const { email: identificador, password } = parsed.data;
+  const { email: identificador, password, app } = parsed.data;
 
   const limit = await enforceLoginLimit(identificador);
   if (limit) {
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const sesion = await autenticarEnLaApp(identificador, password);
+  const sesion = await autenticarEnLaApp(identificador, password, app);
   if (!sesion) {
     // Un solo mensaje para todo: identificador que no existe, contraseña
     // equivocada, acceso revocado. Distinguirlos le dice a quien prueba cuáles

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { validateCredentials } from "@/lib/auth-helpers";
 import { validateClienteCredentials } from "./cliente-invite.service";
 import type { User, UserRole } from "@/generated/prisma/client";
+import type { AppMovil } from "@vivero/shared";
+import { ROLES_DEL_LADO } from "./correo-unico";
 
 /**
  * Una sola puerta para entrar a la app, sea quien sea.
@@ -33,11 +35,20 @@ export interface SesionDeApp {
 
 export async function autenticarEnLaApp(
   identificador: string,
-  password: string
+  password: string,
+  /**
+   * La app que pregunta: solo se buscan cuentas de su lado (ver
+   * `loginSchema`). Sin ella, los dos lados, el del equipo primero.
+   */
+  app?: AppMovil
 ): Promise<SesionDeApp | null> {
-  // 1. La cuenta del equipo: usuario o correo. `validateCredentials` ya
-  //    rechaza al que tiene el acceso revocado y al que nunca puso contraseña.
-  const user = await validateCredentials(identificador, password);
+  // 1. Una cuenta: usuario o correo. `validateCredentials` ya rechaza al que
+  //    tiene el acceso revocado y al que nunca puso contraseña.
+  const user = await validateCredentials(
+    identificador,
+    password,
+    app ? ROLES_DEL_LADO[app === "equipo" ? "equipo" : "cliente"] : undefined
+  );
   if (user) {
     if (user.role === "CLIENTE") {
       // Un cliente puede tener correo en su `User` además de en su ficha, así
@@ -64,7 +75,8 @@ export async function autenticarEnLaApp(
     };
   }
 
-  // 2. La ficha del cliente: teléfono o correo.
+  // 2. La ficha del cliente: teléfono o correo. Nunca en la app del equipo.
+  if (app === "equipo") return null;
   const cliente = await validateClienteCredentials(identificador, password);
   if (!cliente) return null;
   return {

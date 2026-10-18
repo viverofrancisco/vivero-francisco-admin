@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { APP_ANDROID_PACKAGE, APP_ANDROID_SHA256 } from "@/lib/enlaces-a-la-app";
+import {
+  APP_ANDROID_PACKAGE,
+  APP_ANDROID_SHA256,
+  APP_EQUIPO_ANDROID_PACKAGE,
+  APP_EQUIPO_ANDROID_SHA256,
+} from "@/lib/enlaces-a-la-app";
 
 /**
  * App Links de Android: al instalar la app, el sistema lee este archivo y
@@ -18,6 +23,19 @@ export function GET() {
           sha256_cert_fingerprints: APP_ANDROID_SHA256,
         },
       },
+      // La del equipo, solo cuando tenga sus huellas (ver la constante).
+      ...(APP_EQUIPO_ANDROID_SHA256.length
+        ? [
+            {
+              relation: ["delegate_permission/common.handle_all_urls"],
+              target: {
+                namespace: "android_app",
+                package_name: APP_EQUIPO_ANDROID_PACKAGE,
+                sha256_cert_fingerprints: APP_EQUIPO_ANDROID_SHA256,
+              },
+            },
+          ]
+        : []),
     ],
     {
       headers: {
