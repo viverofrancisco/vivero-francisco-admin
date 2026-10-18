@@ -51,12 +51,12 @@ open -a /Applications/Xcode.app/Contents/Applications/DeviceHub.app 2>/dev/null 
 
 LOG=ios/build/ios-sim.log
 mkdir -p ios/build
-echo "› Compilando (la primera vez tarda varios minutos; el detalle queda en apps/app-equipo/$LOG)"
+echo "› Compilando (la primera vez tarda varios minutos; el detalle queda en apps/app-admin/$LOG)"
 if ! xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Debug \
   -destination "id=$UDID" -derivedDataPath ios/build/dd \
   IPHONEOS_DEPLOYMENT_TARGET=15.1 build >"$LOG" 2>&1; then
   grep -E "error:" "$LOG" | head -20
-  echo "✗ La compilación falló. El detalle completo está en apps/app-equipo/$LOG"
+  echo "✗ La compilación falló. El detalle completo está en apps/app-admin/$LOG"
   exit 1
 fi
 

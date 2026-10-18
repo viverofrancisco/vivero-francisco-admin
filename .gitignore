@@ -18,8 +18,8 @@ build/
 # dos veces y que una quede vieja.
 apps/app-clientes/ios/
 apps/app-clientes/android/
-apps/app-equipo/ios/
-apps/app-equipo/android/
+apps/app-admin/ios/
+apps/app-admin/android/
 
 coverage/
 .vercel
