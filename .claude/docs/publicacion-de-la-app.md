@@ -1,6 +1,15 @@
 # Publicar la app en las tiendas
 
-La app (`apps/mobile`) se compila y se sube con **EAS** (Expo Application
+**Son dos apps** desde el 17-oct-2026: **Vivero Francisco** (`apps/app-clientes`,
+`com.viverofrancisco.app`), la de clientes, que es la que aparece en las tiendas y
+conserva esta ficha y su proyecto de EAS; y **Vivero Francisco Admin**
+(`apps/app-equipo`, `com.viverofrancisco.admin`), la del equipo, **no listada** en
+las dos tiendas (Apple rechaza por la regla 3.2 una app donde solo entran cuentas
+que crea la empresa), con su propio proyecto de EAS que hay que crear (`eas init`).
+Lo de abajo se escribió cuando había una sola app y vale para cada una desde su
+carpeta; lo propio de la del equipo se completa al publicarla.
+
+Cada app se compila y se sube con **EAS** (Expo Application
 Services): `eas build` compila en la nube el binario firmado y `eas submit`
 lo sube a App Store Connect o a Google Play. La máquina de desarrollo no
 necesita Xcode para eso; sí para `npx expo run:ios --device`, que es cómo se
@@ -45,7 +54,7 @@ aquella vez está descrito acá para rehacerlos si el logo cambia:
 
 ## Variables de entorno en EAS
 
-EAS Build **no sube `apps/mobile/.env`** (está en `.gitignore`), así que lo que
+EAS Build **no sube `apps/app-*/.env`** (está en `.gitignore`), así que lo que
 `app.config.ts` y el bundle leen de ahí tiene que estar cargado como variable
 de entorno del proyecto en EAS, en el ambiente que el perfil de `eas.json`
 declara (`environment: "production"`):
@@ -68,7 +77,7 @@ declara (`environment: "production"`):
 
 Se cargan con `eas env:create --environment production --name … --value …`
 (visibilidad *sensitive* para las claves) o de un tirón con
-`eas env:push --environment production --path apps/mobile/.env` — ojo, ese
+`eas env:push --environment production --path apps/app-*/.env` — ojo, ese
 `.env` tiene las líneas de `EXPO_PUBLIC_API_BASE_URL` comentadas.
 
 ## Perfiles (`eas.json`)
@@ -91,7 +100,7 @@ faltan las tres cosas; para instalar un `.apk` de EAS no hace falta ninguna. `ve
 `app.json` es la versión que la gente ve (`1.0.0`).
 
 Es un monorepo con npm workspaces: `eas build` se corre **desde
-`apps/mobile`**, y EAS sube el repo entero (lo que git no ignora) e instala
+la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`)**, y EAS sube el repo entero (lo que git no ignora) e instala
 desde la raíz, que es donde vive `packages/shared`.
 
 ## Un solo `expo` en el monorepo
@@ -101,18 +110,18 @@ El primer `.apk` de EAS **se cerraba al abrir** con
 `DomWebViewModule`. La causa no estaba en la app sino en `node_modules`: la
 raíz tenía `expo-router` como devDependency (un resto del template) y npm,
 al resolver los peers `expo@"*"` de los paquetes izados, instaló **expo 57**
-en la raíz mientras `apps/mobile` quedaba con su expo 54 anidado. Desde
-`apps/mobile`, `require("expo")` daba 54 y `require("expo-modules-core")`
+en la raíz mientras la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`) quedaba con su expo 54 anidado. Desde
+la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`), `require("expo")` daba 54 y `require("expo-modules-core")`
 daba el 57 de la raíz, y el build de Android compiló el módulo de uno contra
 el core del otro. iOS no se quejó porque CocoaPods resuelve cada pod desde
 el paquete que lo declara.
 
 Por eso la raíz lleva **`overrides.expo = "~54.0.33"`** (el mismo rango que
-`apps/mobile`, hay que moverlos juntos al subir de SDK) y ya no tiene
+la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`), hay que moverlos juntos al subir de SDK) y ya no tiene
 `expo-router`. El override no bastó sobre el lockfile viejo —npm no vuelve a
 resolver lo que ya tenía resuelto— y hubo que regenerarlo desde cero
 (`rm -rf node_modules package-lock.json && npm install`). La comprobación
-rápida, desde `apps/mobile`:
+rápida, desde la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`):
 
 ```bash
 node -e "console.log(require('expo/package.json').version, require('expo-modules-core/package.json').version)"
@@ -127,7 +136,7 @@ versiones que no corresponden al SDK.
    empresa piden el D-U-N-S; con cuenta individual sale a nombre de la persona.
 2. `npm i -g eas-cli` (la máquina tenía 20.1; la 24 es la actual) y
    `eas login`.
-3. Desde `apps/mobile`: `eas init` desde la cuenta de Expo del negocio (`app.json` lleva `owner: "vivero-francisco"`, la organización, para que el proyecto no caiga en la cuenta personal `viverofrancisco` con la que se inicia sesión; crea el proyecto en Expo y escribe
+3. Desde la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`): `eas init` desde la cuenta de Expo del negocio (`app.json` lleva `owner: "vivero-francisco"`, la organización, para que el proyecto no caiga en la cuenta personal `viverofrancisco` con la que se inicia sesión; crea el proyecto en Expo y escribe
    `extra.eas.projectId` en `app.json` — se commitea).
 4. Las tres variables de arriba en el ambiente `production`.
 5. `eas build -p ios --profile production`. La primera vez pide el Apple ID y
@@ -183,7 +192,7 @@ capabilities*; o activar la capacidad en developer.apple.com (Identifiers ›
 la app) y borrar el perfil después. Vale para cualquier capacidad futura
 (push, Sign in with Apple).
 
-**Correr `eas` desde `apps/mobile`**, siempre: lanzado desde la raíz del
+**Correr `eas` desde la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`)**, siempre: lanzado desde la raíz del
 monorepo, EAS CLI deja un `app.json` vacío (`{"expo": {}}`) al lado del
 `package.json` de la raíz, que un `git add -A` se lleva sin que nadie lo
 mire. Ya pasó dos veces.
@@ -233,7 +242,7 @@ Expo SDK 54 busca una app llamada "Simulator" antes de compilar y se detiene con
 `npm run ios` y la tecla `i` de `expo start` no sirven. Además Xcode 27 rechaza los
 pods con *deployment target* 13.x/14.x (*supported range is 15.0 to 27.0*). Hasta que
 Expo lo soporte, la versión de desarrollo se compila e instala con
-`npm run ios:sim` (en `apps/mobile`; `scripts/ios-sim.sh`): carga las claves de
+`npm run ios:sim` (en la carpeta de la app (`apps/app-clientes` o `apps/app-equipo`); `scripts/ios-sim.sh`): carga las claves de
 Google Maps del `.env`, elige el simulador encendido (o el que le pases por nombre:
 `npm run ios:sim -- "iPhone 17 Pro Max"`, si no un iPhone 17 Pro), compila con
 `xcodebuild … IPHONEOS_DEPLOYMENT_TARGET=15.1`, instala con `simctl` y abre la app. El
@@ -315,6 +324,6 @@ una vez aprobadas las dos tiendas.
 5. **Los textos de las tiendas todavía son solo del equipo**: con el
    modo invitado, agregar la parte de los clientes (catálogo,
    solicitudes, ver sus visitas) a las dos fichas —ya está en
-   `apps/mobile/tienda/textos.md`— y responder de nuevo *Data safety* de Play
+   `apps/app-clientes/tienda/textos.md`— y responder de nuevo *Data safety* de Play
    y la privacidad de App Store: ahora se recogen nombre y teléfono de
    cualquiera que mande una solicitud.

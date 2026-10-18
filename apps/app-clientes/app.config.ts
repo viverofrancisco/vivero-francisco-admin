@@ -4,7 +4,7 @@ import type { ConfigContext, ExpoConfig } from "@expo/config";
  * Lo que `app.json` no puede decir: las claves de Google Maps.
  *
  * Son una por plataforma —cada una restringida a su app (bundle id en iOS,
- * paquete + SHA-1 en Android) y a su SDK— y viven en `apps/mobile/.env`, que
+ * paquete + SHA-1 en Android) y a su SDK— y viven en `apps/app-clientes/.env`, que
  * no se sube al repo. Expo carga ese archivo antes de evaluar esta
  * configuración, así que acá llegan por `process.env`, y el prebuild las
  * hornea en el binario: `ios.config.googleMapsApiKey` va al Info.plist y al

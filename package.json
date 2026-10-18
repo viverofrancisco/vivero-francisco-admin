@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "dev:admin": "npm run dev -w apps/admin",
-    "dev:mobile": "npm run start -w apps/mobile",
+    "dev:clientes": "npm run start -w apps/app-clientes",
+    "dev:equipo": "npm run start -w apps/app-equipo",
     "build:admin": "npm run build -w apps/admin",
     "lint:admin": "npm run lint -w apps/admin",
     "migrate:dev": "npm run migrate:dev -w apps/admin",

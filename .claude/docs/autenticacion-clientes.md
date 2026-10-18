@@ -78,7 +78,7 @@ publicada, y por eso su Zod ya **no** valida como dirección.
 ## Modo invitado
 
 **Quien abre la app sin cuenta puede mirar el catálogo y pedir una visita** (*Seguir como invitado*, al pie del login →
-`apps/mobile/app/(invitado)/`). Es lo que hace que la app le sirva a alguien
+`apps/app-clientes/app/(invitado)/`). Es lo que hace que la app le sirva a alguien
 que todavía no es cliente, y lo que Apple pidió para publicarla: la rechazó
 por la regla 3.2 mientras solo se podía entrar con una cuenta creada por el
 vivero. `useAuthGate` deja pasar `(invitado)` sin sesión.
@@ -98,7 +98,7 @@ vivero. `useAuthGate` deja pasar `(invitado)` sin sesión.
 ## Registro desde la app
 
 *Crear cuenta*, al pie del login junto a *Seguir como invitado*
-(`apps/mobile/app/(auth)/registro.tsx`), **con el correo**; el teléfono es
+(`apps/app-clientes/app/(auth)/registro.tsx`), **con el correo**; el teléfono es
 opcional. Se activó así (12-oct-2026) para que la app tenga registro propio
 mientras falta el número de WhatsApp dedicado: la versión con el **teléfono** y un
 código por **WhatsApp** (una plantilla *AUTHENTICATION* de Meta, que
@@ -375,7 +375,7 @@ mitades el sistema entrega el enlace a la app sin preguntar.
 - **La mitad de la app** es `ios.associatedDomains` e `android.intentFilters`
   (con `autoVerify`) en `app.json` —cambiarlos pide un build nativo nuevo, y
   en iOS EAS enciende la capacidad *Associated Domains* en el App ID solo— y
-  la pantalla `apps/mobile/app/establecer-contrasena.tsx`, a la que expo-router
+  la pantalla `apps/app-*/app/establecer-contrasena.tsx`, a la que expo-router
   enruta la URL por el camino. Es la página del portal en la app: las mismas
   rutas públicas, los mismos estados (válido, caducado, usado, reemplazado),
   y al terminar *Iniciar sesión*, que cierra la sesión que hubiera —un
@@ -408,9 +408,9 @@ portal con tu correo". Ahora es "app" para `PERSONAL` y para los clientes, y
 | Invitación desde admin | `apps/admin/src/app/api/clientes/[id]/invitar/route.ts` |
 | Página pública | `apps/admin/src/app/establecer-contrasena/` |
 | El enlace abre en la app: identidad y los dos `.well-known` | `apps/admin/src/lib/enlaces-a-la-app.ts` + `apps/admin/src/app/.well-known/{apple-app-site-association,assetlinks.json}/route.ts` |
-| La misma pantalla en la app | `apps/mobile/app/establecer-contrasena.tsx` (+ `associatedDomains` / `intentFilters` en `app.json`) |
+| La misma pantalla en la app | `apps/app-*/app/establecer-contrasena.tsx` (+ `associatedDomains` / `intentFilters` en `app.json`) |
 | Modelo del token | `SetPasswordToken` en `prisma/schema.prisma` — apunta a **un** `clienteId` **o** a **un** `userId`, nunca a los dos (`CHECK`) |
-| Pantallas móviles | `apps/mobile/app/(auth)/{login,registro,solicitar-acceso}.tsx` |
+| Pantallas móviles | `apps/app-clientes/app/(auth)/{login,registro,solicitar-acceso}.tsx` |
 | Registro, código y eliminar la cuenta | `apps/admin/src/lib/services/registro-cliente.service.ts` + `apps/admin/src/app/api/mobile/auth/{registro,registro/confirmar,cuenta}/route.ts` |
 
 ## El cliente cambia su correo
