@@ -241,13 +241,13 @@ export function UbicacionForm({
         {cambio ? (
           <div className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b bg-card/95 px-3 backdrop-blur-sm">
             <PastillaDeHoja texto="Cancelar" onClick={() => setC(inicial)} disabled={guardando} />
-            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">{inicial.nombre}</h1>
+            <div className="flex-1" />
             <PastillaDeHoja texto="Guardar" primaria cargando={guardando} onClick={() => void guardar()} />
           </div>
         ) : (
         <div className="sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b bg-card/95 px-3 backdrop-blur-sm">
           <VolverRedondo href={volverA} />
-          <h1 className="min-w-0 flex-1 truncate text-[17px] font-bold">{inicial.nombre}</h1>
+          <div className="flex-1" />
           <DropdownMenu>
             <DropdownMenuTrigger
               render={<button type="button" aria-label="Más acciones" className={BOTON_REDONDO_MOVIL} />}

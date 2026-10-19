@@ -131,7 +131,7 @@ export function FichaDeUbicacion({
     <View style={styles.flex}>
       {cambio ? (
         <EncabezadoDeFormulario
-          titulo={guardada.nombre}
+          titulo=""
           accion="Guardar"
           onAccion={guardar}
           onCancelar={() => setB(guardada)}
@@ -140,7 +140,7 @@ export function FichaDeUbicacion({
         />
       ) : (
         <EncabezadoDeFicha
-          titulo={guardada.nombre}
+          titulo=""
           derecha={<MenuDeEncabezado opciones={[{ etiqueta: "Eliminar ubicación", onPress: onEliminar }]} />}
         />
       )}
