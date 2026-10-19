@@ -173,7 +173,6 @@ export function UbicacionForm({
             onValueChange={setRetiro}
           />
 
-          <Titulo>Nombre</Titulo>
           <Campo
             label="Nombre"
             required
