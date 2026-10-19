@@ -229,7 +229,7 @@ export default function NuevaSolicitudScreen() {
               {telefonoMalo ? (
                 <HelperText type="error" visible>
                   {digitos === 0
-                    ? "Escribe a qué número llamarte."
+                    ? "Campo obligatorio."
                     : "Escribe un teléfono válido."}
                 </HelperText>
               ) : null}

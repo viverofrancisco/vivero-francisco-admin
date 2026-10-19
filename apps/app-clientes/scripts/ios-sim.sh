@@ -61,7 +61,9 @@ if ! xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Debug \
 fi
 
 echo "› Instalando en el simulador"
-APP=ios/build/dd/Build/Products/Debug-iphonesimulator/$SCHEME.app
+# El .app se llama como el `name` de app.json, no como el workspace: al pasar
+# a "Vivero Admin" salió ViveroAdmin.app con el esquema ViveroFranciscoAdmin.
+APP=$(ls -d ios/build/dd/Build/Products/Debug-iphonesimulator/*.app | head -1)
 BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist")
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 xcrun simctl install "$UDID" "$APP"

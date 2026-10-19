@@ -383,7 +383,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                 />
                 {(digitos > 0 || intentado) && faltaTelefono ? (
                   <HelperText type="error" visible style={styles.ayudaCampo}>
-                    {digitos === 0 ? "Escribe a qué número llamarte." : "Escribe un teléfono válido."}
+                    {digitos === 0 ? "Campo obligatorio." : "Escribe un teléfono válido."}
                   </HelperText>
                 ) : null}
               </View>
