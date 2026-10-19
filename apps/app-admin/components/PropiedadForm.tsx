@@ -333,7 +333,7 @@ export function CamposDePropiedad({
         value={c.numeroCasa}
         onChangeText={c.setNumeroCasa}
       />
-      <SelectorDeCiudad valor={c.ciudad} onCambio={c.setCiudad} />
+      <SelectorDeCiudad valor={c.ciudad} onCambio={c.setCiudad} comoCampo />
       <Campo
         label="Referencia"
         value={c.referencia}

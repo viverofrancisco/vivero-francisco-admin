@@ -25,12 +25,20 @@ export function SelectorDeCiudad({
   etiqueta = "Ciudad",
   error = false,
   textoDeError,
+  comoCampo = false,
 }: {
   valor: string;
   onCambio: (ciudad: string) => void;
   etiqueta?: string;
   error?: boolean;
   textoDeError?: string;
+  /**
+   * Que se vea como `Campo` (`Formulario.tsx`): fondo blanco, borde claro y
+   * esquinas de 12, en los formularios armados con él —propiedad, ubicación—.
+   * Sin esto, el campo de Paper de siempre, como el resto del checkout y de la
+   * solicitud.
+   */
+  comoCampo?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -63,6 +71,14 @@ export function SelectorDeCiudad({
             editable={false}
             error={error}
             right={<TextInput.Icon icon="chevron-down" />}
+            {...(comoCampo
+              ? {
+                  outlineColor: tema.linea,
+                  activeOutlineColor: tema.verde,
+                  outlineStyle: styles.borde,
+                  style: styles.campo,
+                }
+              : {})}
           />
         </View>
       </Pressable>
@@ -123,6 +139,9 @@ export function SelectorDeCiudad({
 }
 
 const styles = StyleSheet.create({
+  // Los de `Campo`, para `comoCampo`.
+  campo: { marginBottom: 8, backgroundColor: "#fff" },
+  borde: { borderRadius: 12 },
   titulo: {
     fontSize: 17,
     fontWeight: "700",

@@ -180,7 +180,7 @@ export function UbicacionForm({
             }}
           />
           <Campo label="Dirección" value={direccion} onChangeText={setDireccion} />
-          <SelectorDeCiudad valor={ciudad} onCambio={setCiudad} />
+          <SelectorDeCiudad valor={ciudad} onCambio={setCiudad} comoCampo />
           <Campo label="Referencia" value={referencia} onChangeText={setReferencia} />
 
           <Titulo>En el mapa</Titulo>
