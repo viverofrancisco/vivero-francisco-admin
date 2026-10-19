@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   CalendarDays,
+  ChevronDown,
   ExternalLink,
   MapPin,
   MessageSquareText,
@@ -29,10 +30,15 @@ import { BarraFiltros } from "@/components/shared/barra-filtros";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -298,14 +304,44 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
                   <span>{cuando(abierta.createdAt)}</span>
                   <EstadoSolicitud atendida={!!abierta.atendidaEl} />
                 </div>
-                <DialogTitle className="text-lg">
-                  {abierta.contacto.nombre}
-                  {abierta.cliente ? null : (
-                    <span className="ml-2 align-middle text-xs font-normal text-muted-foreground">
-                      Sin cuenta
-                    </span>
-                  )}
-                </DialogTitle>
+                {/* El nombre y, a su lado, *Acciones*: lo que se hace con la
+                    solicitud, en un desplegable como en el resto de las fichas
+                    (y como el ⋯ del teléfono). `pr-8` deja sitio a la ✕. */}
+                <div className="flex items-center gap-3 pr-8">
+                  <DialogTitle className="min-w-0 flex-1 text-lg">
+                    {abierta.contacto.nombre}
+                    {abierta.cliente ? null : (
+                      <span className="ml-2 align-middle text-xs font-normal text-muted-foreground">
+                        Sin cuenta
+                      </span>
+                    )}
+                  </DialogTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={<Button variant="outline" size="sm" disabled={guardando} />}
+                    >
+                      Acciones
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-auto">
+                      <DropdownMenuItem onClick={() => marcar(abierta, !abierta.atendidaEl)}>
+                        {abierta.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/dashboard/visitas/nueva?solicitud=${abierta.id}`)}
+                      >
+                        Crear visita
+                      </DropdownMenuItem>
+                      {abierta.cliente ? (
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/dashboard/clientes/${abierta.cliente!.id}`)}
+                        >
+                          Ver cliente
+                        </DropdownMenuItem>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </DialogHeader>
 
               <div className="min-h-0 flex-1 divide-y overflow-y-auto">
@@ -402,41 +438,12 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
                 )}
               </div>
 
-              <DialogFooter className="mx-0 mb-0 items-stretch gap-2 px-5 py-3 sm:items-center sm:justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {abierta.atendidaEl
-                    ? `Atendida ${cuando(abierta.atendidaEl)}${
-                        abierta.atendidaPorNombre ? ` por ${abierta.atendidaPorNombre}` : ""
-                      }`
-                    : null}
+              {abierta.atendidaEl ? (
+                <p className="border-t px-5 py-3 text-xs text-muted-foreground">
+                  Atendida {cuando(abierta.atendidaEl)}
+                  {abierta.atendidaPorNombre ? ` por ${abierta.atendidaPorNombre}` : ""}
                 </p>
-                <div className="flex flex-wrap justify-end gap-2">
-                  {abierta.cliente ? (
-                    <Button
-                      variant="outline"
-                      nativeButton={false}
-                      render={<Link href={`/dashboard/clientes/${abierta.cliente.id}`} />}
-                    >
-                      Ver cliente
-                    </Button>
-                  ) : null}
-                  <Button
-                    variant="outline"
-                    nativeButton={false}
-                    render={
-                      <Link href={`/dashboard/visitas/nueva?solicitud=${abierta.id}`} />
-                    }
-                  >
-                    Crear visita
-                  </Button>
-                  <Button
-                    disabled={guardando}
-                    onClick={() => marcar(abierta, !abierta.atendidaEl)}
-                  >
-                    {abierta.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
-                  </Button>
-                </div>
-              </DialogFooter>
+              ) : null}
             </>
           ) : null}
         </DialogContent>
