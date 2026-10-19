@@ -360,34 +360,41 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                     {faltaEmail ? "Escribe tu correo." : "Escribe un correo válido."}
                   </HelperText>
                 ) : null}
-                <TextInput
-                  mode="outlined"
-                  label="Nombre *"
-                  value={nombre}
-                  onChangeText={setNombre}
-                  autoComplete="given-name"
-                  textContentType="givenName"
-                  error={intentado && faltaNombre}
-                />
-                {intentado && faltaNombre ? (
-                  <HelperText type="error" visible style={styles.ayudaCampo}>
-                    Escribe tu nombre.
-                  </HelperText>
-                ) : null}
-                <TextInput
-                  mode="outlined"
-                  label="Apellido *"
-                  value={apellido}
-                  onChangeText={setApellido}
-                  autoComplete="family-name"
-                  textContentType="familyName"
-                  error={intentado && faltaApellido}
-                />
-                {intentado && faltaApellido ? (
-                  <HelperText type="error" visible style={styles.ayudaCampo}>
-                    Escribe tu apellido.
-                  </HelperText>
-                ) : null}
+                {/* Nombre y apellido lado a lado, como en el checkout de Shopify. */}
+                <View style={styles.lado}>
+                  <View style={styles.mitad}>
+                    <TextInput
+                      mode="outlined"
+                      label="Nombre *"
+                      value={nombre}
+                      onChangeText={setNombre}
+                      autoComplete="given-name"
+                      textContentType="givenName"
+                      error={intentado && faltaNombre}
+                    />
+                    {intentado && faltaNombre ? (
+                      <HelperText type="error" visible style={styles.ayudaLado}>
+                        Escribe tu nombre.
+                      </HelperText>
+                    ) : null}
+                  </View>
+                  <View style={styles.mitad}>
+                    <TextInput
+                      mode="outlined"
+                      label="Apellido *"
+                      value={apellido}
+                      onChangeText={setApellido}
+                      autoComplete="family-name"
+                      textContentType="familyName"
+                      error={intentado && faltaApellido}
+                    />
+                    {intentado && faltaApellido ? (
+                      <HelperText type="error" visible style={styles.ayudaLado}>
+                        Escribe tu apellido.
+                      </HelperText>
+                    ) : null}
+                  </View>
+                </View>
                 <TextInput
                   mode="outlined"
                   label="Teléfono *"
@@ -663,6 +670,9 @@ function TarjetaDeMetodo({
 }
 
 const styles = StyleSheet.create({
+  lado: { flexDirection: "row", gap: 10 },
+  mitad: { flex: 1 },
+  ayudaLado: { paddingHorizontal: 4 },
   cargando: { flex: 1, alignItems: "center", justifyContent: "center" },
   datos: { gap: 10, marginBottom: 6 },
   /** El aviso pegado al campo que señala. */

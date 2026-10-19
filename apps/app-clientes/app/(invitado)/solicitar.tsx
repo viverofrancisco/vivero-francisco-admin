@@ -137,34 +137,41 @@ export default function SolicitarInvitadoScreen() {
 
           <View style={styles.grupo} onLayout={(e) => (yDatos.current = e.nativeEvent.layout.y)}>
             <Text style={styles.rotulo}>TUS DATOS</Text>
-            <TextInput
-              mode="outlined"
-              label="Nombre *"
-              value={nombre}
-              onChangeText={setNombre}
-              autoComplete="given-name"
-              textContentType="givenName"
-              error={intentado && faltaNombre}
-            />
-            {intentado && faltaNombre ? (
-              <HelperText type="error" visible style={styles.ayuda}>
-                Escribe tu nombre.
-              </HelperText>
-            ) : null}
-            <TextInput
-              mode="outlined"
-              label="Apellido *"
-              value={apellido}
-              onChangeText={setApellido}
-              autoComplete="family-name"
-              textContentType="familyName"
-              error={intentado && faltaApellido}
-            />
-            {intentado && faltaApellido ? (
-              <HelperText type="error" visible style={styles.ayuda}>
-                Escribe tu apellido.
-              </HelperText>
-            ) : null}
+            {/* Nombre y apellido lado a lado, como en el checkout de Shopify. */}
+            <View style={styles.lado}>
+              <View style={styles.mitad}>
+                <TextInput
+                  mode="outlined"
+                  label="Nombre *"
+                  value={nombre}
+                  onChangeText={setNombre}
+                  autoComplete="given-name"
+                  textContentType="givenName"
+                  error={intentado && faltaNombre}
+                />
+                {intentado && faltaNombre ? (
+                  <HelperText type="error" visible style={styles.ayudaLado}>
+                    Escribe tu nombre.
+                  </HelperText>
+                ) : null}
+              </View>
+              <View style={styles.mitad}>
+                <TextInput
+                  mode="outlined"
+                  label="Apellido *"
+                  value={apellido}
+                  onChangeText={setApellido}
+                  autoComplete="family-name"
+                  textContentType="familyName"
+                  error={intentado && faltaApellido}
+                />
+                {intentado && faltaApellido ? (
+                  <HelperText type="error" visible style={styles.ayudaLado}>
+                    Escribe tu apellido.
+                  </HelperText>
+                ) : null}
+              </View>
+            </View>
             <TextInput
               mode="outlined"
               label="Teléfono *"
@@ -241,6 +248,9 @@ export default function SolicitarInvitadoScreen() {
 }
 
 const styles = StyleSheet.create({
+  lado: { flexDirection: "row", gap: 10 },
+  mitad: { flex: 1 },
+  ayudaLado: { paddingHorizontal: 4 },
   pantalla: { flex: 1, backgroundColor: "#fff" },
   flex: { flex: 1 },
   cuerpo: { padding: 16, gap: 12, paddingBottom: 40 },
