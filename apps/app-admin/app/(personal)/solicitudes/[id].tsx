@@ -129,12 +129,12 @@ export default function SolicitudScreen() {
         }
       >
         <View style={styles.estadoFila}>
+          <Text style={styles.fecha}>Enviada {fechaYHora12(s.createdAt)}</Text>
           <View style={[styles.pastilla, s.atendidaEl ? styles.atendida : styles.pendiente]}>
             <Text style={[styles.pastillaTexto, { color: s.atendidaEl ? tema.verde700 : tema.ambarTexto }]}>
               {s.atendidaEl ? "Atendida" : "Pendiente"}
             </Text>
           </View>
-          <Text style={styles.fecha}>Enviada {fechaYHora12(s.createdAt)}</Text>
         </View>
 
         <Text style={styles.rotulo}>CLIENTE</Text>

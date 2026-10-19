@@ -162,8 +162,8 @@ export function FichaSolicitud({
 
       <div className="mx-auto max-w-xl px-4 pt-1">
         <div className="flex items-center gap-2">
-          <EstadoSolicitud atendida={!!s.atendidaEl} />
           <p className="text-[13px] text-muted-foreground">Enviada {cuandoSolicitud(s.createdAt)}</p>
+          <EstadoSolicitud atendida={!!s.atendidaEl} />
         </div>
 
         <Seccion titulo="Cliente">
