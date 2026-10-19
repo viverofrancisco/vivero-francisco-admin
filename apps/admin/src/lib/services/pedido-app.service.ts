@@ -162,7 +162,13 @@ export async function crearPedidoDeInvitado(
     fichas.length === 1
       ? { existente: fichas[0] }
       : { nuevo: { nombre: contacto.nombre, telefono: contacto.telefono, email: fichas.length ? null : email } };
-  return crearPedido(quien, null, body, opciones, contacto);
+  // La ficha de alguien que ya existe no se toca: ni su nombre y teléfono
+  // (quién pidió queda en `contacto*` de la orden) ni sus propiedades. Un
+  // invitado no ve *Guardar esta dirección*, pero la app la manda marcada, y
+  // con el correo de otro su dirección se habría sumado a esa ficha.
+  const entrega =
+    body.entrega.tipo === "UBICACION" ? { ...body.entrega, guardar: false } : body.entrega;
+  return crearPedido(quien, null, { ...body, entrega }, opciones, contacto);
 }
 
 type QuienPide =
