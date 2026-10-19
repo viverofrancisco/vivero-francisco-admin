@@ -101,6 +101,12 @@ aquella vez está descrito acá para rehacerlos si el logo cambia:
   negro).
 - `favicon.png` — 64×64 desde el ícono, para la web.
 
+**La app del equipo lleva el ícono sobre arena** (`#F1E6CF`, en `icon.png` y en
+`adaptiveIcon.backgroundColor` de `apps/app-admin/app.json`), para que en la
+pantalla de inicio no se confunda con la de clientes, que va sobre blanco. Se
+genera igual que el de clientes, con el logo (`splash-icon.png`) a 760 px de
+alto centrado sobre ese color; el splash de las dos sigue en blanco.
+
 ## Variables de entorno en EAS
 
 EAS Build **no sube `apps/app-*/.env`** (está en `.gitignore`), así que lo que
