@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -12,18 +13,23 @@ import { HelperText, Text } from "react-native-paper";
 import { HORARIO_POR_DEFECTO, type Ubicacion, type UbicacionBody } from "@vivero/shared";
 import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
 import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { HojaDeOpciones, type OpcionElegible } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { Ionicons } from "@expo/vector-icons";
 import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
-import { Campo, Interruptor } from "@vivero/app-ui/components/ui/Formulario";
+import { Campo } from "@vivero/app-ui/components/ui/Formulario";
 import { mensajeDeError } from "@vivero/app-ui/lib/api";
 import { tema } from "@vivero/app-ui/lib/tema";
 import { HorarioEnHoja } from "@/components/HorarioEnHoja";
 import { CamposDeDireccion, type DireccionDeUbicacion } from "@/components/CamposDeDireccion";
 
 /**
- * Una ubicación ya creada, como la ficha de *Locations* de Shopify: se lee, y
- * cada parte se cambia en su hoja, que guarda solo esa parte —*Editar* en el
- * ⋯ del encabezado para el nombre, el teléfono y los dos interruptores;
- * *Editar* junto a *Dirección* y junto a *Horario* para lo suyo—. Era el
+ * Una ubicación ya creada, como una ficha de Shopify: se lee, y se cambia por
+ * partes. *Estado* y *Retiro* son filas con su pastilla que abren una hoja de
+ * opciones, como el *Product status* de Shopify; lo elegido **no se guarda
+ * solo**: el encabezado se vuelve *Cancelar* / *Guardar*. El nombre y el
+ * teléfono (*Editar* en el ⋯), la dirección y el horario (*Editar* junto a
+ * su rótulo) se cambian en su hoja, que guarda solo esa parte. Era el
  * formulario entero abierto, y una ubicación se mira mucho más de lo que se
  * corrige.
  */
@@ -38,7 +44,23 @@ export function FichaDeUbicacion({
   onEliminar: () => void;
 }) {
   const [u, setU] = useState(ubicacion);
-  const [hoja, setHoja] = useState<"datos" | "direccion" | null>(null);
+  const [hoja, setHoja] = useState<"datos" | "direccion" | "estado" | "retiro" | null>(null);
+  // Estado y retiro esperan al *Guardar* del encabezado.
+  const [activa, setActiva] = useState(ubicacion.activa);
+  const [retiro, setRetiro] = useState(ubicacion.retiro);
+  const [guardando, setGuardando] = useState(false);
+  const pendiente = activa !== u.activa || retiro !== u.retiro;
+
+  async function guardarPendiente() {
+    setGuardando(true);
+    try {
+      setU(await onGuardar({ activa, retiro }));
+    } catch (e) {
+      Alert.alert("No se pudo guardar", mensajeDeError(e, "Intenta de nuevo en un momento."));
+    } finally {
+      setGuardando(false);
+    }
+  }
 
   const guardar = async (cambios: Partial<UbicacionBody>) => {
     setU(await onGuardar(cambios));
@@ -49,21 +71,45 @@ export function FichaDeUbicacion({
 
   return (
     <View style={styles.flex}>
-      <EncabezadoDeFicha
-        titulo={u.nombre}
-        derecha={
-          <MenuDeEncabezado
-            opciones={[
-              { etiqueta: "Editar", onPress: () => setHoja("datos") },
-              { etiqueta: "Eliminar ubicación", onPress: onEliminar },
-            ]}
-          />
-        }
-      />
+      {pendiente ? (
+        <EncabezadoDeFormulario
+          titulo={u.nombre}
+          accion="Guardar"
+          onAccion={guardarPendiente}
+          onCancelar={() => {
+            setActiva(u.activa);
+            setRetiro(u.retiro);
+          }}
+          cargando={guardando}
+          pastillas
+        />
+      ) : (
+        <EncabezadoDeFicha
+          titulo={u.nombre}
+          derecha={
+            <MenuDeEncabezado
+              opciones={[
+                { etiqueta: "Editar", onPress: () => setHoja("datos") },
+                { etiqueta: "Eliminar ubicación", onPress: onEliminar },
+              ]}
+            />
+          }
+        />
+      )}
       <ScrollView style={styles.flex} contentContainerStyle={styles.cuerpo}>
+        <FilaConPastilla
+          etiqueta="Estado"
+          valor={activa ? "Activa" : "Inactiva"}
+          prendida={activa}
+          onPress={() => setHoja("estado")}
+        />
+        <FilaConPastilla
+          etiqueta="Retiro en este local"
+          valor={retiro ? "Sí" : "No"}
+          prendida={retiro}
+          onPress={() => setHoja("retiro")}
+        />
         <View style={styles.filas}>
-          <Renglon etiqueta="Estado" valor={u.activa ? "Activa" : "Inactiva"} apagado={!u.activa} />
-          <Renglon etiqueta="Retiro en este local" valor={u.retiro ? "Sí" : "No"} apagado={!u.retiro} />
           <Renglon etiqueta="Teléfono" valor={u.telefono ?? "—"} apagado={!u.telefono} />
         </View>
 
@@ -104,10 +150,65 @@ export function FichaDeUbicacion({
       {hoja === "datos" ? (
         <HojaDeDatos ubicacion={u} onCerrar={() => setHoja(null)} onGuardar={guardar} />
       ) : null}
+      <HojaDeOpciones
+        visible={hoja === "estado"}
+        titulo="Estado"
+        opciones={OPCIONES_DE_ESTADO}
+        valor={activa ? "si" : "no"}
+        onElegir={(v) => setActiva(v === "si")}
+        onCerrar={() => setHoja(null)}
+      />
+      <HojaDeOpciones
+        visible={hoja === "retiro"}
+        titulo="Retiro en este local"
+        opciones={OPCIONES_DE_RETIRO}
+        valor={retiro ? "si" : "no"}
+        onElegir={(v) => setRetiro(v === "si")}
+        onCerrar={() => setHoja(null)}
+      />
       {hoja === "direccion" ? (
         <HojaDeDireccion ubicacion={u} onCerrar={() => setHoja(null)} onGuardar={guardar} />
       ) : null}
     </View>
+  );
+}
+
+const OPCIONES_DE_ESTADO: OpcionElegible[] = [
+  { clave: "si", etiqueta: "Activa", detalle: "Se ofrece en la app y en los pedidos" },
+  { clave: "no", etiqueta: "Inactiva", detalle: "No se ofrece en ningún lado, pero sigue nombrando sus pedidos" },
+];
+
+const OPCIONES_DE_RETIRO: OpcionElegible[] = [
+  { clave: "si", etiqueta: "Sí", detalle: "El cliente puede elegirlo para retirar su pedido en la app" },
+  { clave: "no", etiqueta: "No", detalle: "No aparece entre los lugares de retiro" },
+];
+
+/** Una fila que abre sus opciones: el rótulo, la pastilla con el valor y el chevron. */
+function FilaConPastilla({
+  etiqueta,
+  valor,
+  prendida,
+  onPress,
+}: {
+  etiqueta: string;
+  valor: string;
+  prendida: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [styles.filaPastilla, pressed && styles.tocado]}
+    >
+      <Text style={styles.filaPastillaTexto}>{etiqueta}</Text>
+      <View style={[styles.pastilla, prendida ? styles.pastillaVerde : styles.pastillaGris]}>
+        <Text style={[styles.pastillaTexto, prendida ? styles.pastillaTextoVerde : styles.pastillaTextoGris]}>
+          {valor}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+    </Pressable>
   );
 }
 
@@ -209,7 +310,7 @@ function horarioOrdenado(u: Ubicacion) {
 
 const texto = (t: string) => t.trim() || null;
 
-/** El nombre, el teléfono y los dos interruptores. */
+/** El nombre y el teléfono. */
 function HojaDeDatos({
   ubicacion: u,
   onCerrar,
@@ -221,13 +322,7 @@ function HojaDeDatos({
 }) {
   const [nombre, setNombre] = useState(u.nombre);
   const [telefono, setTelefono] = useState(u.telefono ?? "");
-  const [activa, setActiva] = useState(u.activa);
-  const [retiro, setRetiro] = useState(u.retiro);
-  const hayCambios =
-    nombre.trim() !== u.nombre ||
-    texto(telefono) !== u.telefono ||
-    activa !== u.activa ||
-    retiro !== u.retiro;
+  const hayCambios = nombre.trim() !== u.nombre || texto(telefono) !== u.telefono;
 
   return (
     <Hoja
@@ -236,22 +331,10 @@ function HojaDeDatos({
       onCerrar={onCerrar}
       onGuardar={async () => {
         if (!nombre.trim()) return "Ponle un nombre";
-        await onGuardar({ nombre: nombre.trim(), telefono: texto(telefono), activa, retiro });
+        await onGuardar({ nombre: nombre.trim(), telefono: texto(telefono) });
         return null;
       }}
     >
-      <Interruptor
-        label="Activa"
-        nota="Apagada no se ofrece en ningún lado, pero sigue nombrando sus pedidos"
-        value={activa}
-        onValueChange={setActiva}
-      />
-      <Interruptor
-        label="Retiro en este local"
-        nota="El cliente puede elegirlo para retirar su pedido en la app"
-        value={retiro}
-        onValueChange={setRetiro}
-      />
       <Campo label="Nombre" required value={nombre} onChangeText={setNombre} />
       <Campo label="Teléfono" value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" />
     </Hoja>
@@ -305,7 +388,23 @@ function HojaDeDireccion({
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
   cuerpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
-  filas: { gap: 8, paddingHorizontal: 4 },
+  filas: { gap: 8, paddingHorizontal: 4, marginTop: 6 },
+  filaPastilla: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: tema.linea,
+  },
+  filaPastillaTexto: { flex: 1, color: tema.texto, fontSize: 15, fontWeight: "600" },
+  pastilla: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
+  pastillaVerde: { backgroundColor: tema.verde100 },
+  pastillaGris: { backgroundColor: tema.lienzo },
+  pastillaTexto: { fontSize: 13, fontWeight: "600" },
+  pastillaTextoVerde: { color: tema.verde700 },
+  pastillaTextoGris: { color: tema.texto2 },
   renglon: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   texto: { color: tema.texto, fontSize: 14 },
   apagado: { color: tema.texto3, fontSize: 14 },

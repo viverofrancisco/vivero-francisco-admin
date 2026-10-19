@@ -61,45 +61,77 @@ export function SelectorOpcion({
         <Ionicons name="chevron-down" size={18} color={tema.texto3} />
       </Pressable>
 
-      <HojaInferior visible={abierto} onCerrar={() => setAbierto(false)}>
-        <Text style={styles.titulo}>{titulo ?? label}</Text>
-        <ScrollView style={styles.lista}>
-          {opciones.map((o) => {
-            const activa = o.clave === valor;
-            return (
-              <Pressable
-                key={o.clave}
-                onPress={() => {
-                  onElegir(o.clave);
-                  setAbierto(false);
-                }}
-                style={({ pressed }) => [
-                  styles.opcion,
-                  activa && styles.opcionElegida,
-                  pressed && !activa && styles.opcionPresionada,
-                ]}
-              >
-                <View style={styles.opcionTexto}>
-                  <Text variant="bodyLarge" style={styles.opcionEtiqueta}>
-                    {o.etiqueta}
-                  </Text>
-                  {o.detalle ? (
-                    <Text variant="bodySmall" style={styles.opcionDetalle}>
-                      {o.detalle}
-                    </Text>
-                  ) : null}
-                </View>
-                {activa ? (
-                  <View style={styles.tilde}>
-                    <Ionicons name="checkmark" size={14} color="#fff" />
-                  </View>
-                ) : null}
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </HojaInferior>
+      <HojaDeOpciones
+        visible={abierto}
+        titulo={titulo ?? label}
+        opciones={opciones}
+        valor={valor}
+        onElegir={onElegir}
+        onCerrar={() => setAbierto(false)}
+      />
     </>
+  );
+}
+
+/**
+ * La hoja sola: el título y las opciones, con la elegida en verde y su tilde.
+ * Elegir cierra. La usa `SelectorOpcion` y cualquier fila que abra lo mismo
+ * con otra forma —el *Estado* de una ficha, con su pastilla—.
+ */
+export function HojaDeOpciones({
+  visible,
+  titulo,
+  opciones,
+  valor,
+  onElegir,
+  onCerrar,
+}: {
+  visible: boolean;
+  titulo: string;
+  opciones: OpcionElegible[];
+  valor: string | null;
+  onElegir: (clave: string) => void;
+  onCerrar: () => void;
+}) {
+  return (
+    <HojaInferior visible={visible} onCerrar={onCerrar}>
+      <Text style={styles.titulo}>{titulo}</Text>
+      <ScrollView style={styles.lista}>
+        {opciones.map((o) => {
+          const activa = o.clave === valor;
+          return (
+            <Pressable
+              key={o.clave}
+              onPress={() => {
+                onElegir(o.clave);
+                onCerrar();
+              }}
+              style={({ pressed }) => [
+                styles.opcion,
+                activa && styles.opcionElegida,
+                pressed && !activa && styles.opcionPresionada,
+              ]}
+            >
+              <View style={styles.opcionTexto}>
+                <Text variant="bodyLarge" style={styles.opcionEtiqueta}>
+                  {o.etiqueta}
+                </Text>
+                {o.detalle ? (
+                  <Text variant="bodySmall" style={styles.opcionDetalle}>
+                    {o.detalle}
+                  </Text>
+                ) : null}
+              </View>
+              {activa ? (
+                <View style={styles.tilde}>
+                  <Ionicons name="checkmark" size={14} color="#fff" />
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </HojaInferior>
   );
 }
 
