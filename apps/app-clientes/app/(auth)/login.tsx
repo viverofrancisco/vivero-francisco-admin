@@ -9,6 +9,7 @@ import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import { registerForPushNotifications } from "@vivero/app-ui/lib/push";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
+import { irAlEntrarA } from "@/lib/destino-al-entrar";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -18,10 +19,10 @@ export default function LoginScreen() {
   const { volver } = useLocalSearchParams<{ volver?: string }>();
   const alCheckout = volver === "checkout";
 
-  /** El carrito de esa sesión y, encima, su checkout: atrás vuelve al carrito. */
-  function irAlCheckout(grupo: "(cliente)" | "(invitado)/(tabs)") {
-    router.replace(`/${grupo}/carrito` as never);
-    setTimeout(() => router.push(`/${grupo}/carrito/confirmar` as never), 50);
+  /** Seguir como invitado: su carrito y, encima, su checkout. */
+  function volverAlCheckoutDeInvitado() {
+    router.replace("/(invitado)/(tabs)/carrito");
+    setTimeout(() => router.push("/(invitado)/(tabs)/carrito/confirmar"), 50);
   }
   const setSession = useAuthStore((s) => s.setSession);
   const [email, setEmail] = useState("");
@@ -54,13 +55,15 @@ export default function LoginScreen() {
         setError("Esta cuenta no puede entrar en esta app.");
         return;
       }
+      // Adónde va lo decide `useAuthGate`; del checkout, de vuelta ahí.
+      irAlEntrarA(alCheckout ? "checkout" : null);
       // Antes de la sesión: lo guardado de otra cuenta no se pinta ni un instante.
       await prepararDatosPara(res.user.id);
       await setSession(res, res.user);
       registerForPushNotifications().catch(() => {});
-      if (alCheckout) irAlCheckout("(cliente)");
-      else router.replace("/(cliente)/visitas");
+      if (!alCheckout) router.replace("/(cliente)/visitas");
     } catch (e) {
+      irAlEntrarA(null);
       setError(mensajeDeError(e, "No pudimos iniciar sesión"));
     } finally {
       setLoading(false);
@@ -141,7 +144,11 @@ export default function LoginScreen() {
         </Text>
         <Button
           mode="outlined"
-          onPress={() => router.push("/(auth)/registro")}
+          onPress={() =>
+            router.push(
+              alCheckout ? { pathname: "/(auth)/registro", params: { volver: "checkout" } } : "/(auth)/registro"
+            )
+          }
           disabled={loading}
         >
           Crear cuenta
@@ -149,7 +156,7 @@ export default function LoginScreen() {
         <Button
           mode="text"
           onPress={() =>
-            alCheckout ? irAlCheckout("(invitado)/(tabs)") : router.push("/(invitado)/(tabs)/catalogo")
+            alCheckout ? volverAlCheckoutDeInvitado() : router.push("/(invitado)/(tabs)/catalogo")
           }
           disabled={loading}
         >

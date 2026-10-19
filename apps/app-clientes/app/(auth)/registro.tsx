@@ -18,6 +18,7 @@ import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
 import { tema } from "@vivero/app-ui/lib/tema";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 import { CampoDeCodigo } from "@vivero/app-ui/components/ui/CampoDeCodigo";
+import { irAlEntrarA } from "@/lib/destino-al-entrar";
 import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 
 /**
@@ -40,6 +41,8 @@ export default function RegistroScreen() {
     apellido?: string;
     email?: string;
     telefono?: string;
+    /** "checkout": vino del checkout de invitado, y al entrar vuelve ahí. */
+    volver?: string;
   }>();
   const [nombre, setNombre] = useState(previo.nombre ?? "");
   const [apellido, setApellido] = useState(previo.apellido ?? "");
@@ -186,6 +189,7 @@ export default function RegistroScreen() {
     // La cuenta ya existe: de acá en adelante nada dice "no pudimos crearla".
     // No se navega desde acá: al abrir la sesión, `useAuthGate` lleva al
     // cliente a sus visitas, y es el único que decide a dónde va cada rol.
+    irAlEntrarA(previo.volver === "checkout" ? "checkout" : null);
     await prepararDatosPara(res.user.id);
     await setSession(res, res.user);
     registerForPushNotifications().catch(() => {});

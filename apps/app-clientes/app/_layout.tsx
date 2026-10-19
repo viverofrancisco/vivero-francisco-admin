@@ -12,6 +12,7 @@ import { resolverServidor } from "@vivero/app-ui/lib/config";
 import { precargarBranding } from "@vivero/app-ui/lib/branding";
 import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
 import type { MeResponse } from "@vivero/shared";
+import { tomarDestinoAlEntrar } from "@/lib/destino-al-entrar";
 import { tema } from "@vivero/app-ui/lib/tema";
 
 LocaleConfig.locales.es = {
@@ -143,7 +144,16 @@ function useAuthGate() {
     // cortaba con "Maximum update depth exceeded" (desde el 14-sep-2026; nadie
     // lo vio porque ningún cliente entraba todavía a la app).
     if (user.role === "CLIENTE") {
-      if (!inCliente) router.replace("/(cliente)/visitas");
+      if (!inCliente) {
+        // Desde el checkout de invitado, de vuelta a ese checkout: el carrito
+        // y, encima, su confirmar —atrás vuelve al carrito—.
+        if (tomarDestinoAlEntrar() === "checkout") {
+          router.replace("/(cliente)/carrito");
+          setTimeout(() => router.push("/(cliente)/carrito/confirmar"), 50);
+        } else {
+          router.replace("/(cliente)/visitas");
+        }
+      }
     } else {
       // Esta es la app de clientes. Una sesión del equipo guardada de antes
       // de que la app se separara en dos no tiene nada que hacer acá: se

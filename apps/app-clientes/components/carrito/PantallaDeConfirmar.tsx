@@ -182,6 +182,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
           apellido: apellido.trim(),
           email: email.trim(),
           telefono: telefono.trim(),
+          volver: "checkout",
         },
       });
   }
