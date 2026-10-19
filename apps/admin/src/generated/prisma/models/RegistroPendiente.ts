@@ -222,7 +222,7 @@ export type RegistroPendienteGroupByOutputType = {
   nombre: string
   apellido: string | null
   telefono: string | null
-  passwordHash: string
+  passwordHash: string | null
   codigoHash: string
   expiresAt: Date
   intentos: number
@@ -258,7 +258,7 @@ export type RegistroPendienteWhereInput = {
   nombre?: Prisma.StringFilter<"RegistroPendiente"> | string
   apellido?: Prisma.StringNullableFilter<"RegistroPendiente"> | string | null
   telefono?: Prisma.StringNullableFilter<"RegistroPendiente"> | string | null
-  passwordHash?: Prisma.StringFilter<"RegistroPendiente"> | string
+  passwordHash?: Prisma.StringNullableFilter<"RegistroPendiente"> | string | null
   codigoHash?: Prisma.StringFilter<"RegistroPendiente"> | string
   expiresAt?: Prisma.DateTimeFilter<"RegistroPendiente"> | Date | string
   intentos?: Prisma.IntFilter<"RegistroPendiente"> | number
@@ -271,7 +271,7 @@ export type RegistroPendienteOrderByWithRelationInput = {
   nombre?: Prisma.SortOrder
   apellido?: Prisma.SortOrderInput | Prisma.SortOrder
   telefono?: Prisma.SortOrderInput | Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   codigoHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   intentos?: Prisma.SortOrder
@@ -287,7 +287,7 @@ export type RegistroPendienteWhereUniqueInput = Prisma.AtLeast<{
   nombre?: Prisma.StringFilter<"RegistroPendiente"> | string
   apellido?: Prisma.StringNullableFilter<"RegistroPendiente"> | string | null
   telefono?: Prisma.StringNullableFilter<"RegistroPendiente"> | string | null
-  passwordHash?: Prisma.StringFilter<"RegistroPendiente"> | string
+  passwordHash?: Prisma.StringNullableFilter<"RegistroPendiente"> | string | null
   codigoHash?: Prisma.StringFilter<"RegistroPendiente"> | string
   expiresAt?: Prisma.DateTimeFilter<"RegistroPendiente"> | Date | string
   intentos?: Prisma.IntFilter<"RegistroPendiente"> | number
@@ -300,7 +300,7 @@ export type RegistroPendienteOrderByWithAggregationInput = {
   nombre?: Prisma.SortOrder
   apellido?: Prisma.SortOrderInput | Prisma.SortOrder
   telefono?: Prisma.SortOrderInput | Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   codigoHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   intentos?: Prisma.SortOrder
@@ -321,7 +321,7 @@ export type RegistroPendienteScalarWhereWithAggregatesInput = {
   nombre?: Prisma.StringWithAggregatesFilter<"RegistroPendiente"> | string
   apellido?: Prisma.StringNullableWithAggregatesFilter<"RegistroPendiente"> | string | null
   telefono?: Prisma.StringNullableWithAggregatesFilter<"RegistroPendiente"> | string | null
-  passwordHash?: Prisma.StringWithAggregatesFilter<"RegistroPendiente"> | string
+  passwordHash?: Prisma.StringNullableWithAggregatesFilter<"RegistroPendiente"> | string | null
   codigoHash?: Prisma.StringWithAggregatesFilter<"RegistroPendiente"> | string
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"RegistroPendiente"> | Date | string
   intentos?: Prisma.IntWithAggregatesFilter<"RegistroPendiente"> | number
@@ -334,7 +334,7 @@ export type RegistroPendienteCreateInput = {
   nombre: string
   apellido?: string | null
   telefono?: string | null
-  passwordHash: string
+  passwordHash?: string | null
   codigoHash: string
   expiresAt: Date | string
   intentos?: number
@@ -347,7 +347,7 @@ export type RegistroPendienteUncheckedCreateInput = {
   nombre: string
   apellido?: string | null
   telefono?: string | null
-  passwordHash: string
+  passwordHash?: string | null
   codigoHash: string
   expiresAt: Date | string
   intentos?: number
@@ -360,7 +360,7 @@ export type RegistroPendienteUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   codigoHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intentos?: Prisma.IntFieldUpdateOperationsInput | number
@@ -373,7 +373,7 @@ export type RegistroPendienteUncheckedUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   codigoHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intentos?: Prisma.IntFieldUpdateOperationsInput | number
@@ -386,7 +386,7 @@ export type RegistroPendienteCreateManyInput = {
   nombre: string
   apellido?: string | null
   telefono?: string | null
-  passwordHash: string
+  passwordHash?: string | null
   codigoHash: string
   expiresAt: Date | string
   intentos?: number
@@ -399,7 +399,7 @@ export type RegistroPendienteUpdateManyMutationInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   codigoHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intentos?: Prisma.IntFieldUpdateOperationsInput | number
@@ -412,7 +412,7 @@ export type RegistroPendienteUncheckedUpdateManyInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   codigoHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intentos?: Prisma.IntFieldUpdateOperationsInput | number
@@ -532,9 +532,11 @@ export type $RegistroPendientePayload<ExtArgs extends runtime.Types.Extensions.I
     apellido: string | null
     telefono: string | null
     /**
-     * La contraseña ya elegida, en bcrypt: el segundo paso solo trae el código.
+     * La contraseña ya elegida, en bcrypt. Vacía cuando se elige **después**
+     * del código (*Crear cuenta* desde el aviso de un pedido o una solicitud de
+     * invitado, que va directo a verificar el correo): la trae `confirmar`.
      */
-    passwordHash: string
+    passwordHash: string | null
     /**
      * `sha256` del código de seis dígitos; el código en sí no se guarda.
      */

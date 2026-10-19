@@ -54,7 +54,11 @@ export const registroSchema = z.object({
   apellido: apellidoDeRegistro,
   email: correoDeRegistro,
   telefono: z.string().trim().max(30).optional(),
-  password: contrasenaDeRegistro,
+  /**
+   * Sin ella, se elige después del código: el *Crear cuenta* del aviso de un
+   * pedido o una solicitud de invitado va directo a verificar el correo.
+   */
+  password: contrasenaDeRegistro.optional(),
 });
 
 export const correoRegistroSchema = z.object({ email: correoDeRegistro });
@@ -63,7 +67,10 @@ export type RegistroBody = z.infer<typeof registroSchema>;
 export const confirmarRegistroSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(120),
   codigo: z.string().trim().regex(/^\d{6}$/, "El código tiene 6 dígitos"),
+  /** La contraseña, cuando no vino en el primer paso. */
+  password: contrasenaDeRegistro.optional(),
 });
+export const verificarCodigoDeRegistroSchema = confirmarRegistroSchema.omit({ password: true });
 export type ConfirmarRegistroBody = z.infer<typeof confirmarRegistroSchema>;
 
 // ──────────────────────────────────────────────

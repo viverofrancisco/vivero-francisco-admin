@@ -23,7 +23,8 @@ export async function POST(request: Request) {
   try {
     const { user, clienteId } = await confirmarRegistro(
       parsed.data.email,
-      parsed.data.codigo
+      parsed.data.codigo,
+      parsed.data.password
     );
     const tokens = await issueTokenPair({
       userId: user.id,

@@ -86,7 +86,7 @@ export async function solicitarCodigoDeRegistro(datos: RegistroBody): Promise<vo
   const libre = await correoParaRegistro(email);
   if (!libre.disponible) throw new ConflictError(libre.motivo);
   const codigo = String(randomInt(0, 1_000_000)).padStart(6, "0");
-  const passwordHash = await bcrypt.hash(datos.password, 12);
+  const passwordHash = datos.password ? await bcrypt.hash(datos.password, 12) : null;
 
   const fila = {
     nombre: datos.nombre.trim(),
@@ -116,14 +116,11 @@ export async function solicitarCodigoDeRegistro(datos: RegistroBody): Promise<vo
 }
 
 /**
- * Segundo paso: con el código correcto, la cuenta. Devuelve el `User` y el
- * cliente para abrir la sesión ahí mismo —pedirle que inicie sesión con lo que
- * acaba de escribir es un paso que no prueba nada—.
+ * Si el código es el que se mandó a ese correo, sin consumirlo: un error suma
+ * un intento, como al confirmar. Es el paso del medio cuando la contraseña se
+ * elige después del código —la pantalla la pide solo con el código ya bueno—.
  */
-export async function confirmarRegistro(
-  emailCrudo: string,
-  codigo: string
-): Promise<{ user: User; clienteId: string }> {
+export async function comprobarCodigoDeRegistro(emailCrudo: string, codigo: string) {
   const email = emailCrudo.trim().toLowerCase();
   const pendiente = await prisma.registroPendiente.findUnique({ where: { email } });
   if (!pendiente || pendiente.expiresAt.getTime() < Date.now()) {
@@ -139,6 +136,25 @@ export async function confirmarRegistro(
     });
     throw new ValidationError("El código no coincide.");
   }
+  return pendiente;
+}
+
+/**
+ * Segundo paso: con el código correcto, la cuenta. Devuelve el `User` y el
+ * cliente para abrir la sesión ahí mismo —pedirle que inicie sesión con lo que
+ * acaba de escribir es un paso que no prueba nada—. La contraseña viene acá
+ * cuando no vino en el primer paso.
+ */
+export async function confirmarRegistro(
+  emailCrudo: string,
+  codigo: string,
+  password?: string
+): Promise<{ user: User; clienteId: string }> {
+  const email = emailCrudo.trim().toLowerCase();
+  const pendiente = await comprobarCodigoDeRegistro(email, codigo);
+  const passwordHash =
+    pendiente.passwordHash ?? (password ? await bcrypt.hash(password, 12) : null);
+  if (!passwordHash) throw new ValidationError("Elige tu contraseña.");
 
   const existente = await resolveClienteByIdentifier(email);
   if (existente.status === "ambiguous") {
@@ -167,7 +183,7 @@ export async function confirmarRegistro(
         // enlace de restablecer, así que la contraseña nueva vale.
         const user = await tx.user.update({
           where: { id: cliente.user.id },
-          data: { password: pendiente.passwordHash, email },
+          data: { password: passwordHash, email },
         });
         return { user, clienteId: cliente.id };
       }
@@ -175,7 +191,7 @@ export async function confirmarRegistro(
         data: {
           role: "CLIENTE",
           email,
-          password: pendiente.passwordHash,
+          password: passwordHash,
           name: cliente.nombre,
           apellido: cliente.apellido,
         },
@@ -201,7 +217,7 @@ export async function confirmarRegistro(
       data: {
         role: "CLIENTE",
         email,
-        password: pendiente.passwordHash,
+        password: passwordHash,
         name: pendiente.nombre,
         apellido: pendiente.apellido,
       },

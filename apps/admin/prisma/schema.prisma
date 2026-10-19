@@ -2545,8 +2545,10 @@ model RegistroPendiente {
   nombre       String
   apellido     String?
   telefono     String?
-  /// La contraseña ya elegida, en bcrypt: el segundo paso solo trae el código.
-  passwordHash String
+  /// La contraseña ya elegida, en bcrypt. Vacía cuando se elige **después**
+  /// del código (*Crear cuenta* desde el aviso de un pedido o una solicitud de
+  /// invitado, que va directo a verificar el correo): la trae `confirmar`.
+  passwordHash String?
   /// `sha256` del código de seis dígitos; el código en sí no se guarda.
   codigoHash   String
   expiresAt    DateTime

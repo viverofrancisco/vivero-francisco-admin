@@ -260,6 +260,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                 router.push({
                   pathname: "/(auth)/registro",
                   params: {
+                    directo: "1",
                     nombre: nombre.trim(),
                     apellido: apellido.trim(),
                     email: email.trim(),

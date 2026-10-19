@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
@@ -34,7 +34,6 @@ import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoD
 export default function RegistroScreen() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
-  const [paso, setPaso] = useState<"datos" | "codigo">("datos");
   // Desde el aviso de una solicitud o un pedido de invitado llega con lo que
   // ya escribió ahí, para no pedírselo dos veces.
   const previo = useLocalSearchParams<{
@@ -44,12 +43,26 @@ export default function RegistroScreen() {
     telefono?: string;
     /** "checkout": vino del checkout de invitado, y al entrar vuelve ahí. */
     volver?: string;
+    /**
+     * "1": desde el aviso de un pedido o una solicitud de invitado, con todos
+     * sus datos. No se muestra el formulario: el código va directo al correo
+     * con el que pidió —que así no se puede cambiar por otro, con lo que el
+     * pedido quedaría en una ficha y la cuenta en otra— y la contraseña se
+     * elige después de verificarlo.
+     */
+    directo?: string;
   }>();
+  const directo = previo.directo === "1";
+  const [paso, setPaso] = useState<"datos" | "codigo" | "contrasena">(
+    directo ? "codigo" : "datos"
+  );
   const [nombre, setNombre] = useState(previo.nombre ?? "");
   const [apellido, setApellido] = useState(previo.apellido ?? "");
   const [email, setEmail] = useState(previo.email ?? "");
   const [telefono, setTelefono] = useState(previo.telefono ?? "");
   const [password, setPassword] = useState("");
+  const [confirmacion, setConfirmacion] = useState("");
+  const [confirmacionTocada, setConfirmacionTocada] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [cargando, setCargando] = useState(false);
   // Solo el error **del código** (no coincide, venció, demasiados intentos):
@@ -119,12 +132,13 @@ export default function RegistroScreen() {
       ? correo.mensaje
       : null;
 
+  const noCoinciden = confirmacion.length > 0 && confirmacion !== password;
+  const contrasenaLista = !!password && !errorPassword && confirmacion === password;
   const datosCompletos =
     !errorNombre &&
     !errorApellido &&
     correo.estado === "libre" &&
-    !!password &&
-    !errorPassword;
+    contrasenaLista;
 
   async function pedirCodigo(reenvio = false) {
     setErrorCodigo(null);
@@ -138,7 +152,8 @@ export default function RegistroScreen() {
           apellido: apellido.trim(),
           email: email.trim(),
           telefono: telefono.trim() || undefined,
-          password,
+          // Directo, la contraseña se elige después del código.
+          password: directo ? undefined : password,
         },
       });
       setPaso("codigo");
@@ -148,11 +163,51 @@ export default function RegistroScreen() {
       // Que el correo ya tiene cuenta va debajo del correo, como si se
       // hubiera sabido al escribirlo.
       if (esApiError(e) && e.status === 409 && !reenvio) {
+        if (directo) {
+          // Ese correo ya tiene cuenta: no hay nada que crear, hay que entrar.
+          Alert.alert("Ya tienes una cuenta", e.message, [
+            { text: "Iniciar sesión", onPress: () => router.replace("/(auth)/login") },
+          ]);
+          return;
+        }
         setCorreoTocado(true);
         setCorreo({ estado: "error", mensaje: e.message });
         return;
       }
       Alert.alert("No pudimos enviarte el código", mensajeDeError(e, "Intenta de nuevo en un momento."));
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  // Directo: el código sale apenas se abre la pantalla, al correo del pedido.
+  const codigoPedido = useRef(false);
+  useEffect(() => {
+    if (!directo || codigoPedido.current) return;
+    codigoPedido.current = true;
+    void pedirCodigo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * Seis dígitos escritos. Con la contraseña ya elegida (el formulario), crea
+   * la cuenta; sin ella (directo), solo comprueba el código y pasa a pedirla.
+   */
+  async function alCompletarCodigo(c: string) {
+    if (!directo) return confirmar(c);
+    setErrorCodigo(null);
+    setCargando(true);
+    try {
+      await apiRequest("/api/mobile/auth/registro/verificar", {
+        method: "POST",
+        authenticated: false,
+        body: { email: email.trim(), codigo: c },
+      });
+      setPaso("contrasena");
+    } catch (e) {
+      if (esApiError(e) && e.status === 400) setErrorCodigo(e.message);
+      else Alert.alert("No pudimos verificar el código", mensajeDeError(e, "Intenta de nuevo en un momento."));
+      setCodigo("");
     } finally {
       setCargando(false);
     }
@@ -168,7 +223,7 @@ export default function RegistroScreen() {
         {
           method: "POST",
           authenticated: false,
-          body: { email: email.trim(), codigo },
+          body: { email: email.trim(), codigo, password: directo ? password : undefined },
         }
       );
     } catch (e) {
@@ -176,6 +231,9 @@ export default function RegistroScreen() {
       // —el acceso bloqueado, dos fichas con el correo, sin conexión— no se
       // arregla escribiéndolo otra vez.
       if (esApiError(e) && e.status === 400) {
+        // Directo, el código ya se comprobó: si falla ahora (venció mientras
+        // elegía la contraseña), se vuelve a pedirlo.
+        if (directo) setPaso("codigo");
         setErrorCodigo(e.message);
       } else {
         Alert.alert("No pudimos crear tu cuenta", mensajeDeError(e, "Intenta de nuevo en un momento."));
@@ -210,16 +268,33 @@ export default function RegistroScreen() {
           cargando={cargando}
           deshabilitado={!datosCompletos}
         />
-      ) : (
+      ) : paso === "codigo" ? (
         <EncabezadoDeFormulario
           titulo="Verifica tu correo"
           textoCancelar="Atrás"
           onCancelar={() => {
+            if (directo) {
+              router.back();
+              return;
+            }
             setPaso("datos");
             setCodigo("");
             setErrorCodigo(null);
           }}
           cargando={cargando}
+        />
+      ) : (
+        <EncabezadoDeFormulario
+          titulo="Crea tu contraseña"
+          textoCancelar="Atrás"
+          onCancelar={() => {
+            setPaso("codigo");
+            setCodigo("");
+          }}
+          accion="Crear cuenta"
+          onAccion={() => void confirmar(codigo)}
+          cargando={cargando}
+          deshabilitado={!contrasenaLista}
         />
       )}
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
@@ -330,6 +405,66 @@ export default function RegistroScreen() {
               >
                 {passwordTocada && errorPassword ? errorPassword : "Al menos 8 caracteres."}
               </HelperText>
+              <TextInput
+                mode="outlined"
+                label="Confirmar contraseña"
+                value={confirmacion}
+                onChangeText={setConfirmacion}
+                onBlur={() => setConfirmacionTocada(true)}
+                secureTextEntry
+                autoComplete="new-password"
+                textContentType="newPassword"
+                error={confirmacionTocada && noCoinciden}
+                style={confirmacionTocada && noCoinciden ? styles.inputConAyuda : styles.input}
+              />
+              {confirmacionTocada && noCoinciden ? (
+                <HelperText type="error" visible style={styles.ayuda}>
+                  Las contraseñas no coinciden.
+                </HelperText>
+              ) : null}
+            </>
+          ) : paso === "contrasena" ? (
+            <>
+              <Text variant="bodyLarge" style={styles.subtitle}>
+                Listo, verificamos <Text style={styles.correo}>{email.trim()}</Text>. Elige la
+                contraseña con la que vas a entrar.
+              </Text>
+              <TextInput
+                mode="outlined"
+                label="Contraseña"
+                value={password}
+                onChangeText={setPassword}
+                onBlur={() => setPasswordTocada(true)}
+                secureTextEntry
+                autoComplete="new-password"
+                textContentType="newPassword"
+                error={passwordTocada && !!errorPassword}
+                style={styles.inputConAyuda}
+              />
+              <HelperText
+                type={passwordTocada && errorPassword ? "error" : "info"}
+                visible
+                style={styles.ayuda}
+              >
+                {passwordTocada && errorPassword ? errorPassword : "Al menos 8 caracteres."}
+              </HelperText>
+              <TextInput
+                mode="outlined"
+                label="Confirmar contraseña"
+                value={confirmacion}
+                onChangeText={setConfirmacion}
+                onBlur={() => setConfirmacionTocada(true)}
+                secureTextEntry
+                autoComplete="new-password"
+                textContentType="newPassword"
+                error={confirmacionTocada && noCoinciden}
+                style={confirmacionTocada && noCoinciden ? styles.inputConAyuda : styles.input}
+              />
+              {confirmacionTocada && noCoinciden ? (
+                <HelperText type="error" visible style={styles.ayuda}>
+                  Las contraseñas no coinciden.
+                </HelperText>
+              ) : null}
             </>
           ) : (
             <>
@@ -343,7 +478,7 @@ export default function RegistroScreen() {
                   setCodigo(c);
                   if (errorCodigo) setErrorCodigo(null);
                 }}
-                alCompletar={confirmar}
+                alCompletar={alCompletarCodigo}
                 deshabilitado={cargando}
                 conError={!!errorCodigo}
               />

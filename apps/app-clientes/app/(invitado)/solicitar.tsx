@@ -95,6 +95,7 @@ export default function SolicitarInvitadoScreen() {
               router.push({
                 pathname: "/(auth)/registro",
                 params: {
+                  directo: "1",
                   nombre: nombre.trim(),
                   apellido: apellido.trim(),
                   email: email.trim(),
