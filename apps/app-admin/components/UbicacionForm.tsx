@@ -160,7 +160,6 @@ export function UbicacionForm({
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
-          <Titulo>Para los clientes</Titulo>
           <Interruptor
             label="Activa"
             nota="Apagada no se ofrece en ningún lado, pero sigue nombrando sus pedidos"
