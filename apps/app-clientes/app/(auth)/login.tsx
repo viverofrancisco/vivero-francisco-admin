@@ -2,7 +2,7 @@ import { useState } from "react";
 import { KeyboardAvoidingView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import type { AuthSuccessResponse } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
@@ -12,6 +12,17 @@ import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
 
 export default function LoginScreen() {
   const router = useRouter();
+  // Desde el checkout de invitado (*¿Ya tienes cuenta? Iniciar sesión*): al
+  // entrar, o al seguir como invitado, se vuelve a ese checkout, con el
+  // carrito que ya tenía.
+  const { volver } = useLocalSearchParams<{ volver?: string }>();
+  const alCheckout = volver === "checkout";
+
+  /** El carrito de esa sesión y, encima, su checkout: atrás vuelve al carrito. */
+  function irAlCheckout(grupo: "(cliente)" | "(invitado)/(tabs)") {
+    router.replace(`/${grupo}/carrito` as never);
+    setTimeout(() => router.push(`/${grupo}/carrito/confirmar` as never), 50);
+  }
   const setSession = useAuthStore((s) => s.setSession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +58,8 @@ export default function LoginScreen() {
       await prepararDatosPara(res.user.id);
       await setSession(res, res.user);
       registerForPushNotifications().catch(() => {});
-      router.replace("/(cliente)/visitas");
+      if (alCheckout) irAlCheckout("(cliente)");
+      else router.replace("/(cliente)/visitas");
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos iniciar sesión"));
     } finally {
@@ -136,7 +148,9 @@ export default function LoginScreen() {
         </Button>
         <Button
           mode="text"
-          onPress={() => router.push("/(invitado)/(tabs)/catalogo")}
+          onPress={() =>
+            alCheckout ? irAlCheckout("(invitado)/(tabs)") : router.push("/(invitado)/(tabs)/catalogo")
+          }
           disabled={loading}
         >
           Seguir como invitado

@@ -174,21 +174,6 @@ export default function SolicitarInvitadoScreen() {
             </View>
             <TextInput
               mode="outlined"
-              label="Teléfono *"
-              value={telefono}
-              onChangeText={setTelefono}
-              keyboardType="phone-pad"
-              autoComplete="tel"
-              textContentType="telephoneNumber"
-              error={(digitos > 0 || intentado) && faltaTelefono}
-            />
-            {(digitos > 0 || intentado) && faltaTelefono ? (
-              <HelperText type="error" visible style={styles.ayuda}>
-                {digitos === 0 ? "Campo obligatorio." : "Escribe un teléfono válido."}
-              </HelperText>
-            ) : null}
-            <TextInput
-              mode="outlined"
               label="Correo *"
               value={email}
               onChangeText={setEmail}
@@ -202,6 +187,21 @@ export default function SolicitarInvitadoScreen() {
             {intentado && emailMalo ? (
               <HelperText type="error" visible style={styles.ayuda}>
                 {faltaEmail ? "Escribe tu correo." : "Escribe un correo válido."}
+              </HelperText>
+            ) : null}
+            <TextInput
+              mode="outlined"
+              label="Teléfono *"
+              value={telefono}
+              onChangeText={setTelefono}
+              keyboardType="phone-pad"
+              autoComplete="tel"
+              textContentType="telephoneNumber"
+              error={(digitos > 0 || intentado) && faltaTelefono}
+            />
+            {(digitos > 0 || intentado) && faltaTelefono ? (
+              <HelperText type="error" visible style={styles.ayuda}>
+                {digitos === 0 ? "Campo obligatorio." : "Escribe un teléfono válido."}
               </HelperText>
             ) : null}
           </View>

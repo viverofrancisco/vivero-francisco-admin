@@ -171,7 +171,9 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
    */
   function irACuenta(destino: "login" | "registro") {
     router.dismissAll();
-    if (destino === "login") router.replace("/(auth)/login");
+    // `volver`: al entrar —o al seguir como invitado— vuelve a este checkout,
+    // no al inicio. El carrito lo sigue (`traerCarritoDelInvitado`).
+    if (destino === "login") router.replace({ pathname: "/(auth)/login", params: { volver: "checkout" } });
     else
       router.push({
         pathname: "/(auth)/registro",
@@ -375,6 +377,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                       </HelperText>
                     ) : null}
                   </View>
+                </View>
                 {/* El correo, después del nombre: es lo que ata el pedido a
                     una ficha. */}
                 <TextInput
@@ -394,7 +397,6 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                     {faltaEmail ? "Escribe tu correo." : "Escribe un correo válido."}
                   </HelperText>
                 ) : null}
-                </View>
                 <TextInput
                   mode="outlined"
                   label="Teléfono *"
