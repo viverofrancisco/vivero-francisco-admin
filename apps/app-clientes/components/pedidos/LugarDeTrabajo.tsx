@@ -16,7 +16,10 @@ import {
   type HorarioSemanal,
 } from "@vivero/shared";
 import type { PropiedadResumen } from "@vivero/app-ui/lib/types";
-import { avisarFaltaUbicacion, ubicacionActual } from "@vivero/app-ui/lib/ubicacion";
+import {
+  avisarFaltaUbicacion,
+  ubicacionActual,
+} from "@vivero/app-ui/lib/ubicacion";
 import { BuscadorDeDireccion } from "@vivero/app-ui/components/BuscadorDeDireccion";
 import {
   MapaDePropiedad,
@@ -44,14 +47,14 @@ export type Direccion =
       referencia: string;
       punto: Punto | null;
       /**
-       * *Guardar esta dirección en mi cuenta*, marcado de entrada: si queda
+       * *Guardar dirección para futuros pedidos*, marcado de entrada: si queda
        * así, el servidor la vuelve una propiedad suya. Es su decisión —un
        * regalo a la casa de un pariente no tiene por qué quedar guardado—.
        */
       guardar: boolean;
     };
 
-export const OTRA_DIRECCION: Direccion = {
+export const OTRA_DIRECCION: Extract<Direccion, { tipo: "OTRA" }> = {
   tipo: "OTRA",
   direccion: "",
   numeroCasa: "",
@@ -124,6 +127,7 @@ export function ElegirDireccion({
   onElegirOtra,
   marcarFaltantes = false,
   sinGuardar = false,
+  textoGuardar = "Guardar dirección para futuros pedidos",
 }: {
   propiedades: PropiedadResumen[];
   valor: Direccion | null;
@@ -142,16 +146,22 @@ export function ElegirDireccion({
    */
   marcarFaltantes?: boolean;
   /**
-   * Sin *Guardar esta dirección en mi cuenta*: el invitado no tiene cuenta
+   * Sin la casilla de guardar: el invitado no tiene cuenta
    * (su dirección pasa a ser la primera propiedad de la ficha que se le crea).
    */
   sinGuardar?: boolean;
+  /** El rótulo de la casilla de guardar: los pedidos o las solicitudes. */
+  textoGuardar?: string;
 }) {
   const [precision, setPrecision] = useState<number | null>(null);
   const [yOtra, setYOtra] = useState(0);
   const [destino, setDestino] = useState<Destino | null>(null);
   const [ubicando, setUbicando] = useState(false);
-  const otra = valor?.tipo === "OTRA" ? valor : null;
+  // Sin propiedades no hay nada que elegir: los campos van directo, sin la
+  // tarjeta *Otra dirección* (que solo tiene sentido frente a otras).
+  const sinPropiedades = propiedades.length === 0;
+  const otra =
+    valor?.tipo === "OTRA" ? valor : sinPropiedades ? OTRA_DIRECCION : null;
   const cambiarOtra = (c: Partial<Extract<Direccion, { tipo: "OTRA" }>>) =>
     onCambio({ ...(otra ?? OTRA_DIRECCION), ...c } as Direccion);
 
@@ -179,34 +189,36 @@ export function ElegirDireccion({
 
   return (
     <View style={styles.elegir}>
-      <View style={styles.tarjetas}>
-        {propiedades.map((p) => (
-          <TarjetaDeLugar
-            key={p.id}
-            activa={valor?.tipo === "PROPIEDAD" && valor.propiedadId === p.id}
-            titulo={p.nombre}
-            datos={[
-              { icono: "location-outline", texto: lineaDeDireccion(p) },
-              { icono: "flag-outline", texto: p.referencia },
-            ]}
-            onPress={() => onCambio({ tipo: "PROPIEDAD", propiedadId: p.id })}
-          />
-        ))}
-        {/* Las tarjetas empiezan arriba de todo, así que su `y` es la de
+      {sinPropiedades ? null : (
+        <View style={styles.tarjetas}>
+          {propiedades.map((p) => (
+            <TarjetaDeLugar
+              key={p.id}
+              activa={valor?.tipo === "PROPIEDAD" && valor.propiedadId === p.id}
+              titulo={p.nombre}
+              datos={[
+                { icono: "location-outline", texto: lineaDeDireccion(p) },
+                { icono: "flag-outline", texto: p.referencia },
+              ]}
+              onPress={() => onCambio({ tipo: "PROPIEDAD", propiedadId: p.id })}
+            />
+          ))}
+          {/* Las tarjetas empiezan arriba de todo, así que su `y` es la de
             este componente. */}
-        <View onLayout={(e) => setYOtra(e.nativeEvent.layout.y)}>
-          <TarjetaDeLugar
-            activa={valor?.tipo === "OTRA"}
-            titulo="Otra dirección"
-            detalle="Escríbela y marca el punto en el mapa."
-            onPress={() => {
-              const yaEstaba = valor?.tipo === "OTRA";
-              onCambio(otra ?? OTRA_DIRECCION);
-              if (!yaEstaba) onElegirOtra?.(yOtra);
-            }}
-          />
+          <View onLayout={(e) => setYOtra(e.nativeEvent.layout.y)}>
+            <TarjetaDeLugar
+              activa={valor?.tipo === "OTRA"}
+              titulo="Otra dirección"
+              detalle="Escríbela y marca el punto en el mapa."
+              onPress={() => {
+                const yaEstaba = valor?.tipo === "OTRA";
+                onCambio(otra ?? OTRA_DIRECCION);
+                if (!yaEstaba) onElegirOtra?.(yOtra);
+              }}
+            />
+          </View>
         </View>
-      </View>
+      )}
       {otra ? (
         <View style={styles.otra}>
           <BuscadorDeDireccion
@@ -282,9 +294,7 @@ export function ElegirDireccion({
                 size={22}
                 color={otra.guardar ? tema.verde : tema.texto3}
               />
-              <Text style={styles.guardarTexto}>
-                Guardar esta dirección en mi cuenta
-              </Text>
+              <Text style={styles.guardarTexto}>{textoGuardar}</Text>
             </Pressable>
           )}
         </View>

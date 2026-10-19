@@ -260,6 +260,7 @@ export default function NuevaSolicitudScreen() {
             <View onLayout={(e) => (yDonde.current = e.nativeEvent.layout.y)}>
               <ElegirDireccion
                 propiedades={propiedades}
+                textoGuardar="Guardar dirección para futuras solicitudes"
                 valor={lugar}
                 onCambio={setLugar}
                 onElegirOtra={mostrarOtra}
