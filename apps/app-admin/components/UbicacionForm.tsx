@@ -217,6 +217,12 @@ export function UbicacionForm({
             onChangeText={setNombre}
             placeholder="Vivero Hipódromo"
           />
+          <Campo
+            label="Teléfono"
+            value={telefono}
+            onChangeText={setTelefono}
+            keyboardType="phone-pad"
+          />
 
           <Titulo>Dirección</Titulo>
           {/* Buscar completa los campos y lleva el mapa al barrio; el pin no sale de acá. */}
@@ -246,13 +252,6 @@ export function UbicacionForm({
             onUsarMiUbicacion={tomarUbicacion}
           />
 
-          <Titulo>Contacto</Titulo>
-          <Campo
-            label="Teléfono"
-            value={telefono}
-            onChangeText={setTelefono}
-            keyboardType="phone-pad"
-          />
 
           {onGuardarHorario ? (
             <HorarioEnHoja
