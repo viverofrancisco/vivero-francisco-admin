@@ -54,15 +54,16 @@ export const APP_ANDROID_SHA256 = [
 ];
 
 /**
- * Las huellas de la app del equipo en Android. **Vacías hasta su primer build
- * de EAS**: el keystore lo genera EAS al crearle el proyecto (`eas init` y el
- * primer `eas build -p android`), y sale de `eas credentials -p android` en
- * `apps/app-admin`. Mientras estén vacías, `assetlinks.json` no la publica y
- * sus enlaces abren en el navegador, que igual funcionan. Como la app no se
- * publica en Play (se instala por enlace o prueba interna), no hay huella de
- * Play App Signing que agregar a menos que se suba a una pista de prueba.
+ * Las huellas de la app del equipo en Android, como las de clientes: el
+ * keystore de EAS (`eas credentials -p android` en `apps/app-admin`) y la de
+ * Play App Signing, que existe desde que se sube el primer `.aab` a Play
+ * Console (*Integridad de la app › Firma de apps*). La app va en Play con
+ * ficha propia, así que las dos hacen falta.
  */
-export const APP_EQUIPO_ANDROID_SHA256: string[] = [];
+export const APP_EQUIPO_ANDROID_SHA256: string[] = [
+  // El keystore de EAS: los apk de prueba que se instalan a mano.
+  "43:AF:0D:92:1B:1E:00:CE:1E:50:67:05:12:CA:87:69:8B:02:18:C0:99:B8:CF:52:67:A8:BE:CA:64:19:53:AF",
+];
 
 /** Las tiendas de la app de clientes, para quien abre su enlace en la computadora. */
 export const TIENDA_APP_CLIENTES = {
