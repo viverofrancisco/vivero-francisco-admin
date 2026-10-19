@@ -68,6 +68,9 @@ export default function UbicacionScreen() {
       accion="Guardar"
       onCancelar={() => router.back()}
       onEliminar={eliminar}
+      onGuardarHorario={async (horarios) => {
+        await apiRequest(`/api/mobile/ubicaciones/${id}`, { method: "PUT", body: { horarios } });
+      }}
       onSubmit={async (valores) => {
         await apiRequest(`/api/mobile/ubicaciones/${id}`, { method: "PUT", body: valores });
         router.back();

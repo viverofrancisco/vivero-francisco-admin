@@ -49,6 +49,7 @@ export function UbicacionForm({
   onSubmit,
   onCancelar,
   onEliminar,
+  onGuardarHorario,
 }: {
   inicial?: Ubicacion;
   titulo: string;
@@ -57,6 +58,8 @@ export function UbicacionForm({
   onSubmit: (valores: UbicacionBody) => Promise<void>;
   onCancelar: () => void;
   onEliminar?: () => void;
+  /** Al editar: la hoja del horario lo guarda sola, sin el resto del formulario. */
+  onGuardarHorario?: (horarios: HorarioSemanal) => Promise<void>;
 }) {
   const [nombre, setNombre] = useState(inicial?.nombre ?? "");
   const [direccion, setDireccion] = useState(inicial?.direccion ?? "");
@@ -65,6 +68,8 @@ export function UbicacionForm({
   const [telefono, setTelefono] = useState(inicial?.telefono ?? "");
   // Una sin horario cargado arranca con el de siempre, listo para corregir.
   const [horarios, setHorarios] = useState(() => ordenado(inicial?.horarios ?? HORARIO_POR_DEFECTO));
+  // Contra qué se mide "hay cambios": la hoja del horario guarda por su cuenta.
+  const [horarioGuardado, setHorarioGuardado] = useState(horarios);
   const [retiro, setRetiro] = useState(inicial?.retiro ?? true);
   const [activa, setActiva] = useState(inicial?.activa ?? true);
   const [punto, setPunto] = useState<Punto | null>(
@@ -117,7 +122,7 @@ export function UbicacionForm({
       valores.ciudad !== inicial.ciudad ||
       valores.referencia !== inicial.referencia ||
       valores.telefono !== inicial.telefono ||
-      JSON.stringify(horarios) !== JSON.stringify(ordenado(inicial.horarios ?? HORARIO_POR_DEFECTO)) ||
+      JSON.stringify(horarios) !== JSON.stringify(horarioGuardado) ||
       valores.lat !== inicial.lat ||
       valores.lng !== inicial.lng ||
       valores.retiro !== inicial.retiro ||
@@ -219,8 +224,15 @@ export function UbicacionForm({
 
           <Titulo>Horario</Titulo>
           <Text style={styles.resumenHorario}>El cliente lo ve así: {textoDelHorario(horarios)}</Text>
-          {inicial ? (
-            <HorarioEnHoja valor={horarios} onCambio={setHorarios} />
+          {onGuardarHorario ? (
+            <HorarioEnHoja
+              valor={horarios}
+              onGuardar={async (h) => {
+                await onGuardarHorario(h);
+                setHorarios(h);
+                setHorarioGuardado(h);
+              }}
+            />
           ) : (
             <EditorDeHorario valor={horarios} onCambio={setHorarios} />
           )}
