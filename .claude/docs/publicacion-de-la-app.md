@@ -24,7 +24,7 @@ prueba el dev client en el teléfono propio.
 | Bundle id / paquete | `com.viverofrancisco.app` | `com.viverofrancisco.admin` |
 | Slug / scheme | `vivero-francisco` / `viverofrancisco` | `vivero-francisco-admin` / `viverofrancisco-admin` |
 | Proyecto de EAS | `@vivero-francisco/vivero-francisco` (`223ffdcd…`) | `@vivero-francisco/vivero-francisco-admin` (`3f2087df…`, creado con `eas init` el 18-oct) |
-| En las tiendas | **pública** (la ficha de siempre, ASC `6817389110`) | **no listada** en las dos |
+| En las tiendas | **pública** (la ficha de siempre, ASC `6817389110`) | **no listada** en el App Store (ASC `6824696485`, creada el 19-oct); en Google Play, ficha normal al lado de la de clientes |
 | Enlace de contraseña | `/establecer-contrasena` | `/equipo/establecer-contrasena` |
 | Nombre bajo el ícono | *Vivero Francisco* | *Vivero Admin* (`expo.name`; el de las tiendas sigue siendo *Vivero Francisco Admin*, que se pone en App Store Connect y Play Console: completo no entra bajo el ícono y iOS lo cortaba en *Vivero Franci…*, igual que la otra) |
 | `extra.app` (push) | `clientes` | `equipo` |
@@ -42,20 +42,22 @@ copiaron de las de clientes el 18-oct.
    `eas credentials -p android` en `apps/app-admin` una vez que exista, o del
    primer build). Hasta entonces el mapa de la app del equipo sale gris y el
    resto funciona.
-2. **iOS**: el primer `eas build -p ios --profile production` desde
-   `apps/app-admin` crea el App ID con *Associated Domains* y el perfil (pide
-   el Apple ID, es interactivo). Después, en App Store Connect, **Mis apps › +
-   › Nueva app** con ese bundle id y el nombre *Vivero Francisco Admin*; subir el
-   build (`eas submit -p ios`, que la primera vez pregunta el `ascAppId`: anotarlo
-   en `eas.json` como en la de clientes), y pedir la **distribución no listada**
+2. **iOS**: hecho el 19-oct — primer build, la app creada en App Store Connect
+   (*Vivero Francisco Admin*, ASC `6824696485`, ya en `submit.production.ios`
+   de `eas.json`) y el binario subido con `eas submit -p ios --latest`. Los
+   textos de la ficha, las notas para la revisión y las capturas están en
+   `apps/app-admin/tienda/`. Falta mandarla a revisión y pedir la **distribución no listada**
    en <https://developer.apple.com/contact/request/unlisted-app/>. Apple la
    revisa igual; en las notas de revisión va una cuenta de prueba **del equipo**
    (staff) y que es la app interna del vivero para su personal. Una vez
    aprobada, se instala con el enlace que da App Store Connect.
-3. **Android**: Google Play no tiene apps "no listadas" públicas. Lo práctico:
-   una **pista de prueba interna** en Play Console (hasta 100 correos, se
-   instala desde un enlace) o un **APK** del perfil `preview`
-   (`eas build -p android --profile preview`) que se manda por WhatsApp. Con el
+3. **Android**: Google Play no tiene apps "no listadas" públicas, y se decidió
+   (19-oct) publicarla con **ficha normal**, como app nueva en Play Console
+   (*Crear app*), con la cuenta Staff de prueba en *Acceso a la app*. La cuenta
+   de Play es de organización, así que no aplica la prueba cerrada de 14 días
+   con 12 testers. **Orden**: el equipo tiene que tener esta app instalada
+   *antes* de que salga la actualización de `com.viverofrancisco.app` como app
+   de clientes, cuyo login ya no admite cuentas del equipo. Con el
    primer build de Android, poner su SHA-256 en `APP_EQUIPO_ANDROID_SHA256`
    (`apps/admin/src/lib/enlaces-a-la-app.ts`) para que sus enlaces abran en la
    app.
