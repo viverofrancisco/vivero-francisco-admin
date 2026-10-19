@@ -9,6 +9,7 @@ import {
   type UbicacionBody,
 } from "@vivero/shared";
 import { EditorDeHorario } from "@/components/EditorDeHorario";
+import { HorarioEnHoja } from "@/components/HorarioEnHoja";
 import { BotonEliminar, Campo, Interruptor, Titulo } from "@vivero/app-ui/components/ui/Formulario";
 import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 import { BuscadorDeDireccion } from "@vivero/app-ui/components/BuscadorDeDireccion";
@@ -159,6 +160,20 @@ export function UbicacionForm({
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
+          <Titulo>Para los clientes</Titulo>
+          <Interruptor
+            label="Retiro en este local"
+            nota="El cliente puede elegirlo para retirar su pedido en la app"
+            value={retiro}
+            onValueChange={setRetiro}
+          />
+          <Interruptor
+            label="Activa"
+            nota="Apagada no se ofrece en ningún lado, pero sigue nombrando sus pedidos"
+            value={activa}
+            onValueChange={setActiva}
+          />
+
           <Titulo>Nombre</Titulo>
           <Campo
             label="Nombre"
@@ -206,21 +221,11 @@ export function UbicacionForm({
 
           <Titulo>Horario</Titulo>
           <Text style={styles.resumenHorario}>El cliente lo ve así: {textoDelHorario(horarios)}</Text>
-          <EditorDeHorario valor={horarios} onCambio={setHorarios} />
-
-          <Titulo>Para los clientes</Titulo>
-          <Interruptor
-            label="Retiro en este local"
-            nota="El cliente puede elegirlo para retirar su pedido en la app"
-            value={retiro}
-            onValueChange={setRetiro}
-          />
-          <Interruptor
-            label="Activa"
-            nota="Apagada no se ofrece en ningún lado, pero sigue nombrando sus pedidos"
-            value={activa}
-            onValueChange={setActiva}
-          />
+          {inicial ? (
+            <HorarioEnHoja valor={horarios} onCambio={setHorarios} />
+          ) : (
+            <EditorDeHorario valor={horarios} onCambio={setHorarios} />
+          )}
 
           {error ? (
             <HelperText type="error" visible style={styles.error}>
