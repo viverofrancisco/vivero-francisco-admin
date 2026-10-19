@@ -11,7 +11,6 @@ import {
 import { Button, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import {
   fechaSolaCapitalizada,
   nombresDeServicios,
@@ -22,6 +21,7 @@ import { fechaYHora12 } from "@vivero/app-ui/lib/hora";
 import { estadoLabel } from "@vivero/app-ui/lib/estado-visita";
 import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
 import { tema } from "@vivero/app-ui/lib/tema";
+import { MiniaturasDeAdjuntos } from "@vivero/app-ui/components/MiniaturasDeAdjuntos";
 
 /** *Pendiente* o *Atendida*, la misma pastilla de la lista. */
 export function EstadoSolicitud({ atendida }: { atendida: boolean }) {
@@ -145,23 +145,7 @@ export function FichaDeSolicitud({ id }: { id: string }) {
         {s.adjuntos.length ? (
           <>
             <Text style={styles.rotulo}>FOTOS O VIDEOS</Text>
-            <View style={styles.adjuntos}>
-              {s.adjuntos.map((a) => (
-                <Pressable
-                  key={a.id}
-                  onPress={() => Linking.openURL(a.url)}
-                  style={({ pressed }) => [styles.adjunto, pressed && styles.tocada]}
-                >
-                  {a.tipo === "video" ? (
-                    <View style={[styles.adjuntoImagen, styles.video]}>
-                      <Ionicons name="play" size={22} color="#fff" />
-                    </View>
-                  ) : (
-                    <Image source={{ uri: a.url }} style={styles.adjuntoImagen} contentFit="cover" />
-                  )}
-                </Pressable>
-              ))}
-            </View>
+            <MiniaturasDeAdjuntos adjuntos={s.adjuntos} />
           </>
         ) : null}
 
@@ -228,10 +212,6 @@ const styles = StyleSheet.create({
   enlace: { color: tema.verde700, fontWeight: "600" },
   texto2: { color: tema.texto2 },
   texto3: { color: tema.texto3, fontSize: 13 },
-  adjuntos: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  adjunto: { width: 84, height: 84, borderRadius: 10, overflow: "hidden" },
-  adjuntoImagen: { width: "100%", height: "100%", backgroundColor: tema.lienzo },
-  video: { backgroundColor: "#222", alignItems: "center", justifyContent: "center" },
   pastilla: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   pendiente: { backgroundColor: tema.ambar50 },
   atendida: { backgroundColor: tema.verde50 },

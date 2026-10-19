@@ -55,9 +55,13 @@ export default function PersonalTabsLayout() {
         router.push({ pathname: "/(personal)/ordenes/[id]", params: { id: data.ordenId } });
         return;
       }
-      // Un cliente pidió algo desde la app: a la lista, donde se atiende.
+      // Un cliente pidió algo desde la app: a su pantalla, donde se atiende.
       if (data.type === "solicitud_cliente") {
-        router.push("/(personal)/solicitudes");
+        if (typeof data.solicitudId === "string") {
+          router.push({ pathname: "/(personal)/solicitudes/[id]", params: { id: data.solicitudId } });
+        } else {
+          router.push("/(personal)/solicitudes");
+        }
         return;
       }
       const visitaId = data.visitaId;
