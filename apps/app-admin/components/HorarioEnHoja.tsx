@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 4,
-    marginTop: 18,
+    marginTop: 14,
     marginBottom: 8,
   },
   // El mismo rótulo que `Titulo` del formulario.

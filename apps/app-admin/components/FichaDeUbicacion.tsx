@@ -157,7 +157,9 @@ export function FichaDeUbicacion({
             valor={b.retiro ? "Sí" : "No"}
             prendida={b.retiro}
             onPress={() => setHoja("retiro")}
+            ultima
           />
+          <Separador />
 
           <View style={styles.campos}>
             <Campo label="Nombre" required value={b.nombre} onChangeText={(v) => set({ nombre: v })} />
@@ -169,6 +171,7 @@ export function FichaDeUbicacion({
             />
           </View>
 
+          <Separador />
           <Rotulo titulo="Dirección" onEditar={() => setHoja("direccion")} />
           <View style={styles.direccion}>
             {lineas.length > 0 ? (
@@ -195,6 +198,7 @@ export function FichaDeUbicacion({
             )}
           </View>
 
+          <Separador />
           <HorarioEnHoja valor={b.horarios} onCambio={(h) => set({ horarios: h })} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -245,17 +249,20 @@ function FilaConPastilla({
   valor,
   prendida,
   onPress,
+  ultima = false,
 }: {
   etiqueta: string;
   valor: string;
   prendida: boolean;
   onPress: () => void;
+  /** La última de su grupo no lleva raya: abajo va el separador. */
+  ultima?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => [styles.filaPastilla, pressed && styles.tocado]}
+      style={({ pressed }) => [styles.filaPastilla, ultima && styles.sinRaya, pressed && styles.tocado]}
     >
       <Text style={styles.filaPastillaTexto}>{etiqueta}</Text>
       <View style={[styles.pastilla, prendida ? styles.pastillaVerde : styles.pastillaGris]}>
@@ -266,6 +273,14 @@ function FilaConPastilla({
       <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
     </Pressable>
   );
+}
+
+/**
+ * La banda gris de Shopify entre secciones, de borde a borde: separa grupos
+ * de datos sin dibujar tarjetas alrededor de cada uno.
+ */
+function Separador() {
+  return <View style={styles.separador} />;
 }
 
 /** El rótulo de una sección con *Editar* a la derecha, como el del horario. */
@@ -315,7 +330,9 @@ function HojaDeDireccion({
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
   cuerpo: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 40 },
-  campos: { marginTop: 14 },
+  campos: { marginTop: 4 },
+  separador: { height: 8, backgroundColor: tema.lienzo, marginHorizontal: -16, marginTop: 12 },
+  sinRaya: { borderBottomWidth: 0 },
   filaPastilla: {
     flexDirection: "row",
     alignItems: "center",
@@ -339,7 +356,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 4,
-    marginTop: 18,
+    marginTop: 14,
     marginBottom: 8,
   },
   rotulo: { color: tema.texto3, fontSize: 11, letterSpacing: 0.8 },

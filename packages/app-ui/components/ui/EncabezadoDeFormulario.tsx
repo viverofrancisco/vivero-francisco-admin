@@ -47,7 +47,8 @@ export function EncabezadoDeFormulario({
   const apagado = cargando || deshabilitado;
   if (pastillas) {
     return (
-      <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
+      // Sin la raya de abajo: reemplaza al de la ficha, que no la tiene.
+      <View style={[styles.encabezado, styles.sinRaya, { paddingTop: insets.top + 6 }]}>
         <PastillaDeHoja texto={textoCancelar} onPress={onCancelar} disabled={cargando} />
         <Text style={styles.titulo} numberOfLines={1}>
           {titulo}
@@ -125,6 +126,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
   },
+  sinRaya: { borderBottomWidth: 0 },
   botonTocado: { backgroundColor: "rgba(0,0,0,0.05)" },
   cancelar: { color: tema.texto2, fontSize: 16, fontWeight: "600" },
   titulo: {

@@ -239,13 +239,13 @@ export function UbicacionForm({
     return (
       <div className="min-h-full bg-card pb-10">
         {cambio ? (
-          <div className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b bg-card/95 px-3 backdrop-blur-sm">
+          <div className="sticky top-0 z-20 flex h-12 items-center gap-2 bg-card/95 px-3 backdrop-blur-sm">
             <PastillaDeHoja texto="Cancelar" onClick={() => setC(inicial)} disabled={guardando} />
             <div className="flex-1" />
             <PastillaDeHoja texto="Guardar" primaria cargando={guardando} onClick={() => void guardar()} />
           </div>
         ) : (
-        <div className="sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b bg-card/95 px-3 backdrop-blur-sm">
+        <div className="sticky top-0 z-20 flex h-12 items-center gap-2.5 bg-card/95 px-3 backdrop-blur-sm">
           <VolverRedondo href={volverA} />
           <div className="flex-1" />
           <DropdownMenu>
@@ -275,11 +275,14 @@ export function UbicacionForm({
             valor={c.retiro ? "Sí" : "No"}
             prendida={c.retiro}
             onClick={() => setHoja("retiro")}
+            ultima
           />
-          <div className="mt-4">
+          <Separador />
+          <div className="mt-3">
             <CamposDeDatos c={c} set={set} sinInterruptores />
           </div>
 
+          <Separador />
           <RotuloConEditar titulo="Dirección" onEditar={() => setHoja("direccion")} />
           <div className="space-y-1 px-1">
             {lineas.length > 0 ? <p>{lineas.join(", ")}</p> : <p className="text-muted-foreground">Sin dirección</p>}
@@ -298,6 +301,7 @@ export function UbicacionForm({
             )}
           </div>
 
+          <Separador />
           <RotuloConEditar titulo="Horario" onEditar={() => setHoja("horario")} />
           <div className="space-y-1 px-1">
             {DIAS_DE_LA_SEMANA.map((dia, i) => {
@@ -535,17 +539,20 @@ function FilaConPastilla({
   valor,
   prendida,
   onClick,
+  ultima = false,
 }: {
   etiqueta: string;
   valor: string;
   prendida: boolean;
   onClick: () => void;
+  /** La última de su grupo no lleva raya: abajo va el separador. */
+  ultima?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 border-b px-1 py-2.5 text-left active:opacity-60"
+      className={`flex w-full items-center gap-2 px-1 py-2.5 text-left active:opacity-60 ${ultima ? "" : "border-b"}`}
     >
       <span className="flex-1 text-[15px] font-semibold">{etiqueta}</span>
       <span
@@ -615,10 +622,18 @@ function HojaDeOpcionesMovil({
   );
 }
 
+/**
+ * La banda gris de Shopify entre secciones, de borde a borde (como en la app):
+ * separa grupos de datos sin dibujar tarjetas alrededor de cada uno.
+ */
+function Separador() {
+  return <div className="-mx-4 mt-3 h-2 bg-muted" />;
+}
+
 /** El rótulo de una sección con *Editar* a la derecha. */
 function RotuloConEditar({ titulo, onEditar }: { titulo: string; onEditar: () => void }) {
   return (
-    <div className="mb-2 mt-6 flex items-center justify-between px-1">
+    <div className="mb-2 mt-3.5 flex items-center justify-between px-1">
       <h2 className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{titulo}</h2>
       <button type="button" onClick={onEditar} className="text-sm font-semibold text-primary active:opacity-50">
         Editar
