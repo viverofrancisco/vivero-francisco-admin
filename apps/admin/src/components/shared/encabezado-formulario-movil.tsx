@@ -31,24 +31,28 @@ export function EncabezadoFormularioMovil({
 }) {
   return (
     <div className="sticky top-0 z-20 flex h-12 items-center gap-1.5 border-b bg-card/95 px-2.5 backdrop-blur-sm md:hidden">
-      <button
-        type="button"
-        onClick={onCancelar}
-        disabled={cargando}
-        className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
-      >
-        Cancelar
-      </button>
+      <div className="flex min-w-[76px]">
+        <button
+          type="button"
+          onClick={onCancelar}
+          disabled={cargando}
+          className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
+        >
+          Cancelar
+        </button>
+      </div>
       <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
         {titulo}
       </h1>
-      <button
-        type="submit"
-        disabled={cargando || deshabilitado}
-        className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
-      >
-        {cargando ? <Loader2 className="h-4 w-4 animate-spin" /> : accion}
-      </button>
+      <div className="flex min-w-[76px] justify-end">
+        <button
+          type="submit"
+          disabled={cargando || deshabilitado}
+          className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
+        >
+          {cargando ? <Loader2 className="h-4 w-4 animate-spin" /> : accion}
+        </button>
+      </div>
     </div>
   );
 }

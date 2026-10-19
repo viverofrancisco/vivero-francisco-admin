@@ -618,29 +618,33 @@ export function OrdenDetail({
       <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-4 flex items-center gap-1.5 bg-card px-4 pt-1.5 pb-2 md:hidden">
         {editando ? (
           <>
-            <button
-              type="button"
-              onClick={() => setEditando(false)}
-              disabled={cargando === "guardar"}
-              className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
-            >
-              Cancelar
-            </button>
+            <div className="flex min-w-[76px]">
+              <button
+                type="button"
+                onClick={() => setEditando(false)}
+                disabled={cargando === "guardar"}
+                className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
+              >
+                Cancelar
+              </button>
+            </div>
             <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
               Pedido #{orden.numero}
             </h1>
-            <button
-              type="submit"
-              form={ORDEN_LINEAS_FORM_ID}
-              disabled={cargando === "guardar"}
-              className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
-            >
-              {cargando === "guardar" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Guardar"
-              )}
-            </button>
+            <div className="flex min-w-[76px] justify-end">
+              <button
+                type="submit"
+                form={ORDEN_LINEAS_FORM_ID}
+                disabled={cargando === "guardar"}
+                className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
+              >
+                {cargando === "guardar" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Guardar"
+                )}
+              </button>
+            </div>
           </>
         ) : (
           <>

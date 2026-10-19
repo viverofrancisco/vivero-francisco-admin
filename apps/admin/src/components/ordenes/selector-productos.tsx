@@ -192,22 +192,26 @@ function Contenido({
           vuelve a la lista sin perder nada. */}
       <div className="flex h-14 flex-none items-center gap-1.5 border-b border-border px-2.5">
         {dentro ? (
-          <button
-            type="button"
-            onClick={() => setDentro(null)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl active:bg-muted"
-            aria-label="Volver a la lista"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
+          <div className="flex min-w-[76px]">
+            <button
+              type="button"
+              onClick={() => setDentro(null)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl active:bg-muted"
+              aria-label="Volver a la lista"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+          </div>
         ) : (
-          <button
-            type="button"
-            onClick={cerrar}
-            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
-          >
-            Cancelar
-          </button>
+          <div className="flex min-w-[76px]">
+            <button
+              type="button"
+              onClick={cerrar}
+              className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
+            >
+              Cancelar
+            </button>
+          </div>
         )}
         <DialogPrimitive.Title className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
           {dentro ? dentro.nombre : "Productos"}
@@ -215,14 +219,16 @@ function Contenido({
         {dentro ? (
           <span className="min-w-[76px]" />
         ) : (
-          <button
-            type="button"
-            onClick={guardar}
-            disabled={!hayCambios}
-            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
-          >
-            Guardar
-          </button>
+          <div className="flex min-w-[76px] justify-end">
+            <button
+              type="button"
+              onClick={guardar}
+              disabled={!hayCambios}
+              className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
+            >
+              Guardar
+            </button>
+          </div>
         )}
       </div>
 

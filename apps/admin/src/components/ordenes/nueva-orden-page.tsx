@@ -643,23 +643,27 @@ export function NuevaOrdenPage({
             título en el medio, Crear a la derecha. Sin subtítulo: lo que la
             pantalla es se ve en la pantalla. */}
         <div className="flex h-12 items-center gap-1.5 px-2.5 md:hidden">
-          <Link
-            href={hrefVolver}
-            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
-          >
-            Cancelar
-          </Link>
+          <div className="flex min-w-[76px]">
+            <Link
+              href={hrefVolver}
+              className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
+            >
+              Cancelar
+            </Link>
+          </div>
           <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
             Nuevo pedido
           </h1>
-          <button
-            type="button"
-            onClick={crear}
-            disabled={noSePuedeGuardar}
-            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
-          >
-            {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear"}
-          </button>
+          <div className="flex min-w-[76px] justify-end">
+            <button
+              type="button"
+              onClick={crear}
+              disabled={noSePuedeGuardar}
+              className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
+            >
+              {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear"}
+            </button>
+          </div>
         </div>
 
         {/* En el escritorio, como siempre. */}
