@@ -104,11 +104,11 @@ aquella vez está descrito acá para rehacerlos si el logo cambia:
 
 **Si se renombra la carpeta de una app, hay que volver a correr `pod install`**: los Pods guardan rutas absolutas, y al pasar `app-equipo` a `app-admin` el build falló con *Unable to open base configuration reference file …/apps/app-equipo/ios/Pods/…* aunque `ios-sim.sh` creyera los pods al día (el `Manifest.lock` coincidía).
 
-**La app del equipo lleva el ícono sobre arena** (`#F1E6CF`, en `icon.png` y en
+**La app del equipo lleva el ícono sobre negro** (`#000000`, en `icon.png` y en
 `adaptiveIcon.backgroundColor` de `apps/app-admin/app.json`), para que en la
-pantalla de inicio no se confunda con la de clientes, que va sobre blanco. Se
-genera igual que el de clientes, con el logo (`splash-icon.png`) a 760 px de
-alto centrado sobre ese color; el splash de las dos sigue en blanco.
+pantalla de inicio no se confunda con la de clientes, que va sobre blanco
+(se probó arena primero y no gustó). Se genera igual que el de clientes, con
+el logo (`splash-icon.png`) a 760 px de alto centrado sobre ese color; el splash de las dos sigue en blanco.
 
 ## Variables de entorno en EAS
 

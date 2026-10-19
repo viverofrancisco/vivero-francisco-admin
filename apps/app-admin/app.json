@@ -22,7 +22,7 @@
     "android": {
       "package": "com.viverofrancisco.admin",
       "adaptiveIcon": {
-        "backgroundColor": "#F1E6CF",
+        "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
