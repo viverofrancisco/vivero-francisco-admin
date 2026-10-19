@@ -346,17 +346,11 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                   textContentType="emailAddress"
                   error={intentado && emailMalo}
                 />
-                <HelperText
-                  type={intentado && emailMalo ? "error" : "info"}
-                  visible
-                  style={styles.ayudaCampo}
-                >
-                  {intentado && emailMalo
-                    ? faltaEmail
-                      ? "Escribe tu correo."
-                      : "Escribe un correo válido."
-                    : "Con tu correo puedes crear tu cuenta después y seguir tu pedido."}
-                </HelperText>
+                {intentado && emailMalo ? (
+                  <HelperText type="error" visible style={styles.ayudaCampo}>
+                    {faltaEmail ? "Escribe tu correo." : "Escribe un correo válido."}
+                  </HelperText>
+                ) : null}
                 <TextInput
                   mode="outlined"
                   label="Nombre *"
