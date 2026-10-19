@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -11,7 +11,6 @@ import {
   MessageSquareText,
   Paperclip,
   Phone,
-  Play,
   Search,
   Wrench,
   type LucideIcon,
@@ -52,6 +51,13 @@ import {
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { useFiltroUrl } from "@/lib/filtros-url";
 import { cn } from "@/lib/utils";
+import { useAca } from "@/lib/filtros-url";
+import { useEsMovil } from "@/lib/use-es-movil";
+import {
+  EstadoSolicitud,
+  MiniaturasDeSolicitud,
+  cuandoSolicitud,
+} from "@/components/solicitudes/ficha-solicitud";
 
 type Estado = "pendientes" | "atendidas" | "todas";
 
@@ -61,16 +67,7 @@ const ESTADOS: { clave: Estado; etiqueta: string }[] = [
   { clave: "todas", etiqueta: "Todas" },
 ];
 
-/** Un instante, en la hora de Ecuador: lo mismo en el servidor y en el navegador. */
-function cuando(iso: string): string {
-  return new Date(iso).toLocaleString("es-EC", {
-    timeZone: "America/Guayaquil",
-    day: "numeric",
-    month: "short",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
+const cuando = cuandoSolicitud;
 
 function queEs(s: SolicitudItem): string {
   return serviciosEnUnaLinea(s) ?? "Solicitud";
@@ -92,6 +89,16 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
   const abierta = solicitudes.find((s) => s.id === abiertaId) ?? null;
   const setAbierta = (s: SolicitudItem | null) => setAbiertaId(s?.id ?? "");
   const [guardando, setGuardando] = useState(false);
+  const esMovil = useEsMovil();
+  const desde = useAca();
+
+  // En el teléfono una solicitud se abre en su página, como en la app: la que
+  // llega por `?abrir=` (la búsqueda global) va a esa página en vez de al diálogo.
+  useEffect(() => {
+    if (esMovil && abiertaId) {
+      router.replace(`/dashboard/solicitudes/${abiertaId}?from=%2Fdashboard%2Fsolicitudes`);
+    }
+  }, [esMovil, abiertaId, router]);
 
   const filtradas = useMemo(
     () =>
@@ -249,10 +256,9 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
         centinela={centinela}
       >
         {filtradas.slice(0, visibles).map((s) => (
-          <button
+          <Link
             key={s.id}
-            type="button"
-            onClick={() => setAbierta(s)}
+            href={`/dashboard/solicitudes/${s.id}?from=${desde}`}
             className={cn(FILA_MOVIL, "w-full text-left")}
           >
             <span className="min-w-0 flex-1">
@@ -273,11 +279,11 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
               <span className="text-xs text-muted-foreground">{cuando(s.createdAt)}</span>
               <EstadoSolicitud atendida={!!s.atendidaEl} />
             </span>
-          </button>
+          </Link>
         ))}
       </ListaMovil>
 
-      <Dialog open={abierta !== null} onOpenChange={(o) => !o && setAbierta(null)}>
+      <Dialog open={abierta !== null && !esMovil} onOpenChange={(o) => !o && setAbierta(null)}>
         <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg" pantallaCompletaEnMovil>
           {abierta ? (
             <>
@@ -345,27 +351,7 @@ export function SolicitudesTable({ solicitudes }: { solicitudes: SolicitudItem[]
 
                 {abierta.adjuntos.length ? (
                   <Renglon icono={Paperclip} rotulo="Fotos o videos">
-                    <div className="flex flex-wrap gap-2">
-                      {abierta.adjuntos.map((a) => (
-                        <a
-                          key={a.id}
-                          href={a.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="relative block h-20 w-20 overflow-hidden rounded-lg bg-muted ring-1 ring-foreground/10 hover:opacity-90"
-                          title={a.nombre ?? undefined}
-                        >
-                          {a.tipo === "video" ? (
-                            <span className="flex h-full w-full items-center justify-center bg-neutral-800">
-                              <Play className="h-6 w-6 fill-white text-white" />
-                            </span>
-                          ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={a.url} alt={a.nombre ?? "Foto"} className="h-full w-full object-cover" />
-                          )}
-                        </a>
-                      ))}
-                    </div>
+                    <MiniaturasDeSolicitud adjuntos={abierta.adjuntos} />
                   </Renglon>
                 ) : null}
 
@@ -479,18 +465,5 @@ function Renglon({
         {children}
       </div>
     </div>
-  );
-}
-
-function EstadoSolicitud({ atendida }: { atendida: boolean }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex rounded-full px-2 py-0.5 text-xs font-semibold",
-        atendida ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-800"
-      )}
-    >
-      {atendida ? "Atendida" : "Pendiente"}
-    </span>
   );
 }
