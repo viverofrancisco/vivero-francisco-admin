@@ -7,7 +7,6 @@ import {
   type HorarioSemanal,
 } from "@vivero/shared";
 import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
-import { mensajeDeError } from "@vivero/app-ui/lib/api";
 import { tema } from "@vivero/app-ui/lib/tema";
 import { EditorDeHorario } from "@/components/EditorDeHorario";
 
@@ -17,17 +16,15 @@ import { EditorDeHorario } from "@/components/EditorDeHorario";
  * crear se edita en línea; al editar se lee mucho más de lo que se cambia, y
  * siete filas de selectores abiertas son media pantalla para mirar.
  *
- * *Guardar* lo guarda ahí mismo, solo el horario, como la hoja del precio:
- * cerrar la hoja con el horario listo y tener que acordarse de guardar otra
- * vez el formulario era una forma de perderlo.
+ * *Listo* lo deja en la ficha, que lo guarda con el resto desde el *Guardar*
+ * de su encabezado.
  */
 export function HorarioEnHoja({
   valor,
-  onGuardar,
+  onCambio,
 }: {
   valor: HorarioSemanal;
-  /** Lo guarda en el servidor; si falla, la hoja queda abierta con el motivo. */
-  onGuardar: (h: HorarioSemanal) => Promise<void>;
+  onCambio: (h: HorarioSemanal) => void;
 }) {
   const [abierta, setAbierta] = useState(false);
 
@@ -60,8 +57,8 @@ export function HorarioEnHoja({
         <HojaDeHorario
           inicial={valor}
           onCerrar={() => setAbierta(false)}
-          onGuardar={async (h) => {
-            await onGuardar(h);
+          onListo={(h) => {
+            onCambio(h);
             setAbierta(false);
           }}
         />
@@ -70,34 +67,26 @@ export function HorarioEnHoja({
   );
 }
 
-/** La hoja: su propia copia del horario, que solo sale guardada. */
+/** La hoja: su propia copia del horario, que sale con *Listo*. */
 function HojaDeHorario({
   inicial,
   onCerrar,
-  onGuardar,
+  onListo,
 }: {
   inicial: HorarioSemanal;
   onCerrar: () => void;
-  onGuardar: (h: HorarioSemanal) => Promise<void>;
+  onListo: (h: HorarioSemanal) => void;
 }) {
   const [horario, setHorario] = useState(inicial);
-  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hayCambios = JSON.stringify(horario) !== JSON.stringify(inicial);
 
-  async function guardar() {
+  function listo() {
     if (horario.some((d) => d.abierto && d.desde >= d.hasta)) {
       setError("Revisa el horario: un día cierra antes de abrir");
       return;
     }
-    setGuardando(true);
-    setError(null);
-    try {
-      await onGuardar(horario);
-    } catch (e) {
-      setError(mensajeDeError(e, "No pudimos guardar el horario"));
-      setGuardando(false);
-    }
+    onListo(horario);
   }
 
   return (
@@ -109,11 +98,10 @@ function HojaDeHorario({
           cerrando={hayCambios ? "cancelar" : "cerrar"}
           derecha={
             <PastillaDeHoja
-              texto="Guardar"
+              texto="Listo"
               primaria
-              onPress={guardar}
+              onPress={listo}
               disabled={!hayCambios}
-              cargando={guardando}
             />
           }
         />

@@ -9,13 +9,18 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { HelperText, Text } from "react-native-paper";
-import { HORARIO_POR_DEFECTO, type Ubicacion, type UbicacionBody } from "@vivero/shared";
-import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
-import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
-import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
-import { HojaDeOpciones, type OpcionElegible } from "@vivero/app-ui/components/ui/SelectorOpcion";
+import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  HORARIO_POR_DEFECTO,
+  type HorarioSemanal,
+  type Ubicacion,
+  type UbicacionBody,
+} from "@vivero/shared";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
+import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
+import { HojaDeOpciones, type OpcionElegible } from "@vivero/app-ui/components/ui/SelectorOpcion";
 import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { Campo } from "@vivero/app-ui/components/ui/Formulario";
 import { mensajeDeError } from "@vivero/app-ui/lib/api";
@@ -23,15 +28,66 @@ import { tema } from "@vivero/app-ui/lib/tema";
 import { HorarioEnHoja } from "@/components/HorarioEnHoja";
 import { CamposDeDireccion, type DireccionDeUbicacion } from "@/components/CamposDeDireccion";
 
+/** Lo que se edita en la ficha, como se escribe en pantalla. */
+interface Borrador {
+  nombre: string;
+  telefono: string;
+  activa: boolean;
+  retiro: boolean;
+  direccion: DireccionDeUbicacion;
+  horarios: HorarioSemanal;
+}
+
 /**
- * Una ubicación ya creada, como una ficha de Shopify: se lee, y se cambia por
- * partes. *Estado* y *Retiro* son filas con su pastilla que abren una hoja de
- * opciones, como el *Product status* de Shopify; lo elegido **no se guarda
- * solo**: el encabezado se vuelve *Cancelar* / *Guardar*. El nombre y el
- * teléfono (*Editar* en el ⋯), la dirección y el horario (*Editar* junto a
- * su rótulo) se cambian en su hoja, que guarda solo esa parte. Era el
- * formulario entero abierto, y una ubicación se mira mucho más de lo que se
- * corrige.
+ * El horario con las claves en orden fijo: Postgres devuelve el JSON
+ * reordenado, y la comparación daba "hay cambios" sin haber tocado nada. Una
+ * sin horario cargado muestra el de siempre.
+ */
+function horarioOrdenado(h: HorarioSemanal | null): HorarioSemanal {
+  return (h ?? HORARIO_POR_DEFECTO).map((d) => ({ abierto: d.abierto, desde: d.desde, hasta: d.hasta }));
+}
+
+function borradorDe(u: Ubicacion): Borrador {
+  return {
+    nombre: u.nombre,
+    telefono: u.telefono ?? "",
+    activa: u.activa,
+    retiro: u.retiro,
+    direccion: {
+      direccion: u.direccion ?? "",
+      ciudad: u.ciudad ?? "",
+      referencia: u.referencia ?? "",
+      punto: u.lat != null && u.lng != null ? { lat: u.lat, lng: u.lng } : null,
+    },
+    horarios: horarioOrdenado(u.horarios),
+  };
+}
+
+const texto = (t: string) => t.trim() || null;
+
+function cuerpoDe(b: Borrador): UbicacionBody {
+  return {
+    nombre: b.nombre.trim(),
+    telefono: texto(b.telefono),
+    activa: b.activa,
+    retiro: b.retiro,
+    direccion: texto(b.direccion.direccion),
+    ciudad: texto(b.direccion.ciudad),
+    referencia: texto(b.direccion.referencia),
+    lat: b.direccion.punto?.lat ?? null,
+    lng: b.direccion.punto?.lng ?? null,
+    horarios: b.horarios,
+  };
+}
+
+/**
+ * Una ubicación ya creada, como una ficha de Shopify. El nombre y el teléfono
+ * se escriben en el lugar; *Estado* y *Retiro* son filas con su pastilla que
+ * abren una hoja de opciones, como el *Product status*; la dirección con su
+ * pin y el horario se leen y se cambian en su hoja (*Editar* junto al
+ * rótulo), que sale con *Listo*. **Nada se guarda solo**: con algo distinto
+ * de lo guardado, el encabezado se vuelve *Cancelar* / *Guardar*, y *Guardar*
+ * manda todo junto.
  */
 export function FichaDeUbicacion({
   ubicacion,
@@ -39,22 +95,28 @@ export function FichaDeUbicacion({
   onEliminar,
 }: {
   ubicacion: Ubicacion;
-  /** Guarda lo que venga (un `PUT` parcial) y devuelve la ubicación como quedó. */
-  onGuardar: (cambios: Partial<UbicacionBody>) => Promise<Ubicacion>;
+  /** Guarda (un `PUT`) y devuelve la ubicación como quedó. */
+  onGuardar: (cambios: UbicacionBody) => Promise<Ubicacion>;
   onEliminar: () => void;
 }) {
-  const [u, setU] = useState(ubicacion);
-  const [hoja, setHoja] = useState<"datos" | "direccion" | "estado" | "retiro" | null>(null);
-  // Estado y retiro esperan al *Guardar* del encabezado.
-  const [activa, setActiva] = useState(ubicacion.activa);
-  const [retiro, setRetiro] = useState(ubicacion.retiro);
+  const [guardada, setGuardada] = useState(() => borradorDe(ubicacion));
+  const [b, setB] = useState(guardada);
+  const [hoja, setHoja] = useState<"direccion" | "estado" | "retiro" | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const pendiente = activa !== u.activa || retiro !== u.retiro;
+  const set = (cambio: Partial<Borrador>) => setB((x) => ({ ...x, ...cambio }));
 
-  async function guardarPendiente() {
+  const cambio = JSON.stringify(cuerpoDe(b)) !== JSON.stringify(cuerpoDe(guardada));
+
+  async function guardar() {
+    if (!b.nombre.trim()) {
+      Alert.alert("Falta el nombre", "Ponle un nombre a la ubicación.");
+      return;
+    }
     setGuardando(true);
     try {
-      setU(await onGuardar({ activa, retiro }));
+      const nueva = borradorDe(await onGuardar(cuerpoDe(b)));
+      setGuardada(nueva);
+      setB(nueva);
     } catch (e) {
       Alert.alert("No se pudo guardar", mensajeDeError(e, "Intenta de nuevo en un momento."));
     } finally {
@@ -62,112 +124,106 @@ export function FichaDeUbicacion({
     }
   }
 
-  const guardar = async (cambios: Partial<UbicacionBody>) => {
-    setU(await onGuardar(cambios));
-    setHoja(null);
-  };
-
-  const lineas = [u.direccion, u.ciudad].filter(Boolean);
+  const d = b.direccion;
+  const lineas = [d.direccion, d.ciudad].map((t) => t.trim()).filter(Boolean);
 
   return (
     <View style={styles.flex}>
-      {pendiente ? (
+      {cambio ? (
         <EncabezadoDeFormulario
-          titulo={u.nombre}
+          titulo={guardada.nombre}
           accion="Guardar"
-          onAccion={guardarPendiente}
-          onCancelar={() => {
-            setActiva(u.activa);
-            setRetiro(u.retiro);
-          }}
+          onAccion={guardar}
+          onCancelar={() => setB(guardada)}
           cargando={guardando}
           pastillas
         />
       ) : (
         <EncabezadoDeFicha
-          titulo={u.nombre}
-          derecha={
-            <MenuDeEncabezado
-              opciones={[
-                { etiqueta: "Editar", onPress: () => setHoja("datos") },
-                { etiqueta: "Eliminar ubicación", onPress: onEliminar },
-              ]}
-            />
-          }
+          titulo={guardada.nombre}
+          derecha={<MenuDeEncabezado opciones={[{ etiqueta: "Eliminar ubicación", onPress: onEliminar }]} />}
         />
       )}
-      <ScrollView style={styles.flex} contentContainerStyle={styles.cuerpo}>
-        <FilaConPastilla
-          etiqueta="Estado"
-          valor={activa ? "Activa" : "Inactiva"}
-          prendida={activa}
-          onPress={() => setHoja("estado")}
-        />
-        <FilaConPastilla
-          etiqueta="Retiro en este local"
-          valor={retiro ? "Sí" : "No"}
-          prendida={retiro}
-          onPress={() => setHoja("retiro")}
-        />
-        <View style={styles.filas}>
-          <Renglon etiqueta="Teléfono" valor={u.telefono ?? "—"} apagado={!u.telefono} />
-        </View>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
+        <ScrollView style={styles.flex} contentContainerStyle={styles.cuerpo} keyboardShouldPersistTaps="handled">
+          <FilaConPastilla
+            etiqueta="Estado"
+            valor={b.activa ? "Activa" : "Inactiva"}
+            prendida={b.activa}
+            onPress={() => setHoja("estado")}
+          />
+          <FilaConPastilla
+            etiqueta="Retiro en este local"
+            valor={b.retiro ? "Sí" : "No"}
+            prendida={b.retiro}
+            onPress={() => setHoja("retiro")}
+          />
 
-        <Rotulo titulo="Dirección" onEditar={() => setHoja("direccion")} />
-        <View style={styles.direccion}>
-          {lineas.length > 0 ? (
-            <Text style={styles.texto}>{lineas.join(", ")}</Text>
-          ) : (
-            <Text style={styles.apagado}>Sin dirección</Text>
-          )}
-          {u.referencia ? <Text style={styles.apagado}>{u.referencia}</Text> : null}
-          {u.lat != null && u.lng != null ? (
-            <Pressable
-              hitSlop={6}
-              onPress={() =>
-                void Linking.openURL(
-                  `https://www.google.com/maps/search/?api=1&query=${u.lat},${u.lng}`
-                )
-              }
-            >
-              {({ pressed }) => (
-                <Text style={[styles.enlace, pressed && styles.tocado]}>Ver en el mapa</Text>
-              )}
-            </Pressable>
-          ) : (
-            <Text style={styles.apagado}>Sin pin en el mapa</Text>
-          )}
-        </View>
+          <View style={styles.campos}>
+            <Campo label="Nombre" required value={b.nombre} onChangeText={(v) => set({ nombre: v })} />
+            <Campo
+              label="Teléfono"
+              value={b.telefono}
+              onChangeText={(v) => set({ telefono: v })}
+              keyboardType="phone-pad"
+            />
+          </View>
 
-        <HorarioEnHoja
-          valor={horarioOrdenado(u)}
-          onGuardar={async (horarios) => {
-            setU(await onGuardar({ horarios }));
-          }}
-        />
-      </ScrollView>
+          <Rotulo titulo="Dirección" onEditar={() => setHoja("direccion")} />
+          <View style={styles.direccion}>
+            {lineas.length > 0 ? (
+              <Text style={styles.texto}>{lineas.join(", ")}</Text>
+            ) : (
+              <Text style={styles.apagado}>Sin dirección</Text>
+            )}
+            {d.referencia.trim() ? <Text style={styles.apagado}>{d.referencia}</Text> : null}
+            {d.punto ? (
+              <Pressable
+                hitSlop={6}
+                onPress={() =>
+                  void Linking.openURL(
+                    `https://www.google.com/maps/search/?api=1&query=${d.punto!.lat},${d.punto!.lng}`
+                  )
+                }
+              >
+                {({ pressed }) => (
+                  <Text style={[styles.enlace, pressed && styles.tocado]}>Ver en el mapa</Text>
+                )}
+              </Pressable>
+            ) : (
+              <Text style={styles.apagado}>Sin pin en el mapa</Text>
+            )}
+          </View>
 
-      {hoja === "datos" ? (
-        <HojaDeDatos ubicacion={u} onCerrar={() => setHoja(null)} onGuardar={guardar} />
-      ) : null}
+          <HorarioEnHoja valor={b.horarios} onCambio={(h) => set({ horarios: h })} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+
       <HojaDeOpciones
         visible={hoja === "estado"}
         titulo="Estado"
         opciones={OPCIONES_DE_ESTADO}
-        valor={activa ? "si" : "no"}
-        onElegir={(v) => setActiva(v === "si")}
+        valor={b.activa ? "si" : "no"}
+        onElegir={(v) => set({ activa: v === "si" })}
         onCerrar={() => setHoja(null)}
       />
       <HojaDeOpciones
         visible={hoja === "retiro"}
         titulo="Retiro en este local"
         opciones={OPCIONES_DE_RETIRO}
-        valor={retiro ? "si" : "no"}
-        onElegir={(v) => setRetiro(v === "si")}
+        valor={b.retiro ? "si" : "no"}
+        onElegir={(v) => set({ retiro: v === "si" })}
         onCerrar={() => setHoja(null)}
       />
       {hoja === "direccion" ? (
-        <HojaDeDireccion ubicacion={u} onCerrar={() => setHoja(null)} onGuardar={guardar} />
+        <HojaDeDireccion
+          inicial={b.direccion}
+          onCerrar={() => setHoja(null)}
+          onListo={(direccion) => {
+            set({ direccion });
+            setHoja(null);
+          }}
+        />
       ) : null}
     </View>
   );
@@ -212,15 +268,6 @@ function FilaConPastilla({
   );
 }
 
-function Renglon({ etiqueta, valor, apagado }: { etiqueta: string; valor: string; apagado?: boolean }) {
-  return (
-    <View style={styles.renglon}>
-      <Text style={styles.texto}>{etiqueta}</Text>
-      <Text style={[styles.texto, apagado && styles.apagado]}>{valor}</Text>
-    </View>
-  );
-}
-
 /** El rótulo de una sección con *Editar* a la derecha, como el del horario. */
 function Rotulo({ titulo, onEditar }: { titulo: string; onEditar: () => void }) {
   return (
@@ -233,61 +280,31 @@ function Rotulo({ titulo, onEditar }: { titulo: string; onEditar: () => void }) 
   );
 }
 
-/** El marco de las dos hojas: *Cancelar* / ✕, el título y *Guardar*. */
-function Hoja({
-  titulo,
-  hayCambios,
+/** La calle, la ciudad, la referencia y el pin, en su hoja; *Listo* los deja en la ficha. */
+function HojaDeDireccion({
+  inicial,
   onCerrar,
-  onGuardar,
-  children,
+  onListo,
 }: {
-  titulo: string;
-  hayCambios: boolean;
+  inicial: DireccionDeUbicacion;
   onCerrar: () => void;
-  /** Devuelve el motivo si no se puede guardar. */
-  onGuardar: () => Promise<string | null>;
-  children: React.ReactNode;
+  onListo: (d: DireccionDeUbicacion) => void;
 }) {
-  const [guardando, setGuardando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function guardar() {
-    setGuardando(true);
-    setError(null);
-    try {
-      const motivo = await onGuardar();
-      if (motivo) setError(motivo);
-    } catch (e) {
-      setError(mensajeDeError(e, "No pudimos guardar"));
-    }
-    setGuardando(false);
-  }
+  const [d, setD] = useState(inicial);
+  const hayCambios = JSON.stringify(d) !== JSON.stringify(inicial);
 
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onCerrar}>
       <View style={styles.hoja}>
         <CabeceraDeHoja
-          titulo={titulo}
+          titulo="Dirección"
           onCerrar={onCerrar}
           cerrando={hayCambios ? "cancelar" : "cerrar"}
-          derecha={
-            <PastillaDeHoja
-              texto="Guardar"
-              primaria
-              onPress={guardar}
-              disabled={!hayCambios}
-              cargando={guardando}
-            />
-          }
+          derecha={<PastillaDeHoja texto="Listo" primaria onPress={() => onListo(d)} disabled={!hayCambios} />}
         />
         <KeyboardAvoidingView style={styles.flex} behavior="padding">
           <ScrollView contentContainerStyle={styles.cuerpoHoja} keyboardShouldPersistTaps="handled">
-            {error ? (
-              <HelperText type="error" visible style={styles.error}>
-                {error}
-              </HelperText>
-            ) : null}
-            {children}
+            <CamposDeDireccion valor={d} onCambio={setD} />
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
@@ -295,100 +312,10 @@ function Hoja({
   );
 }
 
-/**
- * El horario con las claves en orden fijo: Postgres devuelve el JSON
- * reordenado, y la hoja daba "hay cambios" sin haber tocado nada. Una sin
- * horario cargado muestra el de siempre.
- */
-function horarioOrdenado(u: Ubicacion) {
-  return (u.horarios ?? HORARIO_POR_DEFECTO).map((d) => ({
-    abierto: d.abierto,
-    desde: d.desde,
-    hasta: d.hasta,
-  }));
-}
-
-const texto = (t: string) => t.trim() || null;
-
-/** El nombre y el teléfono. */
-function HojaDeDatos({
-  ubicacion: u,
-  onCerrar,
-  onGuardar,
-}: {
-  ubicacion: Ubicacion;
-  onCerrar: () => void;
-  onGuardar: (c: Partial<UbicacionBody>) => Promise<void>;
-}) {
-  const [nombre, setNombre] = useState(u.nombre);
-  const [telefono, setTelefono] = useState(u.telefono ?? "");
-  const hayCambios = nombre.trim() !== u.nombre || texto(telefono) !== u.telefono;
-
-  return (
-    <Hoja
-      titulo="Editar ubicación"
-      hayCambios={hayCambios}
-      onCerrar={onCerrar}
-      onGuardar={async () => {
-        if (!nombre.trim()) return "Ponle un nombre";
-        await onGuardar({ nombre: nombre.trim(), telefono: texto(telefono) });
-        return null;
-      }}
-    >
-      <Campo label="Nombre" required value={nombre} onChangeText={setNombre} />
-      <Campo label="Teléfono" value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" />
-    </Hoja>
-  );
-}
-
-/** La calle, la ciudad, la referencia y el pin. */
-function HojaDeDireccion({
-  ubicacion: u,
-  onCerrar,
-  onGuardar,
-}: {
-  ubicacion: Ubicacion;
-  onCerrar: () => void;
-  onGuardar: (c: Partial<UbicacionBody>) => Promise<void>;
-}) {
-  const [d, setD] = useState<DireccionDeUbicacion>({
-    direccion: u.direccion ?? "",
-    ciudad: u.ciudad ?? "",
-    referencia: u.referencia ?? "",
-    punto: u.lat != null && u.lng != null ? { lat: u.lat, lng: u.lng } : null,
-  });
-  const hayCambios =
-    texto(d.direccion) !== u.direccion ||
-    texto(d.ciudad) !== u.ciudad ||
-    texto(d.referencia) !== u.referencia ||
-    (d.punto?.lat ?? null) !== u.lat ||
-    (d.punto?.lng ?? null) !== u.lng;
-
-  return (
-    <Hoja
-      titulo="Dirección"
-      hayCambios={hayCambios}
-      onCerrar={onCerrar}
-      onGuardar={async () => {
-        await onGuardar({
-          direccion: texto(d.direccion),
-          ciudad: texto(d.ciudad),
-          referencia: texto(d.referencia),
-          lat: d.punto?.lat ?? null,
-          lng: d.punto?.lng ?? null,
-        });
-        return null;
-      }}
-    >
-      <CamposDeDireccion valor={d} onCambio={setD} />
-    </Hoja>
-  );
-}
-
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
-  cuerpo: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
-  filas: { gap: 8, paddingHorizontal: 4, marginTop: 6 },
+  cuerpo: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 40 },
+  campos: { marginTop: 14 },
   filaPastilla: {
     flexDirection: "row",
     alignItems: "center",
@@ -405,7 +332,6 @@ const styles = StyleSheet.create({
   pastillaTexto: { fontSize: 13, fontWeight: "600" },
   pastillaTextoVerde: { color: tema.verde700 },
   pastillaTextoGris: { color: tema.texto2 },
-  renglon: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   texto: { color: tema.texto, fontSize: 14 },
   apagado: { color: tema.texto3, fontSize: 14 },
   rotuloFila: {
@@ -413,7 +339,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 4,
-    marginTop: 22,
+    marginTop: 18,
     marginBottom: 8,
   },
   rotulo: { color: tema.texto3, fontSize: 11, letterSpacing: 0.8 },
@@ -422,5 +348,4 @@ const styles = StyleSheet.create({
   direccion: { gap: 4, paddingHorizontal: 4 },
   hoja: { flex: 1, backgroundColor: tema.superficie },
   cuerpoHoja: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 },
-  error: { textAlign: "center", color: tema.rojo, marginBottom: 4 },
 });
