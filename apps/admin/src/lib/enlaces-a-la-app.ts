@@ -63,6 +63,11 @@ export const APP_ANDROID_SHA256 = [
 export const APP_EQUIPO_ANDROID_SHA256: string[] = [
   // El keystore de EAS: los apk de prueba que se instalan a mano.
   "43:AF:0D:92:1B:1E:00:CE:1E:50:67:05:12:CA:87:69:8B:02:18:C0:99:B8:CF:52:67:A8:BE:CA:64:19:53:AF",
+  // Play App Signing: lo que se instala desde Google Play. En la consola de
+  // Play de esta app, *Protegido con Play › Protección de Play Store › Firma
+  // de apps*, el certificado de la clave de firma (no el de carga, que es el
+  // de EAS de arriba).
+  "A7:4C:BD:A6:0A:2B:6E:73:5B:D8:2C:06:1E:EE:20:F6:F0:7D:1E:9D:A2:4A:B4:8E:EF:DC:A3:46:76:29:8E:49",
 ];
 
 /** Las tiendas de la app de clientes, para quien abre su enlace en la computadora. */
