@@ -26,6 +26,7 @@ prueba el dev client en el teléfono propio.
 | Proyecto de EAS | `@vivero-francisco/vivero-francisco` (`223ffdcd…`) | `@vivero-francisco/vivero-francisco-admin` (`3f2087df…`, creado con `eas init` el 18-oct) |
 | En las tiendas | **pública** (la ficha de siempre, ASC `6817389110`) | **no listada** en las dos |
 | Enlace de contraseña | `/establecer-contrasena` | `/equipo/establecer-contrasena` |
+| Nombre bajo el ícono | *Vivero Francisco* | *Vivero Admin* (`expo.name`; el de las tiendas sigue siendo *Vivero Francisco Admin*, que se pone en App Store Connect y Play Console: completo no entra bajo el ícono y iOS lo cortaba en *Vivero Franci…*, igual que la otra) |
 | `extra.app` (push) | `clientes` | `equipo` |
 
 Las variables de EAS (`EXPO_PUBLIC_API_BASE_URL` y las dos claves de Maps)
@@ -100,6 +101,8 @@ aquella vez está descrito acá para rehacerlos si el logo cambia:
   blanco, también en modo oscuro (el contorno gris del logo se pierde sobre
   negro).
 - `favicon.png` — 64×64 desde el ícono, para la web.
+
+**Si se renombra la carpeta de una app, hay que volver a correr `pod install`**: los Pods guardan rutas absolutas, y al pasar `app-equipo` a `app-admin` el build falló con *Unable to open base configuration reference file …/apps/app-equipo/ios/Pods/…* aunque `ios-sim.sh` creyera los pods al día (el `Manifest.lock` coincidía).
 
 **La app del equipo lleva el ícono sobre arena** (`#F1E6CF`, en `icon.png` y en
 `adaptiveIcon.backgroundColor` de `apps/app-admin/app.json`), para que en la
