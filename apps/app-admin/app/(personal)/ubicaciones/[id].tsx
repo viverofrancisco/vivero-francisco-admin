@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Ubicacion } from "@vivero/shared";
-import { UbicacionForm } from "@/components/UbicacionForm";
+import { FichaDeUbicacion } from "@/components/FichaDeUbicacion";
 import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -56,19 +56,13 @@ export default function UbicacionScreen() {
   }
 
   return (
-    <UbicacionForm
-      inicial={ubicacion}
-      titulo={ubicacion.nombre}
-      accion="Guardar"
-      onCancelar={() => router.back()}
+    <FichaDeUbicacion
+      key={ubicacion.id}
+      ubicacion={ubicacion}
       onEliminar={eliminar}
-      onGuardarHorario={async (horarios) => {
-        await apiRequest(`/api/mobile/ubicaciones/${id}`, { method: "PUT", body: { horarios } });
-      }}
-      onSubmit={async (valores) => {
-        await apiRequest(`/api/mobile/ubicaciones/${id}`, { method: "PUT", body: valores });
-        router.back();
-      }}
+      onGuardar={(cambios) =>
+        apiRequest<Ubicacion>(`/api/mobile/ubicaciones/${id}`, { method: "PUT", body: cambios })
+      }
     />
   );
 }

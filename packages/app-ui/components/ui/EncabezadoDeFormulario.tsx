@@ -2,7 +2,6 @@ import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PressableScale } from "./PressableScale";
-import { PastillaDeHoja } from "./CabeceraDeHoja";
 import { tema } from "../../lib/tema";
 
 /**
@@ -23,7 +22,6 @@ export function EncabezadoDeFormulario({
   textoCancelar = "Cancelar",
   cargando = false,
   deshabilitado = false,
-  pastillas = false,
 }: {
   titulo: string;
   /**
@@ -37,33 +35,9 @@ export function EncabezadoDeFormulario({
   textoCancelar?: string;
   cargando?: boolean;
   deshabilitado?: boolean;
-  /**
-   * Botones en pastilla en vez de texto: para la ficha que se edita en el
-   * lugar y solo muestra este encabezado cuando hay cambios.
-   */
-  pastillas?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const apagado = cargando || deshabilitado;
-  if (pastillas) {
-    return (
-      <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
-        <PastillaDeHoja texto={textoCancelar} onPress={onCancelar} disabled={cargando} />
-        <Text style={styles.titulo} numberOfLines={1}>
-          {titulo}
-        </Text>
-        {accion && onAccion ? (
-          <PastillaDeHoja
-            texto={accion}
-            primaria
-            onPress={onAccion}
-            disabled={deshabilitado}
-            cargando={cargando}
-          />
-        ) : null}
-      </View>
-    );
-  }
   return (
     <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
       <PressableScale
