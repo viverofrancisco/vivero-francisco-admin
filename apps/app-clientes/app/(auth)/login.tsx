@@ -51,7 +51,7 @@ export default function LoginScreen() {
           body: { refreshToken: res.refreshToken },
           authenticated: false,
         }).catch(() => {});
-        setError("Esta cuenta es del equipo del vivero: entra con ella en la app Vivero Francisco Admin.");
+        setError("Esta cuenta no puede entrar en esta app.");
         return;
       }
       // Antes de la sesión: lo guardado de otra cuenta no se pinta ni un instante.

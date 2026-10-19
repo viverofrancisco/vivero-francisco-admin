@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet } from "react-native";
+import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -225,40 +225,47 @@ export default function RegistroScreen() {
           <LogoDeLaEmpresa style={styles.logo} />
           {paso === "datos" ? (
             <>
-              <TextInput
-                mode="outlined"
-                label="Nombre"
-                value={nombre}
-                onChangeText={setNombre}
-                onBlur={() => setNombreTocado(true)}
-                autoComplete="given-name"
-                textContentType="givenName"
-                autoCapitalize="words"
-                error={nombreTocado && !!errorNombre}
-                style={nombreTocado && errorNombre ? styles.inputConAyuda : styles.input}
-              />
-              {nombreTocado && errorNombre ? (
-                <HelperText type="error" visible style={styles.ayuda}>
-                  {errorNombre}
-                </HelperText>
-              ) : null}
-              <TextInput
-                mode="outlined"
-                label="Apellido"
-                value={apellido}
-                onChangeText={setApellido}
-                onBlur={() => setApellidoTocado(true)}
-                autoComplete="family-name"
-                textContentType="familyName"
-                autoCapitalize="words"
-                error={apellidoTocado && !!errorApellido}
-                style={apellidoTocado && errorApellido ? styles.inputConAyuda : styles.input}
-              />
-              {apellidoTocado && errorApellido ? (
-                <HelperText type="error" visible style={styles.ayuda}>
-                  {errorApellido}
-                </HelperText>
-              ) : null}
+              {/* Nombre y apellido lado a lado, como en el checkout. */}
+              <View style={styles.lado}>
+                <View style={styles.mitad}>
+                  <TextInput
+                    mode="outlined"
+                    label="Nombre"
+                    value={nombre}
+                    onChangeText={setNombre}
+                    onBlur={() => setNombreTocado(true)}
+                    autoComplete="given-name"
+                    textContentType="givenName"
+                    autoCapitalize="words"
+                    error={nombreTocado && !!errorNombre}
+                    style={nombreTocado && errorNombre ? styles.inputConAyuda : styles.input}
+                  />
+                  {nombreTocado && errorNombre ? (
+                    <HelperText type="error" visible style={styles.ayuda}>
+                      {errorNombre}
+                    </HelperText>
+                  ) : null}
+                </View>
+                <View style={styles.mitad}>
+                  <TextInput
+                    mode="outlined"
+                    label="Apellido"
+                    value={apellido}
+                    onChangeText={setApellido}
+                    onBlur={() => setApellidoTocado(true)}
+                    autoComplete="family-name"
+                    textContentType="familyName"
+                    autoCapitalize="words"
+                    error={apellidoTocado && !!errorApellido}
+                    style={apellidoTocado && errorApellido ? styles.inputConAyuda : styles.input}
+                  />
+                  {apellidoTocado && errorApellido ? (
+                    <HelperText type="error" visible style={styles.ayuda}>
+                      {errorApellido}
+                    </HelperText>
+                  ) : null}
+                </View>
+              </View>
               <TextInput
                 mode="outlined"
                 label="Correo"
@@ -358,6 +365,8 @@ const styles = StyleSheet.create({
   subtitle: { textAlign: "center", marginBottom: 28, color: "#555" },
   correo: { fontWeight: "700", color: tema.texto },
   input: { marginBottom: 12 },
+  lado: { flexDirection: "row", gap: 10 },
+  mitad: { flex: 1 },
   inputConAyuda: { marginBottom: 0 },
   ayuda: { marginBottom: 8 },
   errorCodigo: { textAlign: "center", marginTop: -12, marginBottom: 8 },

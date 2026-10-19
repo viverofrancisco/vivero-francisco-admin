@@ -145,15 +145,14 @@ export default function EstablecerContrasenaScreen() {
           {estado === "invalido" ? (
             <View style={styles.bloque}>
               <Text variant="bodyMedium" style={styles.texto}>
+                {/* Solo lo del equipo: su enlace lo emite un administrador. */}
                 {motivo === "vencido"
-                  ? destino === "portal"
-                    ? "Este enlace caducó. Pídele uno nuevo a un administrador."
-                    : "Este enlace caducó. Pide uno nuevo desde la app o a un administrador."
+                  ? "Este enlace caducó. Pídele uno nuevo a un administrador."
                   : motivo === "usado"
                     ? "Este enlace ya se usó. Si ya elegiste tu contraseña, entra con ella; si no fuiste tú, avisa a un administrador."
                     : motivo === "anulado"
-                      ? "Este enlace fue reemplazado por uno más nuevo. Busca el último que te enviaron, o pide uno nuevo desde la app o a un administrador."
-                      : "El enlace no es válido. Revisa que lo hayas abierto completo, o pide uno nuevo a quien te lo envió."}
+                      ? "Este enlace fue reemplazado por uno más nuevo. Busca el último que te enviaron, o pídele uno nuevo a un administrador."
+                      : "El enlace no es válido. Revisa que lo hayas abierto completo, o pídele uno nuevo a un administrador."}
               </Text>
               <Button mode="contained" onPress={irAIniciarSesion} style={styles.boton}>
                 {motivo === "usado" ? "Ir a iniciar sesión" : "Volver"}

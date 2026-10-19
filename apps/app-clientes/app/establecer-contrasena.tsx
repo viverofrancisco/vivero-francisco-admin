@@ -145,15 +145,15 @@ export default function EstablecerContrasenaScreen() {
           {estado === "invalido" ? (
             <View style={styles.bloque}>
               <Text variant="bodyMedium" style={styles.texto}>
+                {/* Solo lo del cliente: su enlace lo pide él mismo, desde
+                    *¿Olvidaste tu contraseña?*. */}
                 {motivo === "vencido"
-                  ? destino === "portal"
-                    ? "Este enlace caducó. Pídele uno nuevo a un administrador."
-                    : "Este enlace caducó. Pide uno nuevo desde la app o a un administrador."
+                  ? "Este enlace caducó. Pide uno nuevo desde ¿Olvidaste tu contraseña?"
                   : motivo === "usado"
-                    ? "Este enlace ya se usó. Si ya elegiste tu contraseña, entra con ella; si no fuiste tú, avisa a un administrador."
+                    ? "Este enlace ya se usó. Si ya elegiste tu contraseña, entra con ella."
                     : motivo === "anulado"
-                      ? "Este enlace fue reemplazado por uno más nuevo. Busca el último que te enviaron, o pide uno nuevo desde la app o a un administrador."
-                      : "El enlace no es válido. Revisa que lo hayas abierto completo, o pide uno nuevo a quien te lo envió."}
+                      ? "Este enlace fue reemplazado por uno más nuevo. Busca el último que te enviamos, o pide otro desde ¿Olvidaste tu contraseña?"
+                      : "El enlace no es válido. Revisa que lo hayas abierto completo, o pide otro desde ¿Olvidaste tu contraseña?"}
               </Text>
               <Button mode="contained" onPress={irAIniciarSesion} style={styles.boton}>
                 {motivo === "usado" ? "Ir a iniciar sesión" : "Volver"}

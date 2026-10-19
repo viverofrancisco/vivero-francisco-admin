@@ -40,7 +40,7 @@ export default function LoginScreen() {
           body: { refreshToken: res.refreshToken },
           authenticated: false,
         }).catch(() => {});
-        setError("Esta app es del equipo del vivero. Si eres cliente, entra en la app Vivero Francisco.");
+        setError("Esta cuenta no puede entrar en esta app.");
         return;
       }
       // Antes de la sesión: lo guardado de otra cuenta no se pinta ni un instante.

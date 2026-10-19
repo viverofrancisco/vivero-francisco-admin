@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 
 interface RequestInviteResponse {
   ok: true;
@@ -48,6 +49,7 @@ export default function SolicitarAccesoScreen() {
         style={styles.flex}
       >
         <View style={styles.content}>
+          <LogoDeLaEmpresa style={styles.logo} />
           <Text variant="headlineSmall" style={styles.title}>
             Recuperar tu contraseña
           </Text>
@@ -71,15 +73,6 @@ export default function SolicitarAccesoScreen() {
               <Text variant="bodyLarge" style={styles.subtitle}>
                 Ingresa tu correo y te enviaremos un enlace para elegir una
                 contraseña nueva.
-              </Text>
-              {/* Esto es para el cliente: el enlace sale de su ficha. Quien
-                  trabaja en el vivero no tiene por dónde recibirlo —el
-                  jardinero no tiene correo— así que su enlace lo emite la
-                  oficina, y conviene decirlo acá antes de que espere un mail
-                  que no va a llegar. */}
-              <Text variant="bodySmall" style={styles.nota}>
-                Si trabajas en el vivero, pídele el enlace a un administrador:
-                el tuyo se emite desde tu ficha.
               </Text>
               <TextInput
                 mode="outlined"
@@ -122,6 +115,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   flex: { flex: 1 },
   content: { flex: 1, padding: 24, justifyContent: "center" },
+  logo: { alignSelf: "center", height: 80, width: 220, marginBottom: 16 },
   title: { textAlign: "center", marginBottom: 12 },
   subtitle: { textAlign: "center", marginBottom: 32, color: "#555" },
   input: { marginBottom: 16 },
