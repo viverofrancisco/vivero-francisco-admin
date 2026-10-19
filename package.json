@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev:admin": "npm run dev -w apps/admin",
-    "dev:app-clientes": "npm run start -w apps/app-clientes",
+    "dev:app-clientes": "npm run start -w apps/app-clientes -- --port 8082",
     "dev:app-admin": "npm run start -w apps/app-admin",
     "build:admin": "npm run build -w apps/admin",
     "lint:admin": "npm run lint -w apps/admin",

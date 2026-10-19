@@ -53,7 +53,7 @@ Run from the repo root:
 npm install                 # installs all workspaces
 
 npm run dev:admin           # next dev (admin, http://localhost:3001)
-npm run dev:app-clientes    # expo start (app de clientes, Vivero Francisco)
+npm run dev:app-clientes    # expo start en el 8082 (app de clientes, Vivero Francisco)
 npm run dev:app-admin       # expo start (app del equipo, Vivero Francisco Admin)
 npm run build:admin         # next build
 npm run lint:admin          # eslint (admin)
