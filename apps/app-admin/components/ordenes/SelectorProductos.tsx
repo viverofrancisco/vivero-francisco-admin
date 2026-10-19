@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Searchbar, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
@@ -169,9 +170,9 @@ export function SelectorProductos({
               <Ionicons name="chevron-back" size={24} color={tema.texto} />
             </PressableScale>
           ) : (
-            <PressableScale onPress={cerrar} hitSlop={8} style={styles.boton}>
-              <Text style={styles.cancelar}>Cancelar</Text>
-            </PressableScale>
+            <View style={styles.boton}>
+              <PastillaDeHoja texto="Cancelar" onPress={cerrar} />
+            </View>
           )}
           <Text style={styles.titulo} numberOfLines={1}>
             {abierto ? abierto.nombre : "Productos"}
@@ -179,9 +180,9 @@ export function SelectorProductos({
           {abierto ? (
             <View style={styles.boton} />
           ) : (
-            <PressableScale onPress={guardar} disabled={!hayCambios} hitSlop={8} style={styles.boton}>
-              <Text style={[styles.guardar, !hayCambios && styles.apagado]}>Guardar</Text>
-            </PressableScale>
+            <View style={[styles.boton, styles.botonDerecha]}>
+              <PastillaDeHoja texto="Guardar" primaria onPress={guardar} disabled={!hayCambios} />
+            </View>
           )}
         </View>
 
@@ -320,7 +321,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tema.linea,
   },
-  boton: { minWidth: 76, paddingHorizontal: 6, paddingVertical: 6 },
+  boton: { minWidth: 76, alignItems: "flex-start" },
+  botonDerecha: { alignItems: "flex-end" },
   volver: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   cancelar: { color: tema.texto2, fontSize: 16, fontWeight: "600" },
   guardar: { color: tema.verde, fontSize: 16, fontWeight: "700", textAlign: "right" },

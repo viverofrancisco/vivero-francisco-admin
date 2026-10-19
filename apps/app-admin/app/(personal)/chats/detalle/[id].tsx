@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
-import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { BotonRedondoDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar";
@@ -255,21 +255,19 @@ function AgregarMiembros({
   return (
     <HojaInferior visible={visible} onCerrar={onCerrar}>
       <View style={styles.hojaCabecera}>
-        <PressableScale onPress={onCerrar} hitSlop={8}>
-          <Text style={styles.hojaCancelar}>Cancelar</Text>
-        </PressableScale>
+        <PastillaDeHoja texto="Cancelar" onPress={onCerrar} />
         <Text style={styles.hojaTitulo}>Agregar miembros</Text>
-        <PressableScale
+        <PastillaDeHoja
+          texto="Agregar"
+          primaria
           onPress={async () => {
             await onAgregar(elegidos);
             setElegidos([]);
             setBusqueda("");
           }}
-          disabled={ocupado || elegidos.length === 0}
-          style={[styles.hojaAccion, (ocupado || elegidos.length === 0) && styles.apagado]}
-        >
-          <Text style={styles.hojaAccionTexto}>{ocupado ? "Agregando…" : "Agregar"}</Text>
-        </PressableScale>
+          disabled={elegidos.length === 0}
+          cargando={ocupado}
+        />
       </View>
       <View style={styles.buscador}>
         <Ionicons name="search" size={18} color={tema.texto3} />

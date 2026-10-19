@@ -37,7 +37,7 @@ import { MediaViewer, type MediaViewerSource } from "@vivero/app-ui/components/M
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
-import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { BotonRedondoDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { Conectando } from "@vivero/app-ui/components/ui/Conectando";
 import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
 import { onHecho, trabajosDe, useColaDeVisitas } from "@/lib/cola-de-visitas";
@@ -420,29 +420,9 @@ export default function PersonalVisitaScreen() {
              hay que ir a buscar es una que se pierde. Se lleva puesta la
              flecha de volver, a propósito: para salir hay que decidir antes. */
           <>
-            <PressableScale
-              onPress={cambios.cancelar}
-              disabled={cambios.guardando}
-              hitSlop={8}
-              style={styles.encabezadoBoton}
-              estiloPresionado={styles.encabezadoBotonTocado}
-            >
-              <Text style={styles.encabezadoCancelar}>Cancelar</Text>
-            </PressableScale>
+            <PastillaDeHoja texto="Cancelar" onPress={cambios.cancelar} disabled={cambios.guardando} />
             <View style={styles.encabezadoTexto} />
-            <PressableScale
-              onPress={cambios.guardar}
-              disabled={cambios.guardando}
-              hitSlop={8}
-              style={styles.encabezadoBoton}
-              estiloPresionado={styles.encabezadoBotonTocado}
-            >
-              {cambios.guardando ? (
-                <ActivityIndicator size="small" color={tema.verde} />
-              ) : (
-                <Text style={styles.encabezadoGuardar}>Guardar</Text>
-              )}
-            </PressableScale>
+            <PastillaDeHoja texto="Guardar" primaria onPress={cambios.guardar} cargando={cambios.guardando} />
           </>
         ) : (
           <>

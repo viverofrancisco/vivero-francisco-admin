@@ -136,7 +136,7 @@ export function FichaDeUbicacion({
           onAccion={guardar}
           onCancelar={() => setB(guardada)}
           cargando={guardando}
-          pastillas
+          sinRaya
         />
       ) : (
         <EncabezadoDeFicha

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import {
   KeyboardAvoidingView,
@@ -239,22 +240,19 @@ export default function ChatFormScreen() {
           vista —un formulario largo no puede tener el botón a seis gestos de
           lo último que se escribió—. */}
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
-        <PressableScale onPress={() => router.back()} style={styles.cancelar}>
-          <Text style={styles.cancelarTexto}>Cancelar</Text>
-        </PressableScale>
+        <View style={styles.cancelar}>
+          <PastillaDeHoja texto="Cancelar" onPress={() => router.back()} />
+        </View>
         <Text style={styles.titulo}>{editando ? "Editar chat" : "Nuevo chat"}</Text>
-        <PressableScale
-          onPress={guardar}
-          disabled={guardando || !nombre.trim()}
-          style={[
-            styles.accion,
-            (guardando || !nombre.trim()) && styles.apagado,
-          ]}
-        >
-          <Text style={styles.accionTexto}>
-            {guardando ? "Guardando…" : editando ? "Guardar" : "Crear"}
-          </Text>
-        </PressableScale>
+        <View style={styles.accion}>
+          <PastillaDeHoja
+            texto={editando ? "Guardar" : "Crear"}
+            primaria
+            onPress={guardar}
+            disabled={!nombre.trim()}
+            cargando={guardando}
+          />
+        </View>
       </View>
 
       {/* El buscador de miembros está abajo del nombre y la foto: sin esto
@@ -407,17 +405,8 @@ const styles = StyleSheet.create({
     borderBottomColor: tema.linea,
   },
   titulo: { flex: 1, fontSize: 17, fontWeight: "700", color: tema.texto, textAlign: "center" },
-  cancelar: { paddingVertical: 6, paddingRight: 8 },
-  cancelarTexto: { color: tema.texto2, fontSize: 15, fontWeight: "600" },
-  accion: {
-    height: 30,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: tema.verde,
-  },
-  accionTexto: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  cancelar: { minWidth: 76, alignItems: "flex-start" },
+  accion: { minWidth: 76, alignItems: "flex-end" },
   apagado: { opacity: 0.4 },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
   // Sin `gap`: `Campo` y `Titulo` ya traen su propio margen, y sumarlos dejaba

@@ -1,7 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PressableScale } from "./PressableScale";
 import { PastillaDeHoja } from "./CabeceraDeHoja";
 import { tema } from "../../lib/tema";
 
@@ -9,6 +8,10 @@ import { tema } from "../../lib/tema";
  * El encabezado de un formulario: *Cancelar* a la izquierda, la acción a la
  * derecha, el título en el medio. Fijo arriba, como el de la ficha de la
  * visita cuando tiene cambios sin guardar.
+ *
+ * Los dos son **pastillas** (`PastillaDeHoja`: gris la de salir, verde la
+ * acción), las mismas de las hojas y de la ficha de una ubicación; eran texto
+ * suelto en unas pantallas y botones en otras.
  *
  * La acción vive acá y no en una barra al pie: es lo único que no se va
  * scrolleando, y arriba es donde el portal pone *Crear* y *Cancelar* en la
@@ -23,7 +26,7 @@ export function EncabezadoDeFormulario({
   textoCancelar = "Cancelar",
   cargando = false,
   deshabilitado = false,
-  pastillas = false,
+  sinRaya = false,
 }: {
   titulo: string;
   /**
@@ -38,21 +41,23 @@ export function EncabezadoDeFormulario({
   cargando?: boolean;
   deshabilitado?: boolean;
   /**
-   * Botones en pastilla en vez de texto: para la ficha que se edita en el
-   * lugar y solo muestra este encabezado cuando hay cambios.
+   * Sin la raya de abajo: cuando reemplaza al encabezado de una ficha (que no
+   * la tiene) mientras hay cambios sin guardar.
    */
-  pastillas?: boolean;
+  sinRaya?: boolean;
 }) {
   const insets = useSafeAreaInsets();
-  const apagado = cargando || deshabilitado;
-  if (pastillas) {
-    return (
-      // Sin la raya de abajo: reemplaza al de la ficha, que no la tiene.
-      <View style={[styles.encabezado, styles.sinRaya, { paddingTop: insets.top + 6 }]}>
+  return (
+    <View style={[styles.encabezado, sinRaya && styles.sinRaya, { paddingTop: insets.top + 6 }]}>
+      {/* Los dos lados del mismo ancho mínimo, para que el título quede al
+          centro aunque las pastillas digan cosas de distinto largo. */}
+      <View style={styles.lado}>
         <PastillaDeHoja texto={textoCancelar} onPress={onCancelar} disabled={cargando} />
-        <Text style={styles.titulo} numberOfLines={1}>
-          {titulo}
-        </Text>
+      </View>
+      <Text style={styles.titulo} numberOfLines={1}>
+        {titulo}
+      </Text>
+      <View style={[styles.lado, styles.derecha]}>
         {accion && onAccion ? (
           <PastillaDeHoja
             texto={accion}
@@ -61,50 +66,10 @@ export function EncabezadoDeFormulario({
             disabled={deshabilitado}
             cargando={cargando}
           />
+        ) : cargando ? (
+          <ActivityIndicator size="small" color={tema.verde} />
         ) : null}
       </View>
-    );
-  }
-  return (
-    <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
-      <PressableScale
-        onPress={onCancelar}
-        disabled={cargando}
-        hitSlop={8}
-        style={styles.boton}
-        estiloPresionado={styles.botonTocado}
-      >
-        <Text style={styles.cancelar}>{textoCancelar}</Text>
-      </PressableScale>
-      <Text style={styles.titulo} numberOfLines={1}>
-        {titulo}
-      </Text>
-      {accion && onAccion ? (
-        <PressableScale
-          onPress={onAccion}
-          disabled={apagado}
-          hitSlop={8}
-          style={styles.boton}
-          estiloPresionado={styles.botonTocado}
-        >
-          {cargando ? (
-            <ActivityIndicator size="small" color={tema.verde} />
-          ) : (
-            <Text
-              style={[styles.accion, deshabilitado && styles.accionApagada]}
-            >
-              {accion}
-            </Text>
-          )}
-        </PressableScale>
-      ) : (
-        // Del mismo ancho que el botón, para que el título siga centrado.
-        <View style={styles.boton}>
-          {cargando ? (
-            <ActivityIndicator size="small" color={tema.verde} />
-          ) : null}
-        </View>
-      )}
     </View>
   );
 }
@@ -114,21 +79,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingBottom: 8,
     backgroundColor: "#fff",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tema.linea,
   },
-  boton: {
-    minWidth: 76,
-    paddingHorizontal: 6,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
   sinRaya: { borderBottomWidth: 0 },
-  botonTocado: { backgroundColor: "rgba(0,0,0,0.05)" },
-  cancelar: { color: tema.texto2, fontSize: 16, fontWeight: "600" },
+  lado: { minWidth: 76, flexDirection: "row" },
+  derecha: { justifyContent: "flex-end" },
   titulo: {
     flex: 1,
     textAlign: "center",
@@ -136,11 +95,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: tema.texto,
   },
-  accion: {
-    color: tema.verde,
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "right",
-  },
-  accionApagada: { color: tema.texto3 },
 });

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
+import { Modal, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { primeraLineaPlana } from "@vivero/shared";
@@ -41,13 +42,9 @@ export function EditorDeEncabezado({
     <Modal visible animationType="slide" onRequestClose={onCerrar}>
       <View style={[styles.pantalla, { paddingTop: insets.top + 8 }]}>
         <View style={styles.cabecera}>
-          <Pressable onPress={onCerrar} hitSlop={8}>
-            <Text style={styles.cancelar}>Cancelar</Text>
-          </Pressable>
+          <PastillaDeHoja texto="Cancelar" onPress={onCerrar} />
           <Text style={styles.titulo}>Encabezado</Text>
-          <Pressable onPress={() => void guardar()} hitSlop={8}>
-            <Text style={styles.listo}>Listo</Text>
-          </Pressable>
+          <PastillaDeHoja texto="Listo" primaria onPress={() => void guardar()} />
         </View>
         {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
         <EditorDeTextoRico ref={editor} html={html} centrado />
