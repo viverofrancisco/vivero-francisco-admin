@@ -35,7 +35,7 @@ export function EncabezadoFormularioMovil({
         type="button"
         onClick={onCancelar}
         disabled={cargando}
-        className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-left text-base font-semibold text-muted-foreground active:bg-muted"
+        className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
       >
         Cancelar
       </button>
@@ -45,9 +45,9 @@ export function EncabezadoFormularioMovil({
       <button
         type="submit"
         disabled={cargando || deshabilitado}
-        className="flex min-w-[76px] items-center justify-end rounded-lg px-1.5 py-1.5 text-base font-bold text-primary active:bg-muted disabled:text-muted-foreground"
+        className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
       >
-        {cargando ? <Loader2 className="h-5 w-5 animate-spin" /> : accion}
+        {cargando ? <Loader2 className="h-4 w-4 animate-spin" /> : accion}
       </button>
     </div>
   );

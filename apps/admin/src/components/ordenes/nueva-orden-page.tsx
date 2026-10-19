@@ -645,7 +645,7 @@ export function NuevaOrdenPage({
         <div className="flex h-12 items-center gap-1.5 px-2.5 md:hidden">
           <Link
             href={hrefVolver}
-            className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-base font-semibold text-muted-foreground active:bg-muted"
+            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
           >
             Cancelar
           </Link>
@@ -656,9 +656,9 @@ export function NuevaOrdenPage({
             type="button"
             onClick={crear}
             disabled={noSePuedeGuardar}
-            className="flex min-w-[76px] items-center justify-end rounded-lg px-1.5 py-1.5 text-base font-bold text-primary active:bg-muted disabled:text-muted-foreground"
+            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
           >
-            {guardando ? <Loader2 className="h-5 w-5 animate-spin" /> : "Crear"}
+            {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear"}
           </button>
         </div>
 

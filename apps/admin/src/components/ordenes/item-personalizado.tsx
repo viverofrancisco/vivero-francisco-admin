@@ -101,7 +101,7 @@ function Contenido({
           type="button"
           onClick={agregar}
           disabled={!listo}
-          className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-right text-base font-bold text-primary active:bg-muted disabled:text-muted-foreground"
+          className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
         >
           Agregar
         </button>

@@ -204,7 +204,7 @@ function Contenido({
           <button
             type="button"
             onClick={cerrar}
-            className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-left text-base font-semibold text-muted-foreground active:bg-muted"
+            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-muted px-3 text-[13px] font-semibold text-foreground active:opacity-60 disabled:opacity-40"
           >
             Cancelar
           </button>
@@ -219,7 +219,7 @@ function Contenido({
             type="button"
             onClick={guardar}
             disabled={!hayCambios}
-            className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-right text-base font-bold text-primary active:bg-muted disabled:text-muted-foreground"
+            className="flex h-[30px] flex-none items-center justify-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground active:opacity-60 disabled:opacity-40"
           >
             Guardar
           </button>
