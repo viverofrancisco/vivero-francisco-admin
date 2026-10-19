@@ -5,7 +5,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronDown, ChevronLeft, MoreHorizontal } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   DIAS_DE_LA_SEMANA,
   HORARIO_POR_DEFECTO,
@@ -37,7 +38,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import { EncabezadoFormularioMovil } from "@/components/shared/encabezado-formulario-movil";
-import { BOTON_REDONDO_MOVIL, ICONO_BOTON_REDONDO } from "@/components/shared/boton-redondo-movil";
+import {
+  BOTON_REDONDO_MOVIL,
+  ICONO_BOTON_REDONDO,
+  VolverRedondo,
+} from "@/components/shared/boton-redondo-movil";
+import { CabeceraDeHoja, HojaCompleta, PastillaDeHoja } from "@/components/servicios/movil/piezas";
+import { useEsMovil } from "@/lib/use-es-movil";
 
 /** El editor del pin de las propiedades: busca y mueve el mapa, el pin lo pone el dedo. */
 const MapaPropiedad = dynamic(
@@ -106,6 +113,8 @@ export function UbicacionForm({
   const [guardando, setGuardando] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [hoja, setHoja] = useState<"datos" | "direccion" | "horario" | "estado" | "retiro" | null>(null);
+  const esMovil = useEsMovil();
 
   const nueva = ubicacion === null;
   const cambio = JSON.stringify(c) !== JSON.stringify(inicial);
@@ -174,6 +183,239 @@ export function UbicacionForm({
   }
 
   const titulo = nueva ? "Nueva ubicación" : ubicacion.nombre;
+
+  const dialogoEliminar = (
+    <Dialog open={confirmando} onOpenChange={(o) => !o && !borrando && setConfirmando(false)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>¿Eliminar {ubicacion?.nombre}?</DialogTitle>
+          <DialogDescription>
+            Deja de ofrecerse para retirar. Si algún pedido la cita no se puede eliminar:
+            desactívala en su lugar.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => setConfirmando(false)} disabled={borrando}>
+            Cancelar
+          </Button>
+          <Button type="button" variant="destructive" onClick={eliminar} disabled={borrando}>
+            {borrando ? "Eliminando…" : "Eliminar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  /**
+   * Guarda una parte (un `PUT` parcial) desde una hoja del teléfono: lo que
+   * vuelve pasa a ser lo guardado, y la página se vuelve a pedir para el título
+   * y la lista. Si falla, lanza y la hoja lo dice.
+   */
+  async function guardarParte(cambios: Partial<Campos>) {
+    if (!ubicacion) return;
+    const res = await fetch(`/api/ubicaciones/${ubicacion.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cambios),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "No se pudo guardar");
+    const guardada = desde(data as Ubicacion);
+    setInicial(guardada);
+    // Estado y retiro pendientes en la ficha siguen pendientes si esta parte no los traía.
+    setC((x) => ({
+      ...guardada,
+      activa: "activa" in cambios ? guardada.activa : x.activa,
+      retiro: "retiro" in cambios ? guardada.retiro : x.retiro,
+    }));
+    setHoja(null);
+    toast.success("Ubicación guardada");
+    router.refresh();
+  }
+
+  // En el teléfono, las pantallas de la app (`UbicacionForm` y
+  // `FichaDeUbicacion` de app-admin). Crear es el formulario entero, sin
+  // tarjetas ni columnas; una ya creada es una ficha que se lee, y cada parte
+  // se cambia en su hoja —*Editar* en el ⋯ para el nombre, el teléfono y los
+  // interruptores; *Editar* junto a *Dirección* y a *Horario* para lo suyo—.
+  // *Estado* y *Retiro* son filas con su pastilla que abren sus opciones, como
+  // el *Product status* de Shopify, y **no se guardan solas**: el encabezado se
+  // vuelve *Cancelar* / *Guardar*.
+  if (esMovil && nueva) {
+    return (
+      <form id={FORM_ID} onSubmit={guardar} className="min-h-full bg-card pb-8">
+        <EncabezadoFormularioMovil
+          titulo={titulo}
+          accion="Crear"
+          cargando={guardando}
+          onCancelar={() => router.push(volverA)}
+        />
+        <div className="px-4 pt-3">
+          <CamposDeDatos c={c} set={set} />
+          <Rotulo>Dirección</Rotulo>
+          <CamposDeDireccion c={c} set={set} setC={setC} />
+          <Rotulo>Horario</Rotulo>
+          <EditorDeHorario valor={c.horarios} onCambio={(h) => set("horarios", h)} />
+        </div>
+      </form>
+    );
+  }
+
+  if (esMovil && ubicacion) {
+    const g = inicial;
+    const lineas = [g.direccion, g.ciudad].filter(Boolean);
+    return (
+      <div className="min-h-full bg-card pb-10">
+        {cambio ? (
+          <div className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b bg-card/95 px-3 backdrop-blur-sm">
+            <PastillaDeHoja texto="Cancelar" onClick={() => setC(inicial)} disabled={guardando} />
+            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">{g.nombre}</h1>
+            <PastillaDeHoja
+              texto="Guardar"
+              primaria
+              cargando={guardando}
+              onClick={() => {
+                setGuardando(true);
+                guardarParte({ activa: c.activa, retiro: c.retiro })
+                  .catch((err) => toast.error(err instanceof Error ? err.message : "No se pudo guardar"))
+                  .finally(() => setGuardando(false));
+              }}
+            />
+          </div>
+        ) : (
+        <div className="sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b bg-card/95 px-3 backdrop-blur-sm">
+          <VolverRedondo href={volverA} />
+          <h1 className="min-w-0 flex-1 truncate text-[17px] font-bold">{g.nombre}</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<button type="button" aria-label="Más acciones" className={BOTON_REDONDO_MOVIL} />}
+            >
+              <MoreHorizontal className={ICONO_BOTON_REDONDO} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto">
+              <DropdownMenuItem onClick={() => setHoja("datos")}>Editar</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setConfirmando(true)} className="text-destructive">
+                Eliminar ubicación
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        )}
+
+        <div className="px-4 pt-1 text-sm">
+          <FilaConPastilla
+            etiqueta="Estado"
+            valor={c.activa ? "Activa" : "Inactiva"}
+            prendida={c.activa}
+            onClick={() => setHoja("estado")}
+          />
+          <FilaConPastilla
+            etiqueta="Retiro en este local"
+            valor={c.retiro ? "Sí" : "No"}
+            prendida={c.retiro}
+            onClick={() => setHoja("retiro")}
+          />
+          <div className="mt-3 space-y-2 px-1">
+            <Renglon etiqueta="Teléfono" valor={g.telefono || "—"} apagado={!g.telefono} />
+          </div>
+
+          <RotuloConEditar titulo="Dirección" onEditar={() => setHoja("direccion")} />
+          <div className="space-y-1 px-1">
+            {lineas.length > 0 ? <p>{lineas.join(", ")}</p> : <p className="text-muted-foreground">Sin dirección</p>}
+            {g.referencia ? <p className="text-muted-foreground">{g.referencia}</p> : null}
+            {g.lat != null && g.lng != null ? (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lng}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block font-semibold text-primary active:opacity-50"
+              >
+                Ver en el mapa
+              </a>
+            ) : (
+              <p className="text-muted-foreground">Sin pin en el mapa</p>
+            )}
+          </div>
+
+          <RotuloConEditar titulo="Horario" onEditar={() => setHoja("horario")} />
+          <div className="space-y-1 px-1">
+            {DIAS_DE_LA_SEMANA.map((dia, i) => {
+              const d = g.horarios[i];
+              return (
+                <div key={dia} className="flex justify-between gap-3">
+                  <span>{dia}</span>
+                  <span className={`tabular-nums ${d?.abierto ? "" : "text-muted-foreground"}`}>
+                    {d?.abierto ? `${horaLegible(d.desde)} – ${horaLegible(d.hasta)}` : "Cerrado"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {hoja === "datos" ? (
+          <HojaMovil
+            titulo="Editar ubicación"
+            inicial={g}
+            onCerrar={() => setHoja(null)}
+            onGuardar={(x) =>
+              x.nombre.trim()
+                ? guardarParte({ nombre: x.nombre.trim(), telefono: x.telefono })
+                : Promise.reject(new Error("Ponle un nombre"))
+            }
+            campos={(x, setX) => (
+              <CamposDeDatos c={x} set={(k, v) => setX((y) => ({ ...y, [k]: v }))} sinInterruptores />
+            )}
+          />
+        ) : null}
+        {hoja === "direccion" ? (
+          <HojaMovil
+            titulo="Dirección"
+            inicial={g}
+            onCerrar={() => setHoja(null)}
+            onGuardar={(x) =>
+              guardarParte({ direccion: x.direccion, ciudad: x.ciudad, referencia: x.referencia, lat: x.lat, lng: x.lng })
+            }
+            campos={(x, setX) => (
+              <CamposDeDireccion c={x} set={(k, v) => setX((y) => ({ ...y, [k]: v }))} setC={setX} />
+            )}
+          />
+        ) : null}
+        {hoja === "horario" ? (
+          <HojaMovil
+            titulo="Horario"
+            inicial={g}
+            onCerrar={() => setHoja(null)}
+            onGuardar={(x) =>
+              x.horarios.some((d) => d.abierto && d.desde >= d.hasta)
+                ? Promise.reject(new Error("Revisa el horario: un día cierra antes de abrir"))
+                : guardarParte({ horarios: x.horarios })
+            }
+            campos={(x, setX) => (
+              <EditorDeHorario valor={x.horarios} onCambio={(h) => setX((y) => ({ ...y, horarios: h }))} />
+            )}
+          />
+        ) : null}
+        <HojaDeOpcionesMovil
+          abierta={hoja === "estado"}
+          titulo="Estado"
+          opciones={OPCIONES_DE_ESTADO}
+          valor={c.activa}
+          onElegir={(v) => set("activa", v)}
+          onCerrar={() => setHoja(null)}
+        />
+        <HojaDeOpcionesMovil
+          abierta={hoja === "retiro"}
+          titulo="Retiro en este local"
+          opciones={OPCIONES_DE_RETIRO}
+          valor={c.retiro}
+          onElegir={(v) => set("retiro", v)}
+          onCerrar={() => setHoja(null)}
+        />
+        {dialogoEliminar}
+      </div>
+    );
+  }
 
   return (
     <form id={FORM_ID} onSubmit={guardar} className="pb-6">
@@ -313,26 +555,258 @@ export function UbicacionForm({
         </div>
       </div>
 
-      <Dialog open={confirmando} onOpenChange={(o) => !o && !borrando && setConfirmando(false)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>¿Eliminar {ubicacion?.nombre}?</DialogTitle>
-            <DialogDescription>
-              Deja de ofrecerse para retirar. Si algún pedido la cita no se puede eliminar:
-              desactívala en su lugar.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setConfirmando(false)} disabled={borrando}>
-              Cancelar
-            </Button>
-            <Button type="button" variant="destructive" onClick={eliminar} disabled={borrando}>
-              {borrando ? "Eliminando…" : "Eliminar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {dialogoEliminar}
     </form>
+  );
+}
+
+/** El rótulo de una sección en el teléfono, el `Titulo` de la app. */
+function Rotulo({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-2 mt-5 px-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+      {children}
+    </h2>
+  );
+}
+
+const OPCIONES_DE_ESTADO = [
+  { valor: true, etiqueta: "Activa", detalle: "Se ofrece en la app y en los pedidos" },
+  { valor: false, etiqueta: "Inactiva", detalle: "No se ofrece en ningún lado, pero sigue nombrando sus pedidos" },
+];
+
+const OPCIONES_DE_RETIRO = [
+  { valor: true, etiqueta: "Sí", detalle: "El cliente puede elegirlo para retirar su pedido en la app" },
+  { valor: false, etiqueta: "No", detalle: "No aparece entre los lugares de retiro" },
+];
+
+/** Una fila que abre sus opciones: el rótulo, la pastilla con el valor y el chevron. */
+function FilaConPastilla({
+  etiqueta,
+  valor,
+  prendida,
+  onClick,
+}: {
+  etiqueta: string;
+  valor: string;
+  prendida: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-2 border-b px-1 py-2.5 text-left active:opacity-60"
+    >
+      <span className="flex-1 text-[15px] font-semibold">{etiqueta}</span>
+      <span
+        className={`rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${
+          prendida ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"
+        }`}
+      >
+        {valor}
+      </span>
+      <ChevronRight className="h-[18px] w-[18px] text-muted-foreground" />
+    </button>
+  );
+}
+
+/** La hoja de opciones de la app (`HojaDeOpciones`): elegir cierra, y no guarda. */
+function HojaDeOpcionesMovil({
+  abierta,
+  titulo,
+  opciones,
+  valor,
+  onElegir,
+  onCerrar,
+}: {
+  abierta: boolean;
+  titulo: string;
+  opciones: { valor: boolean; etiqueta: string; detalle: string }[];
+  valor: boolean;
+  onElegir: (v: boolean) => void;
+  onCerrar: () => void;
+}) {
+  return (
+    <Sheet open={abierta} onOpenChange={(o) => !o && onCerrar()}>
+      <SheetContent side="bottom" className="rounded-t-2xl pb-[env(safe-area-inset-bottom)]">
+        <SheetHeader>
+          <SheetTitle>{titulo}</SheetTitle>
+        </SheetHeader>
+        <div className="px-2 pb-3">
+          {opciones.map((o) => {
+            const elegida = o.valor === valor;
+            return (
+              <button
+                key={o.etiqueta}
+                type="button"
+                onClick={() => {
+                  onElegir(o.valor);
+                  onCerrar();
+                }}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left ${
+                  elegida ? "bg-green-50" : "active:bg-secondary"
+                }`}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px]">{o.etiqueta}</span>
+                  <span className="block text-xs text-muted-foreground">{o.detalle}</span>
+                </span>
+                {elegida ? (
+                  <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Check className="h-3.5 w-3.5" />
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function Renglon({ etiqueta, valor, apagado }: { etiqueta: string; valor: string; apagado?: boolean }) {
+  return (
+    <div className="flex justify-between gap-3">
+      <span>{etiqueta}</span>
+      <span className={apagado ? "text-muted-foreground" : ""}>{valor}</span>
+    </div>
+  );
+}
+
+/** El rótulo de una sección con *Editar* a la derecha. */
+function RotuloConEditar({ titulo, onEditar }: { titulo: string; onEditar: () => void }) {
+  return (
+    <div className="mb-2 mt-6 flex items-center justify-between px-1">
+      <h2 className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{titulo}</h2>
+      <button type="button" onClick={onEditar} className="text-sm font-semibold text-primary active:opacity-50">
+        Editar
+      </button>
+    </div>
+  );
+}
+
+type SetCampo = <K extends keyof Campos>(k: K, v: Campos[K]) => void;
+
+/** Si está activa y si se retira ahí, el nombre y el teléfono. */
+function CamposDeDatos({
+  c,
+  set,
+  sinInterruptores = false,
+}: {
+  c: Campos;
+  set: SetCampo;
+  /** En la hoja *Editar* de la ficha: ahí el estado y el retiro tienen su fila. */
+  sinInterruptores?: boolean;
+}) {
+  return (
+    <>
+      {sinInterruptores ? null : (
+        <div className="divide-y">
+          <Interruptor
+            id="u-activa"
+            titulo="Activa"
+            nota="Apagada no se ofrece en ningún lado, pero sigue nombrando sus pedidos."
+            valor={c.activa}
+            onCambio={(v) => set("activa", v)}
+          />
+          <Interruptor
+            id="u-retiro"
+            titulo="Retiro en este local"
+            nota="El cliente puede elegirlo para retirar su pedido en la app."
+            valor={c.retiro}
+            onCambio={(v) => set("retiro", v)}
+          />
+        </div>
+      )}
+      <div className={sinInterruptores ? "space-y-3" : "mt-4 space-y-3"}>
+        <Campo id="u-nombre" etiqueta="Nombre" valor={c.nombre} onCambio={(v) => set("nombre", v)} placeholder="Vivero Hipódromo" />
+        <Campo id="u-telefono" etiqueta="Teléfono" valor={c.telefono} onCambio={(v) => set("telefono", v)} placeholder="Opcional" />
+      </div>
+    </>
+  );
+}
+
+/** La calle, la ciudad, la referencia y el pin en el mapa. */
+function CamposDeDireccion({
+  c,
+  set,
+  setC,
+}: {
+  c: Campos;
+  set: SetCampo;
+  setC: React.Dispatch<React.SetStateAction<Campos>>;
+}) {
+  return (
+    <>
+      <div className="space-y-3">
+        <Campo id="u-direccion" etiqueta="Dirección" valor={c.direccion} onCambio={(v) => set("direccion", v)} placeholder="Calle, número, urbanización" />
+        <div className="space-y-1.5">
+          <Label>Ciudad</Label>
+          <SelectorCiudad value={c.ciudad} onChange={(v) => set("ciudad", v)} clearable={false} />
+        </div>
+        <Campo id="u-referencia" etiqueta="Referencia" valor={c.referencia} onCambio={(v) => set("referencia", v)} placeholder="Frente a…, junto a…" />
+      </div>
+      <Rotulo>En el mapa</Rotulo>
+      <MapaPropiedad
+        lat={c.lat}
+        lng={c.lng}
+        onCambio={(p) => setC((x) => ({ ...x, lat: p?.lat ?? null, lng: p?.lng ?? null }))}
+      />
+    </>
+  );
+}
+
+/**
+ * Una hoja de la ficha en el teléfono: su propia copia de los campos, y
+ * *Guardar* guarda ahí mismo solo esa parte, como la hoja del precio de una
+ * variante y como en la app.
+ */
+function HojaMovil({
+  titulo,
+  inicial,
+  onCerrar,
+  onGuardar,
+  campos,
+}: {
+  titulo: string;
+  inicial: Campos;
+  onCerrar: () => void;
+  onGuardar: (x: Campos) => Promise<void>;
+  campos: (x: Campos, setX: React.Dispatch<React.SetStateAction<Campos>>) => React.ReactNode;
+}) {
+  const [x, setX] = useState(inicial);
+  const [guardando, setGuardando] = useState(false);
+  const hayCambios = JSON.stringify(x) !== JSON.stringify(inicial);
+
+  async function guardar() {
+    setGuardando(true);
+    try {
+      await onGuardar(x);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo guardar");
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <HojaCompleta onCerrar={onCerrar}>
+      <CabeceraDeHoja
+        titulo={titulo}
+        onCerrar={onCerrar}
+        cerrando={hayCambios ? "cancelar" : "cerrar"}
+        derecha={
+          <PastillaDeHoja
+            texto="Guardar"
+            primaria
+            disabled={!hayCambios}
+            cargando={guardando}
+            onClick={() => void guardar()}
+          />
+        }
+      />
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">{campos(x, setX)}</div>
+    </HojaCompleta>
   );
 }
 
