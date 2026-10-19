@@ -4,11 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronRight, Mail, Phone, Play } from "lucide-react";
+import { ChevronRight, Mail, MoreHorizontal, Phone, Play } from "lucide-react";
 import { fechaSola, nombresDeServicios, type SolicitudItem } from "@vivero/shared";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { MediaViewer, type MediaViewerSource } from "@/components/ui/media-viewer";
-import { VolverRedondo } from "@/components/shared/boton-redondo-movil";
+import {
+  BOTON_REDONDO_MOVIL,
+  ICONO_BOTON_REDONDO,
+  VolverRedondo,
+} from "@/components/shared/boton-redondo-movil";
 import { cn } from "@/lib/utils";
 
 /** Un instante, en la hora de Ecuador: lo mismo en el servidor y en el navegador. */
@@ -89,8 +98,8 @@ const LINEA = "flex w-full items-center gap-3 py-3 text-left text-sm";
  * Una solicitud, como la pantalla de la app del equipo: quién la mandó —con su
  * número para llamar—, y en el orden del formulario del cliente los
  * servicios, los detalles, las fotos o videos y dónde; luego las visitas que
- * salieron de ella y si ya se atendió. Abajo, *Marcar atendida* y *Crear
- * visita*.
+ * salieron de ella y si ya se atendió. *Marcar atendida* y *Crear visita*
+ * van en el ⋯ del encabezado.
  */
 export function FichaSolicitud({
   solicitud: s,
@@ -130,11 +139,32 @@ export function FichaSolicitud({
       <div className="sticky top-0 z-20 flex h-12 items-center gap-2.5 bg-card/95 px-3 backdrop-blur-sm md:h-14 md:px-6">
         <VolverRedondo href={volverA} />
         <h1 className="min-w-0 flex-1 truncate text-[17px] font-bold md:text-xl">Solicitud #{s.numero}</h1>
-        <EstadoSolicitud atendida={!!s.atendidaEl} />
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button type="button" aria-label="Acciones" disabled={guardando} className={BOTON_REDONDO_MOVIL} />
+            }
+          >
+            <MoreHorizontal className={ICONO_BOTON_REDONDO} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-auto">
+            <DropdownMenuItem onClick={() => void marcar(!s.atendidaEl)}>
+              {s.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
+            </DropdownMenuItem>
+            {/* El asistente con su cliente y su propiedad puestos; la de un
+                invitado arranca en *Cliente nuevo* con sus datos. */}
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/visitas/nueva?solicitud=${s.id}`)}>
+              Crear visita
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="mx-auto max-w-xl px-4 pt-1">
-        <p className="text-[13px] text-muted-foreground">Enviada {cuandoSolicitud(s.createdAt)}</p>
+        <div className="flex items-center gap-2">
+          <EstadoSolicitud atendida={!!s.atendidaEl} />
+          <p className="text-[13px] text-muted-foreground">Enviada {cuandoSolicitud(s.createdAt)}</p>
+        </div>
 
         <Seccion titulo="Cliente">
           <Caja>
@@ -232,21 +262,6 @@ export function FichaSolicitud({
           </p>
         ) : null}
 
-        <div className="mt-6 flex flex-col gap-2">
-          <Button className="h-11 rounded-full" disabled={guardando} onClick={() => void marcar(!s.atendidaEl)}>
-            {s.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
-          </Button>
-          {/* El asistente con su cliente y su propiedad puestos; la de un
-              invitado arranca en *Cliente nuevo* con sus datos. */}
-          <Button
-            variant="outline"
-            className="h-11 rounded-full"
-            nativeButton={false}
-            render={<Link href={`/dashboard/visitas/nueva?solicitud=${s.id}`} />}
-          >
-            Crear visita
-          </Button>
-        </div>
       </div>
     </div>
   );

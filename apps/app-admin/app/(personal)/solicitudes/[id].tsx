@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { Button, Text } from "react-native-paper";
+import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombresDeServicios, type SolicitudItem } from "@vivero/shared";
@@ -23,8 +24,8 @@ import { tema } from "@vivero/app-ui/lib/tema";
  * Una solicitud, en su pantalla: quién la mandó —con su número para llamar—,
  * y en el orden del formulario del cliente los servicios, los detalles, las
  * fotos o videos (que se abren en la app) y dónde; luego las visitas que
- * salieron de ella y si ya se atendió. Abajo, *Marcar atendida* y *Crear
- * visita*. Era una hoja que subía sobre la lista, y con fotos y cuatro
+ * salieron de ella y si ya se atendió. *Marcar atendida* y *Crear visita*
+ * van en el ⋯ del encabezado. Era una hoja que subía sobre la lista, y con fotos y cuatro
  * botones no entraba.
  */
 export default function SolicitudScreen() {
@@ -91,11 +92,28 @@ export default function SolicitudScreen() {
       <EncabezadoDeFicha
         titulo={`Solicitud #${s.numero}`}
         derecha={
-          <View style={[styles.pastilla, s.atendidaEl ? styles.atendida : styles.pendiente]}>
-            <Text style={[styles.pastillaTexto, { color: s.atendidaEl ? tema.verde700 : tema.ambarTexto }]}>
-              {s.atendidaEl ? "Atendida" : "Pendiente"}
-            </Text>
-          </View>
+          guardando ? (
+            <ActivityIndicator color={tema.verde} />
+          ) : (
+            <MenuDeEncabezado
+              opciones={[
+                {
+                  etiqueta: s.atendidaEl ? "Volver a pendiente" : "Marcar atendida",
+                  onPress: () => void marcar(!s.atendidaEl),
+                },
+                // El asistente con su cliente y su propiedad puestos; la de
+                // un invitado arranca en *Cliente nuevo* con sus datos.
+                {
+                  etiqueta: "Crear visita",
+                  onPress: () =>
+                    router.push({
+                      pathname: "/(personal)/visitas/nueva",
+                      params: { solicitud: s.id, cliente: s.cliente?.id ?? "", propiedad: s.propiedad?.id ?? "" },
+                    }),
+                },
+              ]}
+            />
+          )
         }
       />
       <ScrollView
@@ -110,7 +128,14 @@ export default function SolicitudScreen() {
           />
         }
       >
-        <Text style={styles.fecha}>Enviada {fechaYHora12(s.createdAt)}</Text>
+        <View style={styles.estadoFila}>
+          <View style={[styles.pastilla, s.atendidaEl ? styles.atendida : styles.pendiente]}>
+            <Text style={[styles.pastillaTexto, { color: s.atendidaEl ? tema.verde700 : tema.ambarTexto }]}>
+              {s.atendidaEl ? "Atendida" : "Pendiente"}
+            </Text>
+          </View>
+          <Text style={styles.fecha}>Enviada {fechaYHora12(s.createdAt)}</Text>
+        </View>
 
         <Text style={styles.rotulo}>CLIENTE</Text>
         <View style={styles.caja}>
@@ -224,29 +249,6 @@ export default function SolicitudScreen() {
           </Text>
         ) : null}
 
-        <View style={styles.botones}>
-          <Button
-            mode="contained"
-            loading={guardando}
-            disabled={guardando}
-            onPress={() => void marcar(!s.atendidaEl)}
-          >
-            {s.atendidaEl ? "Volver a pendiente" : "Marcar atendida"}
-          </Button>
-          {/* El asistente con su cliente y su propiedad puestos; la de un
-              invitado arranca en *Cliente nuevo* con sus datos. */}
-          <Button
-            mode="outlined"
-            onPress={() =>
-              router.push({
-                pathname: "/(personal)/visitas/nueva",
-                params: { solicitud: s.id, cliente: s.cliente?.id ?? "", propiedad: s.propiedad?.id ?? "" },
-              })
-            }
-          >
-            Crear visita
-          </Button>
-        </View>
       </ScrollView>
     </View>
   );
@@ -269,7 +271,7 @@ const styles = StyleSheet.create({
   texto2: { color: tema.texto2 },
   texto3: { color: tema.texto3, fontSize: 13 },
   atendidaTexto: { marginTop: 12, paddingLeft: 4 },
-  botones: { gap: 8, marginTop: 20 },
+  estadoFila: { flexDirection: "row", alignItems: "center", gap: 8 },
   pastilla: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   pendiente: { backgroundColor: tema.ambar50 },
   atendida: { backgroundColor: tema.verde50 },
