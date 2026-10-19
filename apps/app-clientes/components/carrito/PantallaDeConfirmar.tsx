@@ -341,25 +341,6 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                     Iniciar sesión
                   </Text>
                 </Text>
-                {/* El correo primero, como el checkout de Shopify: es lo que
-                    ata el pedido a una ficha. */}
-                <TextInput
-                  mode="outlined"
-                  label="Correo *"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="email-address"
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  error={intentado && emailMalo}
-                />
-                {intentado && emailMalo ? (
-                  <HelperText type="error" visible style={styles.ayudaCampo}>
-                    {faltaEmail ? "Escribe tu correo." : "Escribe un correo válido."}
-                  </HelperText>
-                ) : null}
                 {/* Nombre y apellido lado a lado, como en el checkout de Shopify. */}
                 <View style={styles.lado}>
                   <View style={styles.mitad}>
@@ -394,6 +375,25 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                       </HelperText>
                     ) : null}
                   </View>
+                {/* El correo, después del nombre: es lo que ata el pedido a
+                    una ficha. */}
+                <TextInput
+                  mode="outlined"
+                  label="Correo *"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  error={intentado && emailMalo}
+                />
+                {intentado && emailMalo ? (
+                  <HelperText type="error" visible style={styles.ayudaCampo}>
+                    {faltaEmail ? "Escribe tu correo." : "Escribe un correo válido."}
+                  </HelperText>
+                ) : null}
                 </View>
                 <TextInput
                   mode="outlined"
