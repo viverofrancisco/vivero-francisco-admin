@@ -114,5 +114,11 @@ Datos recopilados, **vinculados a la identidad**, **sin rastreo**, uso
 
 ## Capturas
 
-Pendientes: iPhone 6.5" (1284×2778) y Android (1080×2160), con la cuenta
-de prueba en el simulador.
+- **App Store**: `capturas/ios-6.5/` (1284×2778, el espacio de 6.5").
+- **Google Play**: `capturas/android/` (1080×2160; el iPhone es más alto que
+  2:1, que es el máximo de Play, así que van con un margen blanco a los lados).
+
+Sacadas del simulador (iPhone 17 Pro, barra de estado a las 9:41) con datos de
+desarrollo, por deep link (`xcrun simctl openurl … viverofrancisco-admin://chats/<id>`):
+la ficha de una visita, el chat de una cuadrilla, Clientes, Pedidos, Informes y
+Productos.
