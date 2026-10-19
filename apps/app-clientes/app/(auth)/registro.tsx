@@ -35,9 +35,14 @@ export default function RegistroScreen() {
   const [paso, setPaso] = useState<"datos" | "codigo">("datos");
   // Desde el aviso de una solicitud o un pedido de invitado llega con lo que
   // ya escribió ahí, para no pedírselo dos veces.
-  const previo = useLocalSearchParams<{ nombre?: string; email?: string; telefono?: string }>();
+  const previo = useLocalSearchParams<{
+    nombre?: string;
+    apellido?: string;
+    email?: string;
+    telefono?: string;
+  }>();
   const [nombre, setNombre] = useState(previo.nombre ?? "");
-  const [apellido, setApellido] = useState("");
+  const [apellido, setApellido] = useState(previo.apellido ?? "");
   const [email, setEmail] = useState(previo.email ?? "");
   const [telefono, setTelefono] = useState(previo.telefono ?? "");
   const [password, setPassword] = useState("");

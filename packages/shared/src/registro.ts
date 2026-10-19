@@ -191,6 +191,8 @@ export type PedidoBody = z.infer<typeof pedidoSchema>;
 export const pedidoInvitadoSchema = pedidoSchema.extend({
   contacto: z.object({
     nombre: z.string().trim().min(1, "Escribe tu nombre").max(120),
+    /** Opcional para no romper una app de antes del campo; la de hoy lo pide. */
+    apellido: z.string().trim().max(120).optional(),
     telefono: z
       .string()
       .trim()

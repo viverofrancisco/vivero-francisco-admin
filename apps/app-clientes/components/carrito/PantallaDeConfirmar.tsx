@@ -88,6 +88,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
 
   // Con quién hablar, solo el invitado: el cliente ya lo dice su cuenta.
   const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [intentado, setIntentado] = useState(false);
@@ -95,6 +96,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
   const yMetodo = useRef(0);
   const digitos = telefono.replace(/\D/g, "").length;
   const faltaNombre = invitado && nombre.trim().length === 0;
+  const faltaApellido = invitado && apellido.trim().length === 0;
   const faltaTelefono = invitado && digitos < 7;
   // Obligatorio: es lo que le deja crear su cuenta después y ver el pedido.
   const faltaEmail = invitado && email.trim().length === 0;
@@ -173,7 +175,12 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
     else
       router.push({
         pathname: "/(auth)/registro",
-        params: { nombre: nombre.trim(), email: email.trim(), telefono: telefono.trim() },
+        params: {
+          nombre: nombre.trim(),
+          apellido: apellido.trim(),
+          email: email.trim(),
+          telefono: telefono.trim(),
+        },
       });
   }
 
@@ -182,7 +189,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
     // pantalla va hasta ahí. Apagado, el botón no decía qué faltaba —y sin
     // elegir la forma de entrega no pasaba nada al tocarlo—.
     const faltanDatos =
-      invitado && (faltaNombre || faltaTelefono || emailMalo);
+      invitado && (faltaNombre || faltaApellido || faltaTelefono || emailMalo);
     if (faltanDatos || !entregaLista) {
       setIntentado(true);
       Keyboard.dismiss();
@@ -220,6 +227,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
               ...pedido,
               contacto: {
                 nombre: nombre.trim(),
+                apellido: apellido.trim(),
                 telefono: telefono.trim(),
                 email: email.trim(),
               },
@@ -249,6 +257,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                   pathname: "/(auth)/registro",
                   params: {
                     nombre: nombre.trim(),
+                    apellido: apellido.trim(),
                     email: email.trim(),
                     telefono: telefono.trim(),
                   },
@@ -356,13 +365,27 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                   label="Nombre *"
                   value={nombre}
                   onChangeText={setNombre}
-                  autoComplete="name"
-                  textContentType="name"
+                  autoComplete="given-name"
+                  textContentType="givenName"
                   error={intentado && faltaNombre}
                 />
                 {intentado && faltaNombre ? (
                   <HelperText type="error" visible style={styles.ayudaCampo}>
                     Escribe tu nombre.
+                  </HelperText>
+                ) : null}
+                <TextInput
+                  mode="outlined"
+                  label="Apellido *"
+                  value={apellido}
+                  onChangeText={setApellido}
+                  autoComplete="family-name"
+                  textContentType="familyName"
+                  error={intentado && faltaApellido}
+                />
+                {intentado && faltaApellido ? (
+                  <HelperText type="error" visible style={styles.ayudaCampo}>
+                    Escribe tu apellido.
                   </HelperText>
                 ) : null}
                 <TextInput
@@ -464,7 +487,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                   <View style={[styles.caja, styles.entrega]}>
                     <Ionicons name="person-outline" size={22} color={tema.verde} />
                     <View style={styles.flex}>
-                      <Text style={styles.entregaTitulo}>{nombre.trim()}</Text>
+                      <Text style={styles.entregaTitulo}>{`${nombre.trim()} ${apellido.trim()}`.trim()}</Text>
                       <Text style={styles.entregaDetalle}>{telefono.trim()}</Text>
                       {email.trim() ? <Text style={styles.entregaDetalle}>{email.trim()}</Text> : null}
                     </View>

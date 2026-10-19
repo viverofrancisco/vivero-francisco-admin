@@ -145,8 +145,10 @@ export async function crearPedidoDeInvitado(
     throw new ValidationError("Sin cuenta no hay propiedades: elige retiro o escribe la dirección.");
   }
   const email = normalizarCorreo(body.contacto.email);
+  const apellido = body.contacto.apellido?.trim() || null;
   const contacto = {
-    nombre: body.contacto.nombre.trim(),
+    // En la orden, el nombre completo: es a quién se llama por este pedido.
+    nombre: [body.contacto.nombre.trim(), apellido].filter(Boolean).join(" "),
     telefono: body.contacto.telefono.trim(),
   };
   const fichas = email
@@ -161,7 +163,16 @@ export async function crearPedidoDeInvitado(
   const quien: QuienPide =
     fichas.length === 1
       ? { existente: fichas[0] }
-      : { nuevo: { nombre: contacto.nombre, telefono: contacto.telefono, email: fichas.length ? null : email } };
+      : {
+          // Una ficha nueva sí nace con lo que escribió: nombre, apellido,
+          // teléfono y correo. La de alguien que ya existía no se toca.
+          nuevo: {
+            nombre: body.contacto.nombre.trim(),
+            apellido,
+            telefono: contacto.telefono,
+            email: fichas.length ? null : email,
+          },
+        };
   // La ficha de alguien que ya existe no se toca: ni su nombre y teléfono
   // (quién pidió queda en `contacto*` de la orden) ni sus propiedades. Un
   // invitado no ve *Guardar esta dirección*, pero la app la manda marcada, y
@@ -173,7 +184,7 @@ export async function crearPedidoDeInvitado(
 
 type QuienPide =
   | { existente: { id: string; nombre: string; apellido: string | null; empresa: string | null } }
-  | { nuevo: { nombre: string; telefono: string; email: string | null } };
+  | { nuevo: { nombre: string; apellido: string | null; telefono: string; email: string | null } };
 
 async function crearPedido(
   quien: QuienPide,
@@ -266,6 +277,7 @@ async function crearPedido(
       const creado = await tx.cliente.create({
         data: {
           nombre: quien.nuevo.nombre,
+          apellido: quien.nuevo.apellido,
           telefono: quien.nuevo.telefono,
           email: quien.nuevo.email,
           propiedades: {
