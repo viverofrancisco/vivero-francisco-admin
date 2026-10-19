@@ -4,7 +4,7 @@ import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Ubicacion } from "@vivero/shared";
 import { UbicacionForm } from "@/components/UbicacionForm";
-import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { tema } from "@vivero/app-ui/lib/tema";
 
@@ -43,17 +43,11 @@ export default function UbicacionScreen() {
     );
   }
 
-  // Mientras carga, el encabezado va igual, apagado, para que no salte.
+  // Mientras carga, el mismo encabezado de ficha, para que no salte.
   if (!ubicacion) {
     return (
       <View style={styles.flex}>
-        <EncabezadoDeFormulario
-          titulo="Ubicación"
-          accion="Guardar"
-          onAccion={() => {}}
-          onCancelar={() => router.back()}
-          deshabilitado
-        />
+        <EncabezadoDeFicha titulo="Ubicación" />
         <View style={styles.centro}>
           {error ? <Text style={styles.apagado}>{error}</Text> : <ActivityIndicator size="large" />}
         </View>

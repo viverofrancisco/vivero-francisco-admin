@@ -12,6 +12,7 @@ import { EditorDeHorario } from "@/components/EditorDeHorario";
 import { HorarioEnHoja } from "@/components/HorarioEnHoja";
 import { BotonEliminar, Campo, Interruptor, Titulo } from "@vivero/app-ui/components/ui/Formulario";
 import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
+import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
 import { BuscadorDeDireccion } from "@vivero/app-ui/components/BuscadorDeDireccion";
 import {
   MapaDePropiedad,
@@ -129,6 +130,22 @@ export function UbicacionForm({
       valores.activa !== inicial.activa
     : valores.nombre.length > 0;
 
+  /** *Cancelar* con cambios: vuelve a lo cargado, sin salir de la ficha. */
+  function descartar() {
+    if (!inicial) return;
+    setNombre(inicial.nombre);
+    setDireccion(inicial.direccion ?? "");
+    setCiudad(inicial.ciudad ?? "");
+    setReferencia(inicial.referencia ?? "");
+    setTelefono(inicial.telefono ?? "");
+    setHorarios(horarioGuardado);
+    setRetiro(inicial.retiro);
+    setActiva(inicial.activa);
+    setPunto(inicial.lat != null && inicial.lng != null ? { lat: inicial.lat, lng: inicial.lng } : null);
+    setPrecision(null);
+    setError(null);
+  }
+
   async function guardar() {
     if (!valores.nombre) {
       setError("Ponle un nombre");
@@ -151,14 +168,30 @@ export function UbicacionForm({
 
   return (
     <View style={styles.flex}>
-      <EncabezadoDeFormulario
-        titulo={titulo}
-        accion={accion}
-        onAccion={guardar}
-        onCancelar={onCancelar}
-        cargando={guardando}
-        deshabilitado={!valores.nombre || !hayCambios}
-      />
+      {/* Al editar, Cancelar y Guardar aparecen solo cuando hay algo que
+          cancelar o guardar; mientras tanto es una ficha con su flecha. */}
+      {!inicial ? (
+        <EncabezadoDeFormulario
+          titulo={titulo}
+          accion={accion}
+          onAccion={guardar}
+          onCancelar={onCancelar}
+          cargando={guardando}
+          deshabilitado={!valores.nombre || !hayCambios}
+        />
+      ) : hayCambios ? (
+        <EncabezadoDeFormulario
+          titulo={titulo}
+          accion={accion}
+          onAccion={guardar}
+          onCancelar={descartar}
+          cargando={guardando}
+          deshabilitado={!valores.nombre}
+          pastillas
+        />
+      ) : (
+        <EncabezadoDeFicha titulo={titulo} />
+      )}
       <KeyboardAvoidingView style={styles.flex} behavior="padding">
         <ScrollView
           style={styles.flex}
