@@ -113,7 +113,7 @@ export function UbicacionForm({
   const [guardando, setGuardando] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
-  const [hoja, setHoja] = useState<"datos" | "direccion" | "horario" | "estado" | "retiro" | null>(null);
+  const [hoja, setHoja] = useState<"direccion" | "horario" | "estado" | "retiro" | null>(null);
   const esMovil = useEsMovil();
 
   const nueva = ubicacion === null;
@@ -206,41 +206,14 @@ export function UbicacionForm({
     </Dialog>
   );
 
-  /**
-   * Guarda una parte (un `PUT` parcial) desde una hoja del teléfono: lo que
-   * vuelve pasa a ser lo guardado, y la página se vuelve a pedir para el título
-   * y la lista. Si falla, lanza y la hoja lo dice.
-   */
-  async function guardarParte(cambios: Partial<Campos>) {
-    if (!ubicacion) return;
-    const res = await fetch(`/api/ubicaciones/${ubicacion.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cambios),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error ?? "No se pudo guardar");
-    const guardada = desde(data as Ubicacion);
-    setInicial(guardada);
-    // Estado y retiro pendientes en la ficha siguen pendientes si esta parte no los traía.
-    setC((x) => ({
-      ...guardada,
-      activa: "activa" in cambios ? guardada.activa : x.activa,
-      retiro: "retiro" in cambios ? guardada.retiro : x.retiro,
-    }));
-    setHoja(null);
-    toast.success("Ubicación guardada");
-    router.refresh();
-  }
-
   // En el teléfono, las pantallas de la app (`UbicacionForm` y
   // `FichaDeUbicacion` de app-admin). Crear es el formulario entero, sin
-  // tarjetas ni columnas; una ya creada es una ficha que se lee, y cada parte
-  // se cambia en su hoja —*Editar* en el ⋯ para el nombre, el teléfono y los
-  // interruptores; *Editar* junto a *Dirección* y a *Horario* para lo suyo—.
-  // *Estado* y *Retiro* son filas con su pastilla que abren sus opciones, como
-  // el *Product status* de Shopify, y **no se guardan solas**: el encabezado se
-  // vuelve *Cancelar* / *Guardar*.
+  // tarjetas ni columnas. Una ya creada es una ficha: el nombre y el teléfono
+  // se escriben en el lugar, *Estado* y *Retiro* son filas con su pastilla que
+  // abren sus opciones (el *Product status* de Shopify), y la dirección y el
+  // horario se cambian en su hoja, que sale con *Listo*. **Nada se guarda
+  // solo**: con cambios, el encabezado se vuelve *Cancelar* / *Guardar*, y
+  // *Guardar* manda todo junto.
   if (esMovil && nueva) {
     return (
       <form id={FORM_ID} onSubmit={guardar} className="min-h-full bg-card pb-8">
@@ -262,30 +235,19 @@ export function UbicacionForm({
   }
 
   if (esMovil && ubicacion) {
-    const g = inicial;
-    const lineas = [g.direccion, g.ciudad].filter(Boolean);
+    const lineas = [c.direccion, c.ciudad].map((t) => t.trim()).filter(Boolean);
     return (
       <div className="min-h-full bg-card pb-10">
         {cambio ? (
           <div className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b bg-card/95 px-3 backdrop-blur-sm">
             <PastillaDeHoja texto="Cancelar" onClick={() => setC(inicial)} disabled={guardando} />
-            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">{g.nombre}</h1>
-            <PastillaDeHoja
-              texto="Guardar"
-              primaria
-              cargando={guardando}
-              onClick={() => {
-                setGuardando(true);
-                guardarParte({ activa: c.activa, retiro: c.retiro })
-                  .catch((err) => toast.error(err instanceof Error ? err.message : "No se pudo guardar"))
-                  .finally(() => setGuardando(false));
-              }}
-            />
+            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">{inicial.nombre}</h1>
+            <PastillaDeHoja texto="Guardar" primaria cargando={guardando} onClick={() => void guardar()} />
           </div>
         ) : (
         <div className="sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b bg-card/95 px-3 backdrop-blur-sm">
           <VolverRedondo href={volverA} />
-          <h1 className="min-w-0 flex-1 truncate text-[17px] font-bold">{g.nombre}</h1>
+          <h1 className="min-w-0 flex-1 truncate text-[17px] font-bold">{inicial.nombre}</h1>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={<button type="button" aria-label="Más acciones" className={BOTON_REDONDO_MOVIL} />}
@@ -293,7 +255,6 @@ export function UbicacionForm({
               <MoreHorizontal className={ICONO_BOTON_REDONDO} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-auto">
-              <DropdownMenuItem onClick={() => setHoja("datos")}>Editar</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setConfirmando(true)} className="text-destructive">
                 Eliminar ubicación
               </DropdownMenuItem>
@@ -315,17 +276,17 @@ export function UbicacionForm({
             prendida={c.retiro}
             onClick={() => setHoja("retiro")}
           />
-          <div className="mt-3 space-y-2 px-1">
-            <Renglon etiqueta="Teléfono" valor={g.telefono || "—"} apagado={!g.telefono} />
+          <div className="mt-4">
+            <CamposDeDatos c={c} set={set} sinInterruptores />
           </div>
 
           <RotuloConEditar titulo="Dirección" onEditar={() => setHoja("direccion")} />
           <div className="space-y-1 px-1">
             {lineas.length > 0 ? <p>{lineas.join(", ")}</p> : <p className="text-muted-foreground">Sin dirección</p>}
-            {g.referencia ? <p className="text-muted-foreground">{g.referencia}</p> : null}
-            {g.lat != null && g.lng != null ? (
+            {c.referencia.trim() ? <p className="text-muted-foreground">{c.referencia}</p> : null}
+            {c.lat != null && c.lng != null ? (
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lng}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-block font-semibold text-primary active:opacity-50"
@@ -340,7 +301,7 @@ export function UbicacionForm({
           <RotuloConEditar titulo="Horario" onEditar={() => setHoja("horario")} />
           <div className="space-y-1 px-1">
             {DIAS_DE_LA_SEMANA.map((dia, i) => {
-              const d = g.horarios[i];
+              const d = c.horarios[i];
               return (
                 <div key={dia} className="flex justify-between gap-3">
                   <span>{dia}</span>
@@ -353,29 +314,15 @@ export function UbicacionForm({
           </div>
         </div>
 
-        {hoja === "datos" ? (
-          <HojaMovil
-            titulo="Editar ubicación"
-            inicial={g}
-            onCerrar={() => setHoja(null)}
-            onGuardar={(x) =>
-              x.nombre.trim()
-                ? guardarParte({ nombre: x.nombre.trim(), telefono: x.telefono })
-                : Promise.reject(new Error("Ponle un nombre"))
-            }
-            campos={(x, setX) => (
-              <CamposDeDatos c={x} set={(k, v) => setX((y) => ({ ...y, [k]: v }))} sinInterruptores />
-            )}
-          />
-        ) : null}
         {hoja === "direccion" ? (
           <HojaMovil
             titulo="Dirección"
-            inicial={g}
+            inicial={c}
             onCerrar={() => setHoja(null)}
-            onGuardar={(x) =>
-              guardarParte({ direccion: x.direccion, ciudad: x.ciudad, referencia: x.referencia, lat: x.lat, lng: x.lng })
-            }
+            onListo={(x) => {
+              setC((y) => ({ ...y, direccion: x.direccion, ciudad: x.ciudad, referencia: x.referencia, lat: x.lat, lng: x.lng }));
+              setHoja(null);
+            }}
             campos={(x, setX) => (
               <CamposDeDireccion c={x} set={(k, v) => setX((y) => ({ ...y, [k]: v }))} setC={setX} />
             )}
@@ -384,13 +331,16 @@ export function UbicacionForm({
         {hoja === "horario" ? (
           <HojaMovil
             titulo="Horario"
-            inicial={g}
+            inicial={c}
             onCerrar={() => setHoja(null)}
-            onGuardar={(x) =>
-              x.horarios.some((d) => d.abierto && d.desde >= d.hasta)
-                ? Promise.reject(new Error("Revisa el horario: un día cierra antes de abrir"))
-                : guardarParte({ horarios: x.horarios })
-            }
+            onListo={(x) => {
+              if (x.horarios.some((d) => d.abierto && d.desde >= d.hasta)) {
+                toast.error("Revisa el horario: un día cierra antes de abrir");
+                return;
+              }
+              set("horarios", x.horarios);
+              setHoja(null);
+            }}
             campos={(x, setX) => (
               <EditorDeHorario valor={x.horarios} onCambio={(h) => setX((y) => ({ ...y, horarios: h }))} />
             )}
@@ -665,15 +615,6 @@ function HojaDeOpcionesMovil({
   );
 }
 
-function Renglon({ etiqueta, valor, apagado }: { etiqueta: string; valor: string; apagado?: boolean }) {
-  return (
-    <div className="flex justify-between gap-3">
-      <span>{etiqueta}</span>
-      <span className={apagado ? "text-muted-foreground" : ""}>{valor}</span>
-    </div>
-  );
-}
-
 /** El rótulo de una sección con *Editar* a la derecha. */
 function RotuloConEditar({ titulo, onEditar }: { titulo: string; onEditar: () => void }) {
   return (
@@ -758,36 +699,24 @@ function CamposDeDireccion({
 }
 
 /**
- * Una hoja de la ficha en el teléfono: su propia copia de los campos, y
- * *Guardar* guarda ahí mismo solo esa parte, como la hoja del precio de una
- * variante y como en la app.
+ * Una hoja de la ficha en el teléfono: su propia copia de los campos, que
+ * *Listo* deja en la ficha; se guardan con el resto desde su encabezado.
  */
 function HojaMovil({
   titulo,
   inicial,
   onCerrar,
-  onGuardar,
+  onListo,
   campos,
 }: {
   titulo: string;
   inicial: Campos;
   onCerrar: () => void;
-  onGuardar: (x: Campos) => Promise<void>;
+  onListo: (x: Campos) => void;
   campos: (x: Campos, setX: React.Dispatch<React.SetStateAction<Campos>>) => React.ReactNode;
 }) {
   const [x, setX] = useState(inicial);
-  const [guardando, setGuardando] = useState(false);
   const hayCambios = JSON.stringify(x) !== JSON.stringify(inicial);
-
-  async function guardar() {
-    setGuardando(true);
-    try {
-      await onGuardar(x);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No se pudo guardar");
-      setGuardando(false);
-    }
-  }
 
   return (
     <HojaCompleta onCerrar={onCerrar}>
@@ -797,11 +726,10 @@ function HojaMovil({
         cerrando={hayCambios ? "cancelar" : "cerrar"}
         derecha={
           <PastillaDeHoja
-            texto="Guardar"
+            texto="Listo"
             primaria
             disabled={!hayCambios}
-            cargando={guardando}
-            onClick={() => void guardar()}
+            onClick={() => onListo(x)}
           />
         }
       />
