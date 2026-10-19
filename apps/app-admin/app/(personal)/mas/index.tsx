@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest } from "@vivero/app-ui/lib/api";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -23,7 +21,7 @@ interface Item {
  * El menú completo, como el del portal en móvil.
  *
  * Es la misma forma: una lista de filas grandes con su icono, y abajo la
- * tarjeta de quién está adentro con la salida. Era una lista de tres ítems con
+ * tarjeta de quién está adentro, que abre su cuenta. Era una lista de tres ítems con
  * el aspecto de un panel de ajustes de iOS, así que la app y el portal —que son
  * el mismo producto— se veían distintos justo en la pantalla que se usa para
  * saber dónde está uno.
@@ -38,9 +36,6 @@ export default function MasMenuScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
-  const refreshToken = useAuthStore((s) => s.refreshToken);
-  const clear = useAuthStore((s) => s.clear);
-  const [saliendo, setSaliendo] = useState(false);
 
   const role = user?.role;
   const isAdmin = role === "ADMIN";
@@ -119,12 +114,6 @@ export default function MasMenuScreen() {
       visible: isAdmin,
       configuracion: true,
     },
-    {
-      label: "Cuenta",
-      icon: "settings-outline",
-      href: "/(personal)/configuracion",
-      visible: true,
-    },
   ];
 
   const visibles = items.filter((i) => i.visible);
@@ -139,18 +128,6 @@ export default function MasMenuScreen() {
       .map((n) => n[0])
       .join("")
       .toUpperCase() || "?";
-
-  async function salir() {
-    setSaliendo(true);
-    if (refreshToken) {
-      apiRequest("/api/mobile/auth/logout", {
-        method: "POST",
-        body: { refreshToken },
-        authenticated: false,
-      }).catch(() => {});
-    }
-    await clear();
-  }
 
   return (
     <View style={styles.contenedor}>
@@ -193,11 +170,18 @@ export default function MasMenuScreen() {
         )}
       </ScrollView>
 
-      {/* Quién está adentro y cómo salir, al pie: lo mismo que el portal pone
-          abajo de su menú. Es la respuesta a "¿con qué cuenta entré?", que es
-          la pregunta que trae a alguien a este menú cuando algo no aparece. */}
+      {/* Quién está adentro, al pie, y tocarlo abre *Cuenta*: lo mismo que el
+          portal pone abajo de su menú. Es la respuesta a "¿con qué cuenta
+          entré?", y la cuenta es donde se cambia la contraseña y se cierra la
+          sesión —una fila *Cuenta* en la lista y un botón de salir acá decían
+          dos veces lo mismo, y salir a un toque de distancia es salir sin querer. */}
       <View style={styles.pie}>
-        <View style={styles.cuenta}>
+        <PressableScale
+          onPress={() => router.push("/(personal)/configuracion" as never)}
+          style={styles.cuenta}
+          accessibilityRole="button"
+          accessibilityLabel="Cuenta"
+        >
           <View style={styles.avatar}>
             <Text style={styles.avatarTexto}>{iniciales}</Text>
           </View>
@@ -209,15 +193,8 @@ export default function MasMenuScreen() {
               {user?.usuario ?? user?.email ?? ""}
             </Text>
           </View>
-          <PressableScale
-            onPress={salir}
-            disabled={saliendo}
-            style={styles.salir}
-            accessibilityLabel="Cerrar sesión"
-          >
-            <Ionicons name="log-out-outline" size={20} color={tema.texto2} />
-          </PressableScale>
-        </View>
+          <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+        </PressableScale>
       </View>
     </View>
   );
@@ -263,6 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: tema.lienzo,
     borderRadius: 12,
     padding: 10,
+    paddingRight: 12,
   },
   avatar: {
     width: 36,
@@ -276,11 +254,4 @@ const styles = StyleSheet.create({
   cuentaTexto: { flex: 1, gap: 1 },
   cuentaNombre: { color: tema.texto, fontWeight: "700" },
   cuentaDetalle: { color: tema.texto3 },
-  salir: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
 });

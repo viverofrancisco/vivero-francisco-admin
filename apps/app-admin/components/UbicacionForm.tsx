@@ -162,16 +162,16 @@ export function UbicacionForm({
         >
           <Titulo>Para los clientes</Titulo>
           <Interruptor
-            label="Retiro en este local"
-            nota="El cliente puede elegirlo para retirar su pedido en la app"
-            value={retiro}
-            onValueChange={setRetiro}
-          />
-          <Interruptor
             label="Activa"
             nota="Apagada no se ofrece en ningún lado, pero sigue nombrando sus pedidos"
             value={activa}
             onValueChange={setActiva}
+          />
+          <Interruptor
+            label="Retiro en este local"
+            nota="El cliente puede elegirlo para retirar su pedido en la app"
+            value={retiro}
+            onValueChange={setRetiro}
           />
 
           <Titulo>Nombre</Titulo>
