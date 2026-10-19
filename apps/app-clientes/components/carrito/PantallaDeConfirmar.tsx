@@ -332,6 +332,31 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                     Iniciar sesión
                   </Text>
                 </Text>
+                {/* El correo primero, como el checkout de Shopify: es lo que
+                    ata el pedido a una ficha. */}
+                <TextInput
+                  mode="outlined"
+                  label="Correo *"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  error={intentado && emailMalo}
+                />
+                <HelperText
+                  type={intentado && emailMalo ? "error" : "info"}
+                  visible
+                  style={styles.ayudaCampo}
+                >
+                  {intentado && emailMalo
+                    ? faltaEmail
+                      ? "Escribe tu correo."
+                      : "Escribe un correo válido."
+                    : "Con tu correo puedes crear tu cuenta después y seguir tu pedido."}
+                </HelperText>
                 <TextInput
                   mode="outlined"
                   label="Nombre *"
@@ -361,29 +386,6 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                     {digitos === 0 ? "Escribe a qué número llamarte." : "Escribe un teléfono válido."}
                   </HelperText>
                 ) : null}
-                <TextInput
-                  mode="outlined"
-                  label="Correo *"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="email-address"
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  error={intentado && emailMalo}
-                />
-                <HelperText
-                  type={intentado && emailMalo ? "error" : "info"}
-                  visible
-                  style={styles.ayudaCampo}
-                >
-                  {intentado && emailMalo
-                    ? faltaEmail
-                      ? "Escribe tu correo."
-                      : "Escribe un correo válido."
-                    : "Con tu correo puedes crear tu cuenta después y seguir tu pedido."}
-                </HelperText>
               </View>
             ) : null}
             <View onLayout={(e) => (yMetodo.current = e.nativeEvent.layout.y)}>
