@@ -1193,6 +1193,7 @@ export const SolicitudClienteScalarFieldEnum = {
   lat: 'lat',
   lng: 'lng',
   contactoNombre: 'contactoNombre',
+  contactoApellido: 'contactoApellido',
   contactoTelefono: 'contactoTelefono',
   contactoEmail: 'contactoEmail',
   createdAt: 'createdAt',

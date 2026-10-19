@@ -29,6 +29,7 @@ export default async function NuevaVisitaRoute({
           lat: true,
           lng: true,
           contactoNombre: true,
+          contactoApellido: true,
           contactoTelefono: true,
           contactoEmail: true,
           clienteId: true,
@@ -136,6 +137,7 @@ export default async function NuevaVisitaRoute({
               propiedadId: solicitud.propiedadId,
               contacto: {
                 nombre: solicitud.contactoNombre,
+                apellido: solicitud.contactoApellido,
                 telefono: solicitud.contactoTelefono,
                 email: solicitud.contactoEmail,
               },

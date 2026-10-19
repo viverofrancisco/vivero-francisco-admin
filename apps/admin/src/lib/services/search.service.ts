@@ -218,6 +218,7 @@ export async function globalSearch(
               AND: palabras.map((w) => ({
                 OR: [
                   { contactoNombre: { contains: w, ...insensitive } },
+                  { contactoApellido: { contains: w, ...insensitive } },
                   { contactoTelefono: { contains: w } },
                   { mensaje: { contains: w, ...insensitive } },
                   { direccion: { contains: w, ...insensitive } },
@@ -373,6 +374,7 @@ export async function globalSearch(
             createdAt: true,
             atendidaEl: true,
             contactoNombre: true,
+            contactoApellido: true,
             servicios: { select: { producto: { select: { nombre: true } } } },
             otroServicio: true,
             cliente: { select: { nombre: true, apellido: true, empresa: true } },
@@ -478,7 +480,7 @@ export async function globalSearch(
       id: r.id,
       title: `Solicitud #${r.numero}`,
       subtitle: [
-        r.cliente ? nombreCliente(r.cliente) : (r.contactoNombre ?? "Sin nombre"),
+        r.cliente ? nombreCliente(r.cliente) : ([r.contactoNombre, r.contactoApellido].filter(Boolean).join(" ") || "Sin nombre"),
         fmtDate(r.createdAt),
         r.atendidaEl ? "Atendida" : "Pendiente",
       ].join(" · "),

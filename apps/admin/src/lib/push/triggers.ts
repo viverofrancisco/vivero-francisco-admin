@@ -357,6 +357,7 @@ export async function pushSolicitudDeCliente(solicitudId: string): Promise<void>
       numero: true,
       mensaje: true,
       contactoNombre: true,
+      contactoApellido: true,
       servicios: { select: { producto: { select: { nombre: true } } } },
       otroServicio: true,
       cliente: { select: { nombre: true, apellido: true, empresa: true } },
@@ -366,7 +367,7 @@ export async function pushSolicitudDeCliente(solicitudId: string): Promise<void>
   // Sin cliente es alguien del modo invitado: se nombra con lo que escribió.
   const quien = s.cliente
     ? nombreCliente(s.cliente)
-    : `${s.contactoNombre ?? "Sin nombre"} (sin cuenta)`;
+    : `${[s.contactoNombre, s.contactoApellido].filter(Boolean).join(" ") || "Sin nombre"} (sin cuenta)`;
 
   const admins = await getAdminUserIds();
   if (admins.length === 0) return;

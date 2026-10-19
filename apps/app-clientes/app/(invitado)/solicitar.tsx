@@ -19,6 +19,7 @@ export default function SolicitarInvitadoScreen() {
   const router = useRouter();
   const [servicioIds, setServicioIds] = useState<string[]>([]);
   const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [mensaje, setMensaje] = useState("");
@@ -29,6 +30,7 @@ export default function SolicitarInvitadoScreen() {
   const digitos = telefono.replace(/\D/g, "").length;
   const faltaServicios = servicioIds.length === 0;
   const faltaNombre = nombre.trim().length === 0;
+  const faltaApellido = apellido.trim().length === 0;
   const faltaTelefono = digitos < 7;
   const faltaMensaje = mensaje.trim().length === 0;
   // Obligatorio: es lo que le deja crear su cuenta después y seguir la
@@ -46,12 +48,12 @@ export default function SolicitarInvitadoScreen() {
   const yMensaje = useRef(0);
 
   async function enviar() {
-    if (faltaServicios || faltaNombre || faltaTelefono || emailMalo || faltaMensaje) {
+    if (faltaServicios || faltaNombre || faltaApellido || faltaTelefono || emailMalo || faltaMensaje) {
       setIntentado(true);
       Keyboard.dismiss();
       const y = faltaServicios
         ? yServicios.current
-        : faltaNombre || faltaTelefono || emailMalo
+        : faltaNombre || faltaApellido || faltaTelefono || emailMalo
           ? yDatos.current
           : yMensaje.current;
       setTimeout(() => scroll.current?.scrollTo({ y: Math.max(0, y - 12), animated: true }), 60);
@@ -65,6 +67,7 @@ export default function SolicitarInvitadoScreen() {
         authenticated: false,
         body: {
           nombre: nombre.trim(),
+          apellido: apellido.trim(),
           telefono: telefono.trim(),
           email: email.trim(),
           mensaje: mensaje.trim(),
@@ -90,7 +93,12 @@ export default function SolicitarInvitadoScreen() {
             onPress: () =>
               router.push({
                 pathname: "/(auth)/registro",
-                params: { nombre: nombre.trim(), email: email.trim(), telefono: telefono.trim() },
+                params: {
+                  nombre: nombre.trim(),
+                  apellido: apellido.trim(),
+                  email: email.trim(),
+                  telefono: telefono.trim(),
+                },
               }),
           },
         ]
@@ -134,13 +142,27 @@ export default function SolicitarInvitadoScreen() {
               label="Nombre *"
               value={nombre}
               onChangeText={setNombre}
-              autoComplete="name"
-              textContentType="name"
+              autoComplete="given-name"
+              textContentType="givenName"
               error={intentado && faltaNombre}
             />
             {intentado && faltaNombre ? (
               <HelperText type="error" visible style={styles.ayuda}>
                 Escribe tu nombre.
+              </HelperText>
+            ) : null}
+            <TextInput
+              mode="outlined"
+              label="Apellido *"
+              value={apellido}
+              onChangeText={setApellido}
+              autoComplete="family-name"
+              textContentType="familyName"
+              error={intentado && faltaApellido}
+            />
+            {intentado && faltaApellido ? (
+              <HelperText type="error" visible style={styles.ayuda}>
+                Escribe tu apellido.
               </HelperText>
             ) : null}
             <TextInput

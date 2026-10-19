@@ -62,6 +62,7 @@ export type SolicitudClienteMinAggregateOutputType = {
   lat: number | null
   lng: number | null
   contactoNombre: string | null
+  contactoApellido: string | null
   contactoTelefono: string | null
   contactoEmail: string | null
   createdAt: Date | null
@@ -85,6 +86,7 @@ export type SolicitudClienteMaxAggregateOutputType = {
   lat: number | null
   lng: number | null
   contactoNombre: string | null
+  contactoApellido: string | null
   contactoTelefono: string | null
   contactoEmail: string | null
   createdAt: Date | null
@@ -108,6 +110,7 @@ export type SolicitudClienteCountAggregateOutputType = {
   lat: number
   lng: number
   contactoNombre: number
+  contactoApellido: number
   contactoTelefono: number
   contactoEmail: number
   createdAt: number
@@ -145,6 +148,7 @@ export type SolicitudClienteMinAggregateInputType = {
   lat?: true
   lng?: true
   contactoNombre?: true
+  contactoApellido?: true
   contactoTelefono?: true
   contactoEmail?: true
   createdAt?: true
@@ -168,6 +172,7 @@ export type SolicitudClienteMaxAggregateInputType = {
   lat?: true
   lng?: true
   contactoNombre?: true
+  contactoApellido?: true
   contactoTelefono?: true
   contactoEmail?: true
   createdAt?: true
@@ -191,6 +196,7 @@ export type SolicitudClienteCountAggregateInputType = {
   lat?: true
   lng?: true
   contactoNombre?: true
+  contactoApellido?: true
   contactoTelefono?: true
   contactoEmail?: true
   createdAt?: true
@@ -301,6 +307,7 @@ export type SolicitudClienteGroupByOutputType = {
   lat: number | null
   lng: number | null
   contactoNombre: string | null
+  contactoApellido: string | null
   contactoTelefono: string | null
   contactoEmail: string | null
   createdAt: Date
@@ -347,6 +354,7 @@ export type SolicitudClienteWhereInput = {
   lat?: Prisma.FloatNullableFilter<"SolicitudCliente"> | number | null
   lng?: Prisma.FloatNullableFilter<"SolicitudCliente"> | number | null
   contactoNombre?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
+  contactoApellido?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   contactoTelefono?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   contactoEmail?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SolicitudCliente"> | Date | string
@@ -376,6 +384,7 @@ export type SolicitudClienteOrderByWithRelationInput = {
   lat?: Prisma.SortOrderInput | Prisma.SortOrder
   lng?: Prisma.SortOrderInput | Prisma.SortOrder
   contactoNombre?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactoApellido?: Prisma.SortOrderInput | Prisma.SortOrder
   contactoTelefono?: Prisma.SortOrderInput | Prisma.SortOrder
   contactoEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -408,6 +417,7 @@ export type SolicitudClienteWhereUniqueInput = Prisma.AtLeast<{
   lat?: Prisma.FloatNullableFilter<"SolicitudCliente"> | number | null
   lng?: Prisma.FloatNullableFilter<"SolicitudCliente"> | number | null
   contactoNombre?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
+  contactoApellido?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   contactoTelefono?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   contactoEmail?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SolicitudCliente"> | Date | string
@@ -437,6 +447,7 @@ export type SolicitudClienteOrderByWithAggregationInput = {
   lat?: Prisma.SortOrderInput | Prisma.SortOrder
   lng?: Prisma.SortOrderInput | Prisma.SortOrder
   contactoNombre?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactoApellido?: Prisma.SortOrderInput | Prisma.SortOrder
   contactoTelefono?: Prisma.SortOrderInput | Prisma.SortOrder
   contactoEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -468,6 +479,7 @@ export type SolicitudClienteScalarWhereWithAggregatesInput = {
   lat?: Prisma.FloatNullableWithAggregatesFilter<"SolicitudCliente"> | number | null
   lng?: Prisma.FloatNullableWithAggregatesFilter<"SolicitudCliente"> | number | null
   contactoNombre?: Prisma.StringNullableWithAggregatesFilter<"SolicitudCliente"> | string | null
+  contactoApellido?: Prisma.StringNullableWithAggregatesFilter<"SolicitudCliente"> | string | null
   contactoTelefono?: Prisma.StringNullableWithAggregatesFilter<"SolicitudCliente"> | string | null
   contactoEmail?: Prisma.StringNullableWithAggregatesFilter<"SolicitudCliente"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SolicitudCliente"> | Date | string
@@ -489,6 +501,7 @@ export type SolicitudClienteCreateInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -517,6 +530,7 @@ export type SolicitudClienteUncheckedCreateInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -540,6 +554,7 @@ export type SolicitudClienteUpdateInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -568,6 +583,7 @@ export type SolicitudClienteUncheckedUpdateInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -594,6 +610,7 @@ export type SolicitudClienteCreateManyInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -614,6 +631,7 @@ export type SolicitudClienteUpdateManyMutationInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -636,6 +654,7 @@ export type SolicitudClienteUncheckedUpdateManyInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -674,6 +693,7 @@ export type SolicitudClienteCountOrderByAggregateInput = {
   lat?: Prisma.SortOrder
   lng?: Prisma.SortOrder
   contactoNombre?: Prisma.SortOrder
+  contactoApellido?: Prisma.SortOrder
   contactoTelefono?: Prisma.SortOrder
   contactoEmail?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -703,6 +723,7 @@ export type SolicitudClienteMaxOrderByAggregateInput = {
   lat?: Prisma.SortOrder
   lng?: Prisma.SortOrder
   contactoNombre?: Prisma.SortOrder
+  contactoApellido?: Prisma.SortOrder
   contactoTelefono?: Prisma.SortOrder
   contactoEmail?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -726,6 +747,7 @@ export type SolicitudClienteMinOrderByAggregateInput = {
   lat?: Prisma.SortOrder
   lng?: Prisma.SortOrder
   contactoNombre?: Prisma.SortOrder
+  contactoApellido?: Prisma.SortOrder
   contactoTelefono?: Prisma.SortOrder
   contactoEmail?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -928,6 +950,7 @@ export type SolicitudClienteCreateWithoutAtendidaPorInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -955,6 +978,7 @@ export type SolicitudClienteUncheckedCreateWithoutAtendidaPorInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1009,6 +1033,7 @@ export type SolicitudClienteScalarWhereInput = {
   lat?: Prisma.FloatNullableFilter<"SolicitudCliente"> | number | null
   lng?: Prisma.FloatNullableFilter<"SolicitudCliente"> | number | null
   contactoNombre?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
+  contactoApellido?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   contactoTelefono?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   contactoEmail?: Prisma.StringNullableFilter<"SolicitudCliente"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SolicitudCliente"> | Date | string
@@ -1030,6 +1055,7 @@ export type SolicitudClienteCreateWithoutClienteInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1056,6 +1082,7 @@ export type SolicitudClienteUncheckedCreateWithoutClienteInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1106,6 +1133,7 @@ export type SolicitudClienteCreateWithoutPropiedadInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1132,6 +1160,7 @@ export type SolicitudClienteUncheckedCreateWithoutPropiedadInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1182,6 +1211,7 @@ export type SolicitudClienteCreateWithoutVisitasInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1209,6 +1239,7 @@ export type SolicitudClienteUncheckedCreateWithoutVisitasInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1247,6 +1278,7 @@ export type SolicitudClienteUpdateWithoutVisitasInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1274,6 +1306,7 @@ export type SolicitudClienteUncheckedUpdateWithoutVisitasInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1297,6 +1330,7 @@ export type SolicitudClienteCreateWithoutAdjuntosInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1324,6 +1358,7 @@ export type SolicitudClienteUncheckedCreateWithoutAdjuntosInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1362,6 +1397,7 @@ export type SolicitudClienteUpdateWithoutAdjuntosInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1389,6 +1425,7 @@ export type SolicitudClienteUncheckedUpdateWithoutAdjuntosInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1412,6 +1449,7 @@ export type SolicitudClienteCreateWithoutServiciosInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1439,6 +1477,7 @@ export type SolicitudClienteUncheckedCreateWithoutServiciosInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1477,6 +1516,7 @@ export type SolicitudClienteUpdateWithoutServiciosInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1504,6 +1544,7 @@ export type SolicitudClienteUncheckedUpdateWithoutServiciosInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1529,6 +1570,7 @@ export type SolicitudClienteCreateManyAtendidaPorInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1548,6 +1590,7 @@ export type SolicitudClienteUpdateWithoutAtendidaPorInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1575,6 +1618,7 @@ export type SolicitudClienteUncheckedUpdateWithoutAtendidaPorInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1600,6 +1644,7 @@ export type SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1621,6 +1666,7 @@ export type SolicitudClienteCreateManyClienteInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1641,6 +1687,7 @@ export type SolicitudClienteUpdateWithoutClienteInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1667,6 +1714,7 @@ export type SolicitudClienteUncheckedUpdateWithoutClienteInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1692,6 +1740,7 @@ export type SolicitudClienteUncheckedUpdateManyWithoutClienteInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1714,6 +1763,7 @@ export type SolicitudClienteCreateManyPropiedadInput = {
   lat?: number | null
   lng?: number | null
   contactoNombre?: string | null
+  contactoApellido?: string | null
   contactoTelefono?: string | null
   contactoEmail?: string | null
   createdAt?: Date | string
@@ -1734,6 +1784,7 @@ export type SolicitudClienteUpdateWithoutPropiedadInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1760,6 +1811,7 @@ export type SolicitudClienteUncheckedUpdateWithoutPropiedadInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1785,6 +1837,7 @@ export type SolicitudClienteUncheckedUpdateManyWithoutPropiedadInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   contactoNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactoApellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoTelefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactoEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1857,6 +1910,7 @@ export type SolicitudClienteSelect<ExtArgs extends runtime.Types.Extensions.Inte
   lat?: boolean
   lng?: boolean
   contactoNombre?: boolean
+  contactoApellido?: boolean
   contactoTelefono?: boolean
   contactoEmail?: boolean
   createdAt?: boolean
@@ -1887,6 +1941,7 @@ export type SolicitudClienteSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   lat?: boolean
   lng?: boolean
   contactoNombre?: boolean
+  contactoApellido?: boolean
   contactoTelefono?: boolean
   contactoEmail?: boolean
   createdAt?: boolean
@@ -1913,6 +1968,7 @@ export type SolicitudClienteSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   lat?: boolean
   lng?: boolean
   contactoNombre?: boolean
+  contactoApellido?: boolean
   contactoTelefono?: boolean
   contactoEmail?: boolean
   createdAt?: boolean
@@ -1939,6 +1995,7 @@ export type SolicitudClienteSelectScalar = {
   lat?: boolean
   lng?: boolean
   contactoNombre?: boolean
+  contactoApellido?: boolean
   contactoTelefono?: boolean
   contactoEmail?: boolean
   createdAt?: boolean
@@ -1948,7 +2005,7 @@ export type SolicitudClienteSelectScalar = {
   otroServicio?: boolean
 }
 
-export type SolicitudClienteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero" | "clienteId" | "mensaje" | "direccion" | "calle" | "numeroCasa" | "ciudad" | "referencia" | "propiedadId" | "lat" | "lng" | "contactoNombre" | "contactoTelefono" | "contactoEmail" | "createdAt" | "atendidaEl" | "atendidaPorId" | "atendidaPorNombre" | "otroServicio", ExtArgs["result"]["solicitudCliente"]>
+export type SolicitudClienteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero" | "clienteId" | "mensaje" | "direccion" | "calle" | "numeroCasa" | "ciudad" | "referencia" | "propiedadId" | "lat" | "lng" | "contactoNombre" | "contactoApellido" | "contactoTelefono" | "contactoEmail" | "createdAt" | "atendidaEl" | "atendidaPorId" | "atendidaPorNombre" | "otroServicio", ExtArgs["result"]["solicitudCliente"]>
 export type SolicitudClienteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.SolicitudCliente$clienteArgs<ExtArgs>
   propiedad?: boolean | Prisma.SolicitudCliente$propiedadArgs<ExtArgs>
@@ -2017,6 +2074,7 @@ export type $SolicitudClientePayload<ExtArgs extends runtime.Types.Extensions.In
     lat: number | null
     lng: number | null
     contactoNombre: string | null
+    contactoApellido: string | null
     contactoTelefono: string | null
     contactoEmail: string | null
     createdAt: Date
@@ -2470,6 +2528,7 @@ export interface SolicitudClienteFieldRefs {
   readonly lat: Prisma.FieldRef<"SolicitudCliente", 'Float'>
   readonly lng: Prisma.FieldRef<"SolicitudCliente", 'Float'>
   readonly contactoNombre: Prisma.FieldRef<"SolicitudCliente", 'String'>
+  readonly contactoApellido: Prisma.FieldRef<"SolicitudCliente", 'String'>
   readonly contactoTelefono: Prisma.FieldRef<"SolicitudCliente", 'String'>
   readonly contactoEmail: Prisma.FieldRef<"SolicitudCliente", 'String'>
   readonly createdAt: Prisma.FieldRef<"SolicitudCliente", 'DateTime'>

@@ -303,6 +303,8 @@ export type CrearSolicitudBody = z.infer<typeof crearSolicitudSchema>;
  */
 export const solicitudDeInvitadoSchema = crearSolicitudSchema.extend({
   nombre: z.string().trim().min(1, "Escribe tu nombre").max(120),
+  /** Opcional para no romper una app de antes del campo; la de hoy lo pide. */
+  apellido: z.string().trim().max(120).optional(),
   telefono: z
     .string()
     .trim()
@@ -353,7 +355,18 @@ export interface SolicitudItem {
     email: string | null;
   } | null;
   /** Con quién hablar: el cliente, o lo que escribió el invitado. */
-  contacto: { nombre: string; telefono: string | null; email: string | null };
+  contacto: {
+    /** El nombre completo, para mostrar. */
+    nombre: string;
+    telefono: string | null;
+    email: string | null;
+    /**
+     * Nombre y apellido por separado, de un invitado que los escribió así:
+     * con ellos se precarga *Cliente nuevo* al agendar. `null` con cuenta o
+     * en las de antes del campo.
+     */
+    porPartes: { nombre: string; apellido: string } | null;
+  };
   createdAt: string;
   atendidaEl: string | null;
   atendidaPorNombre: string | null;

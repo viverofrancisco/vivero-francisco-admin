@@ -2604,6 +2604,7 @@ model SolicitudCliente {
   lng         Float?
 
   contactoNombre   String?
+  contactoApellido String?
   contactoTelefono String?
   contactoEmail    String?
 

@@ -172,8 +172,10 @@ export default function CrearVisitaScreen() {
             c.nombre || c.telefono || c.email
               ? c
               : {
-                  nombre: sol.contacto.nombre === "Sin nombre" ? "" : sol.contacto.nombre,
-                  apellido: "",
+                  nombre:
+                    sol.contacto.porPartes?.nombre ??
+                    (sol.contacto.nombre === "Sin nombre" ? "" : sol.contacto.nombre),
+                  apellido: sol.contacto.porPartes?.apellido ?? "",
                   telefono: sol.contacto.telefono ?? "",
                   email: sol.contacto.email ?? "",
                 }

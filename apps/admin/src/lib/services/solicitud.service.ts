@@ -37,6 +37,7 @@ const SELECT = {
   referencia: true,
   propiedad: { select: { id: true, nombre: true } },
   contactoNombre: true,
+  contactoApellido: true,
   contactoTelefono: true,
   contactoEmail: true,
   createdAt: true,
@@ -74,6 +75,7 @@ function aItem(
 ): SolicitudItem {
   const {
     contactoNombre,
+    contactoApellido,
     contactoTelefono,
     contactoEmail,
     servicios,
@@ -102,11 +104,16 @@ function aItem(
           // el de su ficha en las que se hicieron antes de pedirlo.
           telefono: contactoTelefono ?? s.cliente.telefono,
           email: s.cliente.email,
+          porPartes: null,
         }
       : {
-          nombre: contactoNombre ?? "Sin nombre",
+          nombre:
+            [contactoNombre, contactoApellido].filter(Boolean).join(" ") || "Sin nombre",
           telefono: contactoTelefono,
           email: contactoEmail,
+          porPartes: contactoApellido
+            ? { nombre: contactoNombre ?? "", apellido: contactoApellido }
+            : null,
         },
     visitas: s.visitas.map((v) => ({
       id: v.id,
@@ -281,6 +288,7 @@ export async function crearSolicitudDeInvitado(
       lat: datos.lat ?? null,
       lng: datos.lng ?? null,
       contactoNombre: datos.nombre.trim(),
+      contactoApellido: datos.apellido?.trim() || null,
       contactoTelefono: datos.telefono.trim(),
       contactoEmail: datos.email?.trim() || null,
     },

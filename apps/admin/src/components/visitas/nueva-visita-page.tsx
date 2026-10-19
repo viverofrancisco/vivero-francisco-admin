@@ -92,7 +92,12 @@ interface SolicitudDeOrigen {
   /** `null`: la mandó un invitado; el alta arranca en *Cliente nuevo* con sus datos. */
   clienteId: string | null;
   propiedadId: string | null;
-  contacto: { nombre: string | null; telefono: string | null; email: string | null };
+  contacto: {
+    nombre: string | null;
+    apellido: string | null;
+    telefono: string | null;
+    email: string | null;
+  };
   /** La otra dirección por partes, para arrancar *Propiedad nueva* con ella. */
   lugar: LugarNuevo & { lat: number | null; lng: number | null };
   /** Los nombres de los servicios que marcó. */
@@ -204,7 +209,7 @@ export function NuevaVisitaPage({
     solicitud && !solicitud.clienteId
       ? {
           nombre: solicitud.contacto.nombre ?? "",
-          apellido: "",
+          apellido: solicitud.contacto.apellido ?? "",
           telefono: solicitud.contacto.telefono ?? "",
           email: solicitud.contacto.email ?? "",
         }
