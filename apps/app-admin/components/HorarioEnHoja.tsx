@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { HelperText, Text } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
 import {
   DIAS_DE_LA_SEMANA,
   horaLegible,
@@ -34,13 +33,17 @@ export function HorarioEnHoja({
 
   return (
     <>
-      <Pressable
-        onPress={() => setAbierta(true)}
-        style={({ pressed }) => [styles.tarjeta, pressed && styles.presionada]}
-        accessibilityRole="button"
-        accessibilityLabel="Editar horario"
-      >
-        <View style={styles.dias}>
+      {/* El rótulo de la sección con *Editar* a su lado, y debajo el horario
+          a secas: se lee, y se cambia desde el enlace. */}
+      <View style={styles.cabecera}>
+        <Text style={styles.rotulo}>HORARIO</Text>
+        <Pressable onPress={() => setAbierta(true)} hitSlop={8} accessibilityRole="button">
+          {({ pressed }) => (
+            <Text style={[styles.editar, pressed && styles.editarTocado]}>Editar</Text>
+          )}
+        </Pressable>
+      </View>
+      <View style={styles.dias}>
           {DIAS_DE_LA_SEMANA.map((dia, i) => {
             const d = valor[i];
             return (
@@ -52,9 +55,7 @@ export function HorarioEnHoja({
               </View>
             );
           })}
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
-      </Pressable>
+      </View>
       {abierta ? (
         <HojaDeHorario
           inicial={valor}
@@ -130,20 +131,19 @@ function HojaDeHorario({
 }
 
 const styles = StyleSheet.create({
-  tarjeta: {
+  cabecera: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: tema.linea,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    justifyContent: "space-between",
+    paddingHorizontal: 4,
+    marginTop: 18,
     marginBottom: 8,
-    backgroundColor: tema.superficie,
   },
-  presionada: { backgroundColor: tema.lienzo },
-  dias: { flex: 1, gap: 4 },
+  // El mismo rótulo que `Titulo` del formulario.
+  rotulo: { color: tema.texto3, fontSize: 11, letterSpacing: 0.8 },
+  editar: { color: tema.verde, fontSize: 14, fontWeight: "600" },
+  editarTocado: { opacity: 0.5 },
+  dias: { gap: 4, paddingHorizontal: 4, marginBottom: 8 },
   fila: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   dia: { color: tema.texto, fontSize: 14 },
   horas: { color: tema.texto, fontSize: 14, fontVariant: ["tabular-nums"] },

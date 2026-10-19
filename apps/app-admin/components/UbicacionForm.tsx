@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native";
-import { HelperText, Text } from "react-native-paper";
+import { HelperText } from "react-native-paper";
 import {
   HORARIO_POR_DEFECTO,
-  textoDelHorario,
   type HorarioSemanal,
   type Ubicacion,
   type UbicacionBody,
@@ -255,8 +254,6 @@ export function UbicacionForm({
             keyboardType="phone-pad"
           />
 
-          <Titulo>Horario</Titulo>
-          <Text style={styles.resumenHorario}>El cliente lo ve así: {textoDelHorario(horarios)}</Text>
           {onGuardarHorario ? (
             <HorarioEnHoja
               valor={horarios}
@@ -267,7 +264,10 @@ export function UbicacionForm({
               }}
             />
           ) : (
-            <EditorDeHorario valor={horarios} onCambio={setHorarios} />
+            <>
+              <Titulo>Horario</Titulo>
+              <EditorDeHorario valor={horarios} onCambio={setHorarios} />
+            </>
           )}
 
           {error ? (
@@ -284,7 +284,6 @@ export function UbicacionForm({
 }
 
 const styles = StyleSheet.create({
-  resumenHorario: { color: tema.texto3, fontSize: 13, marginTop: -4, marginBottom: 8 },
   flex: { flex: 1, backgroundColor: "#fff" },
   scroll: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 },
   error: { textAlign: "center", marginTop: 16, color: tema.rojo },
