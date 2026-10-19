@@ -37,6 +37,7 @@ import {
   type Direccion,
 } from "@/components/pedidos/LugarDeTrabajo";
 import { EncabezadoDePasos } from "@vivero/app-ui/components/ui/EncabezadoDePasos";
+import { UNA_LINEA } from "@vivero/app-ui/components/ui/Formulario";
 import { tema } from "@vivero/app-ui/lib/tema";
 
 type Metodo = "RETIRO" | "ENVIO";
@@ -350,6 +351,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                     <TextInput
                       mode="outlined"
                       label="Nombre *"
+                      contentStyle={UNA_LINEA}
                       value={nombre}
                       onChangeText={setNombre}
                       autoComplete="given-name"
@@ -366,6 +368,7 @@ export function PantallaDeConfirmar({ invitado = false }: { invitado?: boolean }
                     <TextInput
                       mode="outlined"
                       label="Apellido *"
+                      contentStyle={UNA_LINEA}
                       value={apellido}
                       onChangeText={setApellido}
                       autoComplete="family-name"

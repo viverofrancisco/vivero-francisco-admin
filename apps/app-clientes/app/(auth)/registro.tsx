@@ -19,6 +19,7 @@ import { tema } from "@vivero/app-ui/lib/tema";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 import { CampoDeCodigo } from "@vivero/app-ui/components/ui/CampoDeCodigo";
 import { irAlEntrarA } from "@/lib/destino-al-entrar";
+import { UNA_LINEA } from "@vivero/app-ui/components/ui/Formulario";
 import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 
 /**
@@ -235,6 +236,7 @@ export default function RegistroScreen() {
                   <TextInput
                     mode="outlined"
                     label="Nombre"
+                    contentStyle={UNA_LINEA}
                     value={nombre}
                     onChangeText={setNombre}
                     onBlur={() => setNombreTocado(true)}
@@ -254,6 +256,7 @@ export default function RegistroScreen() {
                   <TextInput
                     mode="outlined"
                     label="Apellido"
+                    contentStyle={UNA_LINEA}
                     value={apellido}
                     onChangeText={setApellido}
                     onBlur={() => setApellidoTocado(true)}

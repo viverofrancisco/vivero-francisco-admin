@@ -12,6 +12,16 @@ import { Conmutador } from "./Conmutador";
  * pantalla con sus propios colores de borde y sus propios márgenes: cinco
  * formularios y cinco grises distintos. Acá no hay lógica, solo la forma.
  */
+/**
+ * Para el `contentStyle` de un `TextInput` de Paper de una línea: **que no
+ * parta el texto en dos renglones**. Paper le pone siempre `textAlign` (y
+ * `lineHeight`), y en iOS eso le da al campo un estilo de párrafo con corte
+ * por palabra: sin foco, un "Francisco Francisco Mendoza" que no entra se
+ * dibujaba en dos líneas, la segunda cortada por el borde. Sin esos dos, el
+ * campo hace lo de siempre: corta con "…" y al tocarlo se desplaza.
+ */
+export const UNA_LINEA = { textAlign: undefined, lineHeight: undefined } as const;
+
 export function Titulo({ children }: { children: React.ReactNode }) {
   return (
     <Text variant="labelMedium" style={estilos.titulo}>
@@ -61,7 +71,7 @@ export function Campo({
       activeOutlineColor={tema.verde}
       outlineStyle={estilos.borde}
       style={[estilos.campo, multiline && estilos.campoAlto]}
-      contentStyle={multiline ? estilos.campoAltoContenido : undefined}
+      contentStyle={multiline ? estilos.campoAltoContenido : UNA_LINEA}
     />
   );
 }

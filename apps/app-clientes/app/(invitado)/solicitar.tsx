@@ -6,6 +6,7 @@ import { SERVICIO_OTRO } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
 import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 import { ElegirServicios } from "@/components/solicitudes/ElegirServicios";
+import { UNA_LINEA } from "@vivero/app-ui/components/ui/Formulario";
 import { tema } from "@vivero/app-ui/lib/tema";
 
 /**
@@ -143,6 +144,7 @@ export default function SolicitarInvitadoScreen() {
                 <TextInput
                   mode="outlined"
                   label="Nombre *"
+                  contentStyle={UNA_LINEA}
                   value={nombre}
                   onChangeText={setNombre}
                   autoComplete="given-name"
@@ -159,6 +161,7 @@ export default function SolicitarInvitadoScreen() {
                 <TextInput
                   mode="outlined"
                   label="Apellido *"
+                  contentStyle={UNA_LINEA}
                   value={apellido}
                   onChangeText={setApellido}
                   autoComplete="family-name"
