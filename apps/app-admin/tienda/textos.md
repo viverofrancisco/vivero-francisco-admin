@@ -122,7 +122,7 @@ Datos recopilados, **vinculados a la identidad**, **sin rastreo**, uso
 - **Google Play**: `capturas/android/` (1080×2160; el iPhone es más alto que
   2:1, que es el máximo de Play, así que van recortadas por abajo a 2:1 y escaladas; con margen blanco a los lados, Play las tomó por «ilustraciones o gráficos de marketing»).
 
-Solo dos, **sin datos**, a propósito: el login y *Crea tu contraseña* (el
+El login, la lista de visitas del día (la misma captura de la ficha de clientes cuando era la app unida, `apps/app-clientes/tienda/capturas/`) y *Crea tu contraseña* (el
 enlace de acceso, abierto en el simulador con un enlace de prueba de la base de
 desarrollo). Sacadas del iPhone 17 Pro con la barra de estado a las 9:41
 (`xcrun simctl status_bar … override`).
