@@ -30,7 +30,13 @@ export async function POST(
     );
   }
 
-  await createAndSendInvite(cliente.id);
+  const envio = await createAndSendInvite(cliente.id);
+  if (envio && !envio.success) {
+    return NextResponse.json(
+      { error: "No se pudo enviar el correo. Inténtalo de nuevo en un momento." },
+      { status: 502 }
+    );
+  }
 
   return NextResponse.json({
     ok: true,

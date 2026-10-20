@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { sendSetPasswordEmail } from "@/lib/email";
+import { sendSetPasswordEmail, type SendEmailResult } from "@/lib/email";
 import { crearEnlaceParaCliente } from "./acceso.service";
 import type { Cliente, User } from "@/generated/prisma/client";
 
@@ -55,13 +55,23 @@ export async function resolveClienteByIdentifier(
  * enlace para establecer contraseña al **correo** del cliente. (Solo correo: no
  * se usa WhatsApp para esto.) Si el cliente no tiene correo, no se envía nada.
  * No revela si el cliente existe — los llamadores deben responder genéricamente.
+ *
+ * Devuelve lo que contestó el envío (`null` si no había a quién mandarlo): el
+ * botón del portal decía «Invitación enviada» también cuando Gmail rechazaba
+ * el correo, y nadie se enteraba hasta que el cliente decía que no le llegó.
  */
-export async function createAndSendInvite(clienteId: string): Promise<void> {
+export async function createAndSendInvite(
+  clienteId: string
+): Promise<SendEmailResult | null> {
   const cliente = await prisma.cliente.findUnique({ where: { id: clienteId } });
-  if (!cliente || cliente.deletedAt || !cliente.email) return;
+  if (!cliente || cliente.deletedAt || !cliente.email) return null;
 
   const enlace = await crearEnlaceParaCliente(clienteId);
-  await sendSetPasswordEmail(cliente.email, cliente.nombre, enlace.url);
+  const envio = await sendSetPasswordEmail(cliente.email, cliente.nombre, enlace.url);
+  if (!envio.success) {
+    console.error(`[invitación] no se pudo enviar a ${cliente.email}: ${envio.error}`);
+  }
+  return envio;
 }
 
 // ──────────────────────────────────────────────

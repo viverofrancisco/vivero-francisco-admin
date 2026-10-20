@@ -67,6 +67,13 @@ async function buildRawMessage(params: SendEmailParams): Promise<string> {
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
   const client = getClient();
 
+  if (!client && process.env.NODE_ENV === "production") {
+    // En producción, sin las variables no hay correo: decirlo, no fingir que
+    // salió (el bypass de abajo devolvía éxito y el portal decía «enviada»).
+    console.error(`[correo] GMAIL_* sin configurar; no se envió «${params.subject}» a ${params.to}`);
+    return { success: false, error: "El correo no está configurado en el servidor" };
+  }
+
   if (!client) {
     // Dev bypass: no OAuth credentials configured — print to console so flows are testable.
     console.log(
