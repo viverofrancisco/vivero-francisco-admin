@@ -109,7 +109,10 @@ Ni publicidad, ni analítica, ni seguimiento.
 Datos recopilados, **vinculados a la identidad**, **sin rastreo**, uso
 *Funcionalidad de la app*:
 
-- Información de contacto: nombre, correo, teléfono.
+- Información de contacto: nombre, correo, teléfono, dirección física (la de entrega).
 - Ubicación: precisa.
 - Contenido del usuario: fotos o videos, otro contenido (solicitudes, pedidos, calificaciones).
 - Identificadores: ID de usuario, ID del dispositivo.
+- Compras: historial de compras (*Purchases › Purchase History*, entre
+  *Identifiers* y *Usage Data* en la lista), por los pedidos. Publicado el 20-oct
+  con la 1.1.0.
