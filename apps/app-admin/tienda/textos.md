@@ -114,7 +114,11 @@ Datos recopilados, **vinculados a la identidad**, **sin rastreo**, uso
 
 ## Capturas
 
-- **App Store**: `capturas/ios-6.5/` (1284×2778, el espacio de 6.5").
+- **App Store**: `capturas/ios-6.3/` (1206×2622, tal cual salen del iPhone 17
+  Pro). App Store Connect ahora agrupa las de iPhone en *iPhone with Dynamic
+  Island (medium display)*, que acepta 1206×2622 o 1179×2556, y rechazó las de
+  1284×2778 con *File dimensions are invalid*. Las de `capturas/ios-6.5/`
+  quedan por si alguna vez pide ese tamaño.
 - **Google Play**: `capturas/android/` (1080×2160; el iPhone es más alto que
   2:1, que es el máximo de Play, así que van con un margen blanco a los lados).
 
