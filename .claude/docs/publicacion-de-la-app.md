@@ -46,18 +46,29 @@ copiaron de las de clientes el 18-oct.
    (*Vivero Francisco Admin*, ASC `6824696485`, ya en `submit.production.ios`
    de `eas.json`) y el binario subido con `eas submit -p ios --latest`. Los
    textos de la ficha, las notas para la revisión y las capturas están en
-   `apps/app-admin/tienda/`. Falta mandarla a revisión y pedir la **distribución no listada**
-   en <https://developer.apple.com/contact/request/unlisted-app/>. Apple la
-   revisa igual; en las notas de revisión va una cuenta de prueba **del equipo**
-   (staff) y que es la app interna del vivero para su personal. Una vez
-   aprobada, se instala con el enlace que da App Store Connect.
+   `apps/app-admin/tienda/`. El 19-oct se mandó a revisión con **publicación
+   manual** (*Manually release this version*, para que no salga pública antes
+   de que aprueben la no listada) y se pidió la distribución no listada en
+   <https://developer.apple.com/contact/request/unlisted-app/> (interna, ~15
+   empleados, dispositivos no gestionados, solo Ecuador). Una vez aprobada como
+   no listada **no puede volver a ser pública**. Con las dos aprobaciones:
+   *Release this version* y el enlace para el equipo es
+   `https://apps.apple.com/app/id6824696485`. La cuenta de revisión de las dos
+   tiendas es `revision@viverofrancisco.com` (Staff en producción): cambiarle la
+   contraseña o revocarla cuando terminen las revisiones.
 3. **Android**: Google Play no tiene apps "no listadas" públicas, y se decidió
    (19-oct) publicarla con **ficha normal**, como app nueva en Play Console
    (*Crear app*), con la cuenta Staff de prueba en *Acceso a la app*. La cuenta
    de Play es de organización, así que no aplica la prueba cerrada de 14 días
    con 12 testers. **Orden**: el equipo tiene que tener esta app instalada
    *antes* de que salga la actualización de `com.viverofrancisco.app` como app
-   de clientes, cuyo login ya no admite cuentas del equipo. Con el
+   de clientes, cuyo login ya no admite cuentas del equipo. El 19-oct se subió
+   el `.aab` 1.0.0 (2) a prueba interna y a producción (solo Ecuador). Play
+   pidió justificar `READ_MEDIA_IMAGES`/`READ_MEDIA_VIDEO` (la galería propia,
+   se justificó igual que en la de clientes) y rechazó en la verificación
+   previa unas capturas con margen blanco a los lados («ilustraciones o
+   gráficos de marketing») y una ficha con solo login y contraseña: van sin
+   margen y con la lista de visitas. Con el
    primer build de Android, poner su SHA-256 en `APP_EQUIPO_ANDROID_SHA256`
    (`apps/admin/src/lib/enlaces-a-la-app.ts`) para que sus enlaces abran en la
    app.
