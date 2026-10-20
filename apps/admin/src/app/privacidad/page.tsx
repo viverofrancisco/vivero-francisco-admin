@@ -20,7 +20,7 @@ export const metadata: Metadata = {
  * con la app es motivo de rechazo, y una promesa que no se cumple.
  */
 const CONTACTO = "info@viverofrancisco.com";
-const ACTUALIZADA = "5 de octubre de 2026";
+const ACTUALIZADA = "20 de octubre de 2026";
 
 /** El índice de la izquierda; cada `id` es el de su `Seccion`. */
 const SECCIONES = [
@@ -96,9 +96,11 @@ export default async function PrivacidadPage() {
         </nav>
 
         <p>
-          Esta política explica qué datos personales recogen la aplicación móvil{" "}
-          <strong>Vivero Francisco</strong> y el portal{" "}
-          <strong>admin.viverofrancisco.com</strong> (juntos, “la app”), para qué
+          Esta política explica qué datos personales recogen las aplicaciones
+          móviles <strong>Vivero Francisco</strong> (para clientes) y{" "}
+          <strong>Vivero Francisco Admin</strong> (para el equipo del vivero) y
+          el portal <strong>admin.viverofrancisco.com</strong> (juntos, “la
+          app”), para qué
           los usamos y qué derechos tienes sobre ellos. El responsable del
           tratamiento es <strong>Viverofrancisco S.A.S.</strong>, en Guayaquil,
           Ecuador.
@@ -106,12 +108,15 @@ export default async function PrivacidadPage() {
 
         <Seccion id="quien-usa-la-app" titulo="Quién usa la app">
           <p>
-            La app la usan el equipo del vivero —administradores, staff y
-            personal de campo— y sus clientes. Cualquier persona, sin crear una
-            cuenta, puede ver el catálogo y pedir una visita o una cotización
-            dejando su nombre y su teléfono. Las cuentas las crea un
-            administrador del vivero, y cada persona elige su propia
-            contraseña. No está dirigida a menores de edad.
+            Los clientes usan <strong>Vivero Francisco</strong>; el equipo del
+            vivero —administradores, staff y personal de campo— usa{" "}
+            <strong>Vivero Francisco Admin</strong> y el portal. Cualquier
+            persona, sin crear una cuenta, puede ver el catálogo, hacer un
+            pedido o pedir una visita dejando su nombre, su correo y su
+            teléfono. Un cliente puede crear su cuenta desde la app con su
+            correo, que confirmamos con un código; las cuentas del equipo las
+            crea un administrador. Cada persona elige su propia contraseña. No
+            está dirigida a menores de edad.
           </p>
         </Seccion>
 
@@ -126,6 +131,13 @@ export default async function PrivacidadPage() {
               <strong>Datos de clientes:</strong> nombre, contacto, datos de
               facturación y las direcciones de sus propiedades, con su ubicación
               en el mapa y sus medidas.
+            </li>
+            <li>
+              <strong>Pedidos:</strong> los productos que compras desde la app,
+              con tu nombre, correo y teléfono, y la dirección de entrega con
+              su ubicación en el mapa si eliges que te lo llevemos. Si haces un
+              pedido sin cuenta, con esos datos creamos tu ficha de cliente,
+              para poder confirmarlo, cobrarlo y facturarlo.
             </li>
             <li>
               <strong>Solicitudes:</strong> lo que nos pides desde la app —una
