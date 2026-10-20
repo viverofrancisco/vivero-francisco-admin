@@ -62,17 +62,20 @@ foto y precio en producción, apuntando la app del simulador a producción
 
 **Novedades de esta versión** (4000):
 
-> Primera versión de la app de Vivero Francisco: mira el catálogo y pide una visita con los servicios que necesitas.
+> Vivero Francisco ahora es la app para nuestros clientes: compra plantas y productos del catálogo, retíralos en el vivero o recíbelos en casa, y pide una visita eligiendo los servicios que necesitas. Puedes hacerlo con tu cuenta o como invitado.
+
+(La 1.0 era una sola app para clientes y equipo; desde la 1.1.0 el equipo usa
+*Vivero Francisco Admin*.)
 
 **Información para la revisión (App Review)**
 
 - Usuario: `jorgefco95+prueba@gmail.com` — la ficha *Jorge Prueba* en producción, creada el 19-oct con *Enviar invitación* (llega a la bandeja de jorgefco95@gmail.com: Gmail ignora lo que va tras el `+`)
 - Contraseña: *(la que elegiste)*
-- Notas:
+- Notas (en inglés, para App Review):
 
-> Vivero Francisco es la app de un vivero y empresa de mantenimiento de jardines en Guayaquil, Ecuador. Cualquier persona puede crear una cuenta desde la pantalla de inicio (“Crear cuenta”): recibe un código en su correo y entra como cliente, con el catálogo de plantas y productos con sus precios, sus solicitudes de visita (con los servicios que elige) y sus visitas. También puede entrar sin cuenta con “Seguir como invitado”, ver el catálogo y pedir una visita dejando su nombre y teléfono. La cuenta se elimina desde Cuenta → Eliminar mi cuenta.
+> Vivero Francisco is the customer app of a plant nursery and garden maintenance company in Guayaquil, Ecuador. Anyone can use it without an account: on the login screen tap "Seguir como invitado" to browse the catalog, place an order (pick-up at the nursery or delivery) or request a visit choosing the services they need. Customers can also create an account with "Crear cuenta" (a code is sent to their email) to follow their orders, requests and maintenance visits. The account can be deleted in Cuenta → Eliminar mi cuenta.
 >
-> La cuenta de prueba que les damos es de un cliente, con datos de demostración: visitas con sus fotos e informes, pedidos y solicitudes. La ubicación se usa solo mientras la app está en uso, cuando el cliente marca en el mapa dónde es su jardín o adónde llevar su pedido.
+> Starting with this version the app is for customers only; our staff now use a separate app, "Vivero Francisco Admin". The demo account above is a customer account. Location is used only while the app is in use, when the customer marks on the map where their garden is or where to deliver an order.
 
 ## Google Play (Android)
 
