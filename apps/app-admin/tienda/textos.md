@@ -120,7 +120,7 @@ Datos recopilados, **vinculados a la identidad**, **sin rastreo**, uso
   1284×2778 con *File dimensions are invalid*. Las de `capturas/ios-6.5/`
   quedan por si alguna vez pide ese tamaño.
 - **Google Play**: `capturas/android/` (1080×2160; el iPhone es más alto que
-  2:1, que es el máximo de Play, así que van con un margen blanco a los lados).
+  2:1, que es el máximo de Play, así que van recortadas por abajo a 2:1 y escaladas; con margen blanco a los lados, Play las tomó por «ilustraciones o gráficos de marketing»).
 
 Solo dos, **sin datos**, a propósito: el login y *Crea tu contraseña* (el
 enlace de acceso, abierto en el simulador con un enlace de prueba de la base de
