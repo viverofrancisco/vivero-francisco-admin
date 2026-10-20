@@ -12,14 +12,19 @@ de acá entran.
 
 ## Capturas
 
-- **App Store**: `capturas/ios-6.5/` (1284×2778, el espacio de 6.5" que pide
-  App Store Connect; las de `capturas/ios/` son de 6.9", 1320×2868, por si
-  lo pide después).
-- **Google Play**: `capturas/android/` (1080×2160).
+- **App Store**: `capturas/ios-6.3/` (1206×2622, *iPhone with Dynamic Island
+  (medium display)*, que es lo que acepta ahora App Store Connect).
+- **Google Play**: `capturas/android/` (1080×2160: recortadas por abajo a 2:1,
+  sin margen blanco, que Play toma por «gráficos de marketing»).
 
-Las cinco de iPhone sirven, pero conviene **agregar dos del lado del
-cliente** (el catálogo y la ficha de un producto) y ponerlas primero: es lo que le
-muestra a Apple y a quien busca la app que le sirve a cualquiera.
+Sacadas el 19-oct en modo invitado, sin datos de nadie: el login y *Solicitar
+visita*. Las de la app unida (con pantallas del equipo) se fueron con la
+separación y quedan en el historial de git. **Faltan el catálogo y la ficha de
+un producto**, y no se pueden sacar todavía: el catálogo de producción está
+vacío (`/api/mobile/publico/catalogo` devuelve `items: []` el 19-oct) y el de
+desarrollo no tiene fotos. Se sacan cuando el vivero cargue sus productos con
+foto y precio en producción, apuntando la app del simulador a producción
+(`EXPO_PUBLIC_API_BASE_URL`), que para el invitado solo lee.
 
 ## Comunes
 
