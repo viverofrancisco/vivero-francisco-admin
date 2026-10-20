@@ -118,7 +118,7 @@ Datos recopilados, **vinculados a la identidad**, **sin rastreo**, uso
 - **Google Play**: `capturas/android/` (1080×2160; el iPhone es más alto que
   2:1, que es el máximo de Play, así que van con un margen blanco a los lados).
 
-Sacadas del simulador (iPhone 17 Pro, barra de estado a las 9:41) con datos de
-desarrollo, por deep link (`xcrun simctl openurl … viverofrancisco-admin://chats/<id>`):
-la ficha de una visita, el chat de una cuadrilla, Clientes, Pedidos, Informes y
-Productos.
+Solo dos, **sin datos**, a propósito: el login y *Crea tu contraseña* (el
+enlace de acceso, abierto en el simulador con un enlace de prueba de la base de
+desarrollo). Sacadas del iPhone 17 Pro con la barra de estado a las 9:41
+(`xcrun simctl status_bar … override`).
