@@ -66,7 +66,7 @@ foto y precio en producción, apuntando la app del simulador a producción
 
 **Información para la revisión (App Review)**
 
-- Usuario: *(el de la cuenta de prueba)*
+- Usuario: `jorgefco95+prueba@gmail.com` — la ficha *Jorge Prueba* en producción, creada el 19-oct con *Enviar invitación* (llega a la bandeja de jorgefco95@gmail.com: Gmail ignora lo que va tras el `+`)
 - Contraseña: *(la que elegiste)*
 - Notas:
 
