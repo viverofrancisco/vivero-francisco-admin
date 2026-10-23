@@ -13,18 +13,22 @@ de acá entran.
 ## Capturas
 
 - **App Store**: `capturas/ios-6.3/` (1206×2622, *iPhone with Dynamic Island
-  (medium display)*, que es lo que acepta ahora App Store Connect).
+  (medium display)*) y `capturas/ios-6.9/` (1320×2868, las mismas escaladas,
+  para el tamaño grande: la 1.1.0 se rechazó el 23-oct por la regla 2.3.3
+  porque ahí había **solo el login**; se cambian en *View All Sizes in Media
+  Manager*). Ninguna es del login: Apple no lo cuenta como la app en uso.
 - **Google Play**: `capturas/android/` (1080×2160: recortadas por abajo a 2:1,
-  sin margen blanco, que Play toma por «gráficos de marketing»).
+  sin margen blanco, que Play toma por «gráficos de marketing»). Todavía son
+  las del 19-oct (login y *Solicitar visita*).
 
-Sacadas el 19-oct en modo invitado, sin datos de nadie: el login y *Solicitar
-visita*. Las de la app unida (con pantallas del equipo) se fueron con la
-separación y quedan en el historial de git. **Faltan el catálogo y la ficha de
-un producto**, y no se pueden sacar todavía: el catálogo de producción está
-vacío (`/api/mobile/publico/catalogo` devuelve `items: []` el 19-oct) y el de
-desarrollo no tiene fotos. Se sacan cuando el vivero cargue sus productos con
-foto y precio en producción, apuntando la app del simulador a producción
-(`EXPO_PUBLIC_API_BASE_URL`), que para el invitado solo lee.
+Sacadas el 23-oct en modo invitado contra producción, con los doce productos
+reales que se cargaron ese día (plantas, tierras y piedras, sin fotos todavía):
+el catálogo, la ficha de un producto, el carrito, el primer paso del pedido y
+*Solicitar visita*. Cuando los productos tengan foto conviene sacarlas de
+nuevo. Para apuntar el simulador a producción, `EXPO_PUBLIC_API_BASE_URL` no
+alcanza en desarrollo (gana la IP de Metro): hay que levantar Metro con
+`--no-dev`. El carrito se llenó escribiendo `carrito:invitado` en el
+`manifest.json` de AsyncStorage del simulador, con la app cerrada.
 
 ## Comunes
 
@@ -32,7 +36,9 @@ foto y precio en producción, apuntando la app del simulador a producción
 - **Política de privacidad**: https://admin.viverofrancisco.com/privacidad
 - **Sitio / URL de soporte**: https://admin.viverofrancisco.com
 - **Correo de contacto**: info@viverofrancisco.com
-- **Categoría**: Negocios (App Store: *Business*; Play: *Empresa*)
+- **Categoría**: App Store: *Shopping* (Compras), secundaria *Lifestyle*; era
+  *Business*, y con eso Apple la leía como app interna de una empresa (regla 3.2).
+  Play: *Compras*.
 - **Precio**: gratis, sin compras dentro de la app ni anuncios.
 
 ## App Store (iOS)

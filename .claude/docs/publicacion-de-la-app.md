@@ -299,6 +299,17 @@ letras: sin cuenta se puede ver el catálogo con precios y pedir una visita o
 una cotización; los clientes del vivero entran además a ver sus visitas, y
 el equipo entra con la cuenta de prueba.
 
+**La 1.1.0 (build 14) se rechazó otra vez por la 3.2 el 23-oct-2026**, ya
+con modo invitado y registro abierto, y además por la 2.3.3. Lo que vio el
+revisor: capturas que eran solo el login (en el tamaño de 6.5"), un catálogo
+de producción con un único producto de prueba sin foto y agotado, y la
+categoría *Business*. Ninguna de las tres dice "tienda abierta al público".
+Se cargaron doce productos reales en producción, las capturas pasaron a ser
+del catálogo, la ficha, el carrito, el pedido y la solicitud (ver
+`apps/app-clientes/tienda/textos.md`), y la categoría a *Shopping*. **El
+catálogo de producción con productos de verdad es requisito para mandar a
+revisión**: el revisor entra como invitado y es lo primero que ve.
+
 **Las rutas nuevas tienen que estar en producción antes de mandar el build**:
 el revisor se registra contra el portal publicado, y un 404 en
 `/api/mobile/publico/catalogo` es otro rechazo.
