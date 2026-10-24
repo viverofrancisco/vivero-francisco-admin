@@ -13,6 +13,7 @@ import {
 import { ActivityIndicator, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import Constants from "expo-constants";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -78,16 +79,28 @@ interface Props {
  * Play rechazó la app del equipo (23-oct-2026) por pedir `READ_MEDIA_IMAGES` /
  * `READ_MEDIA_VIDEO`: su política solo los admite cuando el selector del
  * sistema no alcanza, y para elegir fotos que mandar alcanza. Así que ahí la
- * app no pide permiso de la galería (los dos `app.json` lo bloquean en
+ * app no pide permiso de la galería (su `app.json` lo bloquea en
  * `blockedPermissions`) y abre el *Photo Picker* de Android, que no lo
  * necesita. Lo que se pierde es volver a ver marcadas las ya elegidas: el
  * selector del sistema no da un id de la galería, así que lo que trae llega
  * **sin `assetId`** y las pantallas lo suman a la bandeja como lo de la
  * cámara —la reemplazan solo las que traen `assetId`, que en Android no hay—,
  * y cada una se quita con su ✕. En iOS sigue siendo la galería propia.
+ *
+ * **Lo decide el `app.json` de cada app, no la plataforma sola**: es el
+ * selector del sistema en Android solo si esa app bloquea
+ * `READ_MEDIA_IMAGES`. Hoy lo hace la del equipo; la de clientes ya estaba
+ * aprobada con el permiso y se dejó como estaba. Así la galería no puede
+ * pedir un permiso que el manifiesto ya no tiene.
  */
+const SELECTOR_DEL_SISTEMA =
+  Platform.OS === "android" &&
+  (Constants.expoConfig?.android?.blockedPermissions ?? []).includes(
+    "android.permission.READ_MEDIA_IMAGES"
+  );
+
 export function SelectorDeGaleria(props: Props) {
-  return Platform.OS === "android" ? (
+  return SELECTOR_DEL_SISTEMA ? (
     <SelectorDelSistema {...props} />
   ) : (
     <GaleriaPropia {...props} />

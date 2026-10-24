@@ -403,16 +403,18 @@ una vez aprobadas las dos tiendas.
    `READ_MEDIA_VIDEO`, que pedía la galería propia (`SelectorDeGaleria`,
    `expo-media-library`). Ahora en Android `SelectorDeGaleria` abre el
    selector de fotos del sistema (`expo-image-picker`, que no pide permiso) y
-   los dos `app.json` ponen esos permisos —y `READ_MEDIA_VISUAL_USER_SELECTED`,
+   el `app.json` de la del equipo pone esos permisos —y `READ_MEDIA_VISUAL_USER_SELECTED`,
    `READ/WRITE_EXTERNAL_STORAGE`, `ACCESS_MEDIA_LOCATION`— en
    `android.blockedPermissions`, que el prebuild escribe como
    `tools:node="remove"` para que tampoco entren por el manifiesto de una
    librería (se comprueba con `npx expo config --type introspect`). En iOS
    sigue la galería propia. Lo que se pierde en Android es volver a ver
-   marcadas las ya elegidas. Para reenviar: build nuevo de las dos apps, y en
+   marcadas las ya elegidas. Para reenviar: build nuevo de la del equipo, y en
    Play Console, *Contenido de la app → Permisos de fotos y videos*, declarar
    que la app ya no los usa; luego *Resumen de publicación → Enviar*. La de
-   clientes tenía el mismo permiso justificado: va en su próximo envío.
+   clientes tiene el mismo permiso y ya estaba aprobada: se dejó como
+   está (sin `blockedPermissions`, con su galería propia también en
+   Android). Si Play la rechaza igual, basta con copiarle esa lista.
    **Pendiente: recuperar la galería propia en Android.** El selector del
    sistema quita funcionalidad (lo ya elegido no vuelve a salir marcado, y no
    es la grilla de WhatsApp que tenemos en iOS). Caminos, de más a menos
