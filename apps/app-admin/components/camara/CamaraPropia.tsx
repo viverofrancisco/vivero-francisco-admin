@@ -244,7 +244,7 @@ export function CamaraPropia({
           </View>
         ) : null}
 
-        <View style={[styles.abajo, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
 
           {recientes.length > 0 && !grabando ? (

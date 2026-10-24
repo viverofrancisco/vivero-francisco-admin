@@ -391,7 +391,7 @@ export function EditorDeFotos({
           ) : null}
         </View>
 
-        <View style={[styles.abajo, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.miniaturas}>
             {(fotos ?? []).map((f, i) => (
               <Pressable
@@ -485,6 +485,7 @@ export function EditorDeFotos({
         {recortando && foto ? (
           <RecortarFoto
             url={foto.archivo.uri}
+            comoWhatsApp
             onCerrar={() => setRecortando(false)}
             onGuardar={(e) => void alRecortar(e)}
           />
@@ -570,7 +571,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 10,
   },
-  miniaturas: { gap: 6, alignItems: "center", paddingRight: 8 },
+  // El ✕ de la miniatura asoma 6 por arriba y a la derecha: sin este aire,
+  // el ScrollView lo corta.
+  miniaturas: { gap: 10, alignItems: "center", paddingTop: 8, paddingRight: 8, paddingLeft: 2 },
   miniatura: { width: 48, height: 48, borderRadius: 6, overflow: "visible" },
   miniaturaActual: { borderWidth: 2, borderColor: "#fff" },
   miniaturaImagen: { width: "100%", height: "100%", borderRadius: 5 },

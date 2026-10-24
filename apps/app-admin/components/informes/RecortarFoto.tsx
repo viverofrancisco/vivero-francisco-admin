@@ -4,13 +4,14 @@ import {
   Image,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
@@ -133,11 +134,18 @@ function moverEsquina(
  * Guardar está siempre disponible, porque el cuadrado inicial ya es un
  * recorte. Antes la foto del grupo pasaba por el recorte del sistema, que
  * muestra un cuadrado para algo que después se ve redondo.
+ *
+ * Con `comoWhatsApp` es el del editor de fotos de la cámara (`EditorDeFotos`),
+ * que tiene que verse como el resto de ese editor: ✕ y girar, voltear y
+ * forma arriba como íconos redondos, *Restablecer* y el ✓ verde abajo, sin
+ * deshacer ni rehacer, y el recuadro también se achica o agranda
+ * pellizcando. El recorte en sí es el mismo.
  */
 export function RecortarFoto({
   url,
   guardando = false,
   circulo = false,
+  comoWhatsApp = false,
   onCerrar,
   onGuardar,
 }: {
@@ -145,6 +153,8 @@ export function RecortarFoto({
   guardando?: boolean;
   /** Foto de perfil: cuadrado fijo con el círculo visible encima. */
   circulo?: boolean;
+  /** La cara del editor de la cámara, la de WhatsApp. */
+  comoWhatsApp?: boolean;
   onCerrar: () => void;
   onGuardar: (edicion: EdicionDeFoto) => void;
 }) {
@@ -283,6 +293,7 @@ export function RecortarFoto({
   const gestoDeMover = useMemo(
     () =>
       Gesture.Pan()
+        .maxPointers(1)
         .onStart(() => {
           desde.set({ x: fx.get(), y: fy.get(), w: fw.get(), h: fh.get() });
         })
@@ -301,6 +312,55 @@ export function RecortarFoto({
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [W, H, caja, indice]
+  );
+
+  // Pellizcar achica o agranda el recuadro alrededor de su centro, con su
+  // misma proporción: abrir los dedos es acercarse, como en WhatsApp.
+  const desdeZoom = useSharedValue({ x: 0, y: 0, w: 0, h: 0 });
+  const gestoDeZoom = useMemo(
+    () =>
+      Gesture.Pinch()
+        .onStart(() => {
+          desdeZoom.set({ x: fx.get(), y: fy.get(), w: fw.get(), h: fh.get() });
+        })
+        .onUpdate((e) => {
+          const d = desdeZoom.get();
+          const proporcion = d.w / d.h;
+          let w = Math.min(Math.max(d.w / e.scale, MINIMO), W);
+          let h = w / proporcion;
+          if (h > H) {
+            h = H;
+            w = h * proporcion;
+          }
+          if (h < MINIMO) {
+            h = MINIMO;
+            w = Math.min(h * proporcion, W);
+          }
+          const cx = d.x + d.w / 2;
+          const cy = d.y + d.h / 2;
+          fx.set(Math.min(Math.max(cx - w / 2, 0), W - w));
+          fy.set(Math.min(Math.max(cy - h / 2, 0), H - h));
+          fw.set(w);
+          fh.set(h);
+        })
+        .onEnd(() => {
+          scheduleOnRN(confirmar, {
+            x: fx.get(),
+            y: fy.get(),
+            w: fw.get(),
+            h: fh.get(),
+          });
+        }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [W, H, caja, indice]
+  );
+  // Un dedo mueve, dos pellizcan: el primero que arranca se queda con el gesto.
+  const gestoDelRecuadro = useMemo(
+    () =>
+      comoWhatsApp
+        ? Gesture.Race(gestoDeZoom, gestoDeMover)
+        : gestoDeMover,
+    [comoWhatsApp, gestoDeZoom, gestoDeMover]
   );
 
   const estiloRecuadro = useAnimatedStyle(() => ({
@@ -364,6 +424,13 @@ export function RecortarFoto({
     });
   }
 
+  /** Vuelve a la foto como llegó. */
+  function restablecer() {
+    setEligiendoForma(false);
+    setHistorial([{ recuadro: ENTERO, rotar: 0, voltear: false, forma: "original" }]);
+    setIndice(0);
+  }
+
   const hayCambios = circulo ? natural !== null : indice > 0;
   const formaActual = FORMAS.find((f) => f.clave === estado.forma) ?? FORMAS[0];
   // La imagen sin girar, centrada donde va la girada: el giro es un
@@ -377,7 +444,36 @@ export function RecortarFoto({
 
   return (
     <Modal visible animationType="slide" onRequestClose={onCerrar}>
-      <View style={[styles.pantalla, { paddingTop: insets.top + 8 }]}>
+      {/* Un Modal es otra ventana: en Android, sin su propia raíz los gestos
+          del recuadro no llegan. */}
+      <GestureHandlerRootView style={[styles.pantalla, { paddingTop: insets.top + 8 }]}>
+        {comoWhatsApp ? (
+          <View style={styles.arriba}>
+            <BotonRedondo etiqueta="Cancelar" onPress={onCerrar} disabled={guardando}>
+              <Ionicons name="close" size={22} color="#fff" />
+            </BotonRedondo>
+            <View style={styles.centro}>
+              <BotonRedondo etiqueta="Girar" onPress={girar} disabled={!natural || guardando}>
+                <MaterialCommunityIcons name="rotate-right" size={22} color="#fff" />
+              </BotonRedondo>
+              <BotonRedondo etiqueta="Voltear" onPress={voltear} disabled={!natural || guardando}>
+                <MaterialCommunityIcons name="flip-horizontal" size={22} color="#fff" />
+              </BotonRedondo>
+              <BotonRedondo
+                etiqueta="Forma del recorte"
+                onPress={() => setEligiendoForma((v) => !v)}
+                disabled={!natural || guardando}
+                activo={eligiendoForma}
+              >
+                <MaterialCommunityIcons
+                  name="aspect-ratio"
+                  size={22}
+                  color={eligiendoForma ? "#000" : "#fff"}
+                />
+              </BotonRedondo>
+            </View>
+          </View>
+        ) : (
         <View style={styles.arriba}>
           <Pressable
             onPress={onCerrar}
@@ -426,6 +522,7 @@ export function RecortarFoto({
             )}
           </Pressable>
         </View>
+        )}
 
         <View
           style={styles.area}
@@ -471,7 +568,7 @@ export function RecortarFoto({
                 <Animated.View style={[styles.velo, estiloAbajo]} />
                 <Animated.View style={[styles.velo, estiloIzquierda]} />
                 <Animated.View style={[styles.velo, estiloDerecha]} />
-                <GestureDetector gesture={gestoDeMover}>
+                <GestureDetector gesture={gestoDelRecuadro}>
                   <Animated.View style={[styles.recuadro, estiloRecuadro]}>
                     {circulo ? (
                       // El círculo que se va a ver, sobre el cuadrado que se recorta.
@@ -498,6 +595,61 @@ export function RecortarFoto({
           )}
         </View>
 
+        {comoWhatsApp ? (
+          <View style={{ paddingBottom: insets.bottom + 16 }}>
+            {eligiendoForma ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.formasEnFila}
+              >
+                {FORMAS.map((f) => {
+                  const elegida = f.clave === estado.forma;
+                  return (
+                    <Pressable
+                      key={f.clave}
+                      onPress={() => elegirForma(f.clave)}
+                      style={({ pressed }) => [
+                        styles.forma,
+                        elegida && styles.formaElegida,
+                        pressed && styles.tocado,
+                      ]}
+                    >
+                      <Text style={[styles.formaTexto, elegida && styles.formaTextoElegida]}>
+                        {f.etiqueta}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            ) : null}
+            <View style={styles.filaFinal}>
+              <Pressable
+                onPress={restablecer}
+                disabled={indice === 0 || guardando}
+                hitSlop={8}
+                style={({ pressed }) => pressed && styles.tocado}
+              >
+                <Text style={[styles.pastillaTexto, indice === 0 && styles.textoApagado]}>
+                  Restablecer
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={hayCambios ? guardar : onCerrar}
+                disabled={guardando}
+                style={({ pressed }) => [styles.listo, pressed && styles.tocado]}
+                accessibilityRole="button"
+                accessibilityLabel="Listo"
+              >
+                {guardando ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="checkmark" size={26} color="#fff" />
+                )}
+              </Pressable>
+            </View>
+          </View>
+        ) : (
         <View style={[styles.abajo, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <View style={styles.centro}>
             <Pressable
@@ -562,8 +714,41 @@ export function RecortarFoto({
           </View>
           )}
         </View>
-      </View>
+        )}
+      </GestureHandlerRootView>
     </Modal>
+  );
+}
+
+/** Los botones redondos del editor de fotos, para que el recorte se vea igual. */
+function BotonRedondo({
+  etiqueta,
+  onPress,
+  disabled = false,
+  activo = false,
+  children,
+}: {
+  etiqueta: string;
+  onPress: () => void;
+  disabled?: boolean;
+  activo?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={4}
+      style={({ pressed }) => [
+        styles.redondoClaro,
+        activo && styles.redondoActivo,
+        (pressed || disabled) && styles.tocado,
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={etiqueta}
+    >
+      {children}
+    </Pressable>
   );
 }
 
@@ -605,6 +790,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#2c2c2e",
     alignItems: "center",
     justifyContent: "center",
+  },
+  redondoClaro: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.14)",
+  },
+  redondoActivo: { backgroundColor: "#fff" },
+  formasEnFila: { gap: 8, paddingHorizontal: 12, paddingBottom: 12 },
+  forma: {
+    height: 32,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.14)",
+  },
+  formaElegida: { backgroundColor: "#fff" },
+  formaTexto: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  formaTextoElegida: { color: "#000" },
+  filaFinal: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  listo: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2d7b48",
   },
   apagado: { opacity: 0.35 },
   tocado: { opacity: 0.7 },

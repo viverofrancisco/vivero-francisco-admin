@@ -76,10 +76,15 @@ function extensionDe(nombre: string): string {
 export async function archivoDeAssetDeGaleria(
   asset: MediaLibrary.Asset
 ): Promise<ArchivoLocal & { assetId: string }> {
-  const info = await MediaLibrary.getAssetInfoAsync(asset.id, {
-    shouldDownloadFromNetwork: true,
-  });
-  const origen = info.localUri ?? asset.uri;
+  // En Android el `uri` del asset ya es el archivo (`file:///storage/…`), y
+  // `getAssetInfoAsync` lee el EXIF, que pide ACCESS_MEDIA_LOCATION: un
+  // permiso que la app del equipo bloquea y que no necesitamos.
+  const origen =
+    Platform.OS === "android"
+      ? asset.uri
+      : ((
+          await MediaLibrary.getAssetInfoAsync(asset.id, { shouldDownloadFromNetwork: true })
+        ).localUri ?? asset.uri);
   const nombreOriginal = asset.filename || origen.split("/").pop() || "archivo";
 
   if (asset.mediaType === "video") {
