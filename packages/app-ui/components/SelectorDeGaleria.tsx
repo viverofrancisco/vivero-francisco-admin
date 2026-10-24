@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   FlatList,
   Linking,
+  Platform,
   Modal,
   Pressable,
   StyleSheet,
@@ -11,11 +13,13 @@ import {
 import { ActivityIndicator, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ARRIBA_DE_LA_HOJA } from "./ui/CabeceraDeHoja";
 import {
   archivoDeAssetDeGaleria,
+  archivoDeAssetDelSelector,
   duracionCorta,
   type ArchivoDeGaleria,
 } from "../lib/galeria";
@@ -57,14 +61,7 @@ const PAGINA = 80;
  * hace acá con *Preparando…* en el botón, para que las dos pantallas que lo
  * usan no tengan que saber nada de eso.
  */
-export function SelectorDeGaleria({
-  titulo = "Elegir fotos",
-  conVideos = false,
-  maximo,
-  preseleccion,
-  onCerrar,
-  onConfirmar,
-}: {
+interface Props {
   titulo?: string;
   /** El chat manda videos; una novedad, fotos. */
   conVideos?: boolean;
@@ -74,7 +71,75 @@ export function SelectorDeGaleria({
   preseleccion: string[];
   onCerrar: () => void;
   onConfirmar: (archivos: ArchivoDeGaleria[]) => void;
-}) {
+}
+
+/**
+ * **En Android es el selector de fotos del sistema**, no esta grilla. Google
+ * Play rechazó la app del equipo (23-oct-2026) por pedir `READ_MEDIA_IMAGES` /
+ * `READ_MEDIA_VIDEO`: su política solo los admite cuando el selector del
+ * sistema no alcanza, y para elegir fotos que mandar alcanza. Así que ahí la
+ * app no pide permiso de la galería (los dos `app.json` lo bloquean en
+ * `blockedPermissions`) y abre el *Photo Picker* de Android, que no lo
+ * necesita. Lo que se pierde es volver a ver marcadas las ya elegidas: el
+ * selector del sistema no da un id de la galería, así que lo que trae llega
+ * **sin `assetId`** y las pantallas lo suman a la bandeja como lo de la
+ * cámara —la reemplazan solo las que traen `assetId`, que en Android no hay—,
+ * y cada una se quita con su ✕. En iOS sigue siendo la galería propia.
+ */
+export function SelectorDeGaleria(props: Props) {
+  return Platform.OS === "android" ? (
+    <SelectorDelSistema {...props} />
+  ) : (
+    <GaleriaPropia {...props} />
+  );
+}
+
+/** El *Photo Picker* de Android: se abre al montar y no dibuja nada propio. */
+function SelectorDelSistema({ conVideos = false, maximo, preseleccion, onCerrar, onConfirmar }: Props) {
+  const abierto = useRef(false);
+
+  useEffect(() => {
+    if (abierto.current) return;
+    abierto.current = true;
+    const quedan = maximo - preseleccion.length;
+    if (quedan <= 0) {
+      Alert.alert("No caben más", `Hasta ${maximo} ${maximo === 1 ? "archivo" : "archivos"} por vez.`);
+      onCerrar();
+      return;
+    }
+    void (async () => {
+      try {
+        const r = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: conVideos ? ["images", "videos"] : ["images"],
+          allowsMultipleSelection: quedan > 1,
+          selectionLimit: quedan,
+          orderedSelection: true,
+        });
+        if (r.canceled || r.assets.length === 0) {
+          onCerrar();
+          return;
+        }
+        const archivos: ArchivoDeGaleria[] = [];
+        for (const a of r.assets.slice(0, quedan)) archivos.push(await archivoDeAssetDelSelector(a));
+        onConfirmar(archivos);
+      } catch {
+        Alert.alert("No pudimos abrir tus fotos", "Prueba otra vez.");
+        onCerrar();
+      }
+    })();
+  }, [conVideos, maximo, preseleccion.length, onCerrar, onConfirmar]);
+
+  return null;
+}
+
+function GaleriaPropia({
+  titulo = "Elegir fotos",
+  conVideos = false,
+  maximo,
+  preseleccion,
+  onCerrar,
+  onConfirmar,
+}: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [permiso, setPermiso] = useState<"pidiendo" | "si" | "limitado" | "no">(

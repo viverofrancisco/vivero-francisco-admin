@@ -16,10 +16,13 @@ export interface ArchivoLocal {
   assetId?: string;
 }
 
-/** Uno de la galería: siempre sabe de qué foto salió. */
-export interface ArchivoDeGaleria extends ArchivoLocal {
-  assetId: string;
-}
+/**
+ * Lo que devuelve `SelectorDeGaleria`. En iOS siempre sabe de qué foto salió
+ * (`assetId`), y con eso vuelve a salir marcada. En Android **no**: ahí se usa
+ * el selector de fotos del sistema, que no da un id de la galería, y lo que
+ * trae se suma a la bandeja como lo de la cámara (ver `SelectorDeGaleria`).
+ */
+export type ArchivoDeGaleria = ArchivoLocal;
 
 /**
  * Lo que devuelve la cámara del sistema (`expo-image-picker`), con nombre y
@@ -70,7 +73,7 @@ function extensionDe(nombre: string): string {
  */
 export async function archivoDeAssetDeGaleria(
   asset: MediaLibrary.Asset
-): Promise<ArchivoDeGaleria> {
+): Promise<ArchivoLocal & { assetId: string }> {
   const info = await MediaLibrary.getAssetInfoAsync(asset.id, {
     shouldDownloadFromNetwork: true,
   });
@@ -100,6 +103,19 @@ export async function archivoDeAssetDeGaleria(
     tipo: "imagen",
     assetId: asset.id,
   };
+}
+
+/**
+ * Lo que trae el selector de fotos del sistema (Android), como archivo listo
+ * para subir y **sin `assetId`**. Una foto se vuelve a codificar como JPEG por
+ * lo mismo que en `archivoDeAssetDeGaleria`; un video va tal cual.
+ */
+export async function archivoDeAssetDelSelector(a: ImagePickerAsset): Promise<ArchivoLocal> {
+  const archivo = archivoDeAssetDeCamara(a);
+  if (archivo.tipo === "video") return archivo;
+  const jpeg = await manipulateAsync(a.uri, [], { compress: 0.8, format: SaveFormat.JPEG });
+  const base = archivo.fileName.replace(/\.[^.]+$/, "") || `foto-${Date.now()}`;
+  return { uri: jpeg.uri, fileName: `${base}.jpg`, contentType: "image/jpeg", tipo: "imagen" };
 }
 
 /** "1:05" para el rótulo de un video. */

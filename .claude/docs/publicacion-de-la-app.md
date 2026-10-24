@@ -65,7 +65,8 @@ copiaron de las de clientes el 18-oct.
    de clientes, cuyo login ya no admite cuentas del equipo. El 19-oct se subió
    el `.aab` 1.0.0 (2) a prueba interna y a producción (solo Ecuador). Play
    pidió justificar `READ_MEDIA_IMAGES`/`READ_MEDIA_VIDEO` (la galería propia,
-   se justificó igual que en la de clientes) y rechazó en la verificación
+   se justificó igual que en la de clientes; el 23-oct igual la rechazó por
+   eso, ver el punto 4 de *Pendientes para las próximas versiones*, y ya no los pide) y rechazó en la verificación
    previa unas capturas con margen blanco a los lados («ilustraciones o
    gráficos de marketing») y una ficha con solo login y contraseña: van sin
    margen y con la lista de visitas. Con el
@@ -396,13 +397,22 @@ una vez aprobadas las dos tiendas.
    y decidir si se adaptan las pantallas o se deja así. También aparece
    `GmsBarcodeScanningDelegateActivity` (ML Kit, de una dependencia), que
    no es nuestra.
-4. **Si Google rechaza el permiso de fotos y videos**
-   (`READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO`): la galería propia
-   (`SelectorDeGaleria`, `expo-media-library`) es lo que lo pide. La salida
-   es que en Android la app use el selector de fotos del sistema
-   (`expo-image-picker`) en lugar de la galería propia, y quitar esos
-   permisos del manifiesto; en iOS se queda igual. Se pierde ver las fotos
-   ya marcadas al volver a abrirla.
+4. **Permiso de fotos y videos en Android: resuelto el 24-oct-2026.** Google
+   rechazó la app del equipo el 23-oct (*Política de permisos de fotos y
+   videos: usar selectores del sistema*) por `READ_MEDIA_IMAGES` /
+   `READ_MEDIA_VIDEO`, que pedía la galería propia (`SelectorDeGaleria`,
+   `expo-media-library`). Ahora en Android `SelectorDeGaleria` abre el
+   selector de fotos del sistema (`expo-image-picker`, que no pide permiso) y
+   los dos `app.json` ponen esos permisos —y `READ_MEDIA_VISUAL_USER_SELECTED`,
+   `READ/WRITE_EXTERNAL_STORAGE`, `ACCESS_MEDIA_LOCATION`— en
+   `android.blockedPermissions`, que el prebuild escribe como
+   `tools:node="remove"` para que tampoco entren por el manifiesto de una
+   librería (se comprueba con `npx expo config --type introspect`). En iOS
+   sigue la galería propia. Lo que se pierde en Android es volver a ver
+   marcadas las ya elegidas. Para reenviar: build nuevo de las dos apps, y en
+   Play Console, *Contenido de la app → Permisos de fotos y videos*, declarar
+   que la app ya no los usa; luego *Resumen de publicación → Enviar*. La de
+   clientes tenía el mismo permiso justificado: va en su próximo envío.
 5. **Los textos de las tiendas todavía son solo del equipo**: con el
    modo invitado, agregar la parte de los clientes (catálogo,
    solicitudes, ver sus visitas) a las dos fichas —ya está en

@@ -342,7 +342,7 @@ export function useCambiosDeArchivos(
           ...deLaCamara,
           ...archivos.map((archivo) => ({
             archivo,
-            tareaId: tareaPorAsset.get(archivo.assetId) ?? null,
+            tareaId: (archivo.assetId && tareaPorAsset.get(archivo.assetId)) || null,
           })),
         ];
       });
@@ -446,7 +446,7 @@ export function ArchivosVisita({
       pendientes.flatMap((p) => (p.archivo.assetId ? [p.archivo.assetId] : []))
     );
     cambios.reemplazarDeGaleria(archivos);
-    if (archivos.some((a) => !yaEstaban.has(a.assetId))) {
+    if (archivos.some((a) => !a.assetId || !yaEstaban.has(a.assetId))) {
       setVista({ paso: "revision" });
     }
   }
