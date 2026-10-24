@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppState, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
@@ -13,8 +12,9 @@ import type { ArchivosEnCola } from "@/lib/visita-con-cola";
 import type { VisitaMedia } from "@vivero/app-ui/lib/types";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
+import { CamaraPropia } from "@/components/camara/CamaraPropia";
+import { EditorDeFotos } from "@/components/camara/EditorDeFotos";
 import {
-  archivoDeAssetDeCamara,
   fotosDeLaVentana,
   type ArchivoDeGaleria,
   type ArchivoLocal,
@@ -335,17 +335,19 @@ export function useCambiosDeArchivos(
         const deLaCamara = antes.filter((p) => !p.archivo.assetId);
         // La tarea ya elegida viaja con la foto: reabrir la galería para sumar
         // una no puede borrar lo que ya se etiquetó.
-        const tareaPorAsset = new Map(
+        // Y el archivo también: si ya pasó por el editor, lo que vale es lo
+        // editado, no la foto de la galería otra vez.
+        const anteriorPorAsset = new Map(
           antes
             .filter((p) => p.archivo.assetId)
-            .map((p) => [p.archivo.assetId!, p.tareaId] as const)
+            .map((p) => [p.archivo.assetId!, p] as const)
         );
         return [
           ...deLaCamara,
-          ...archivos.map((archivo) => ({
-            archivo,
-            tareaId: (archivo.assetId && tareaPorAsset.get(archivo.assetId)) || null,
-          })),
+          ...archivos.map((archivo) => {
+            const anterior = archivo.assetId ? anteriorPorAsset.get(archivo.assetId) : undefined;
+            return anterior ?? { archivo, tareaId: null };
+          }),
         ];
       });
     }, []),
@@ -467,14 +469,19 @@ export function ArchivosVisita({
     return [...archivos].sort((a, b) => lugar(a) - lugar(b));
   }, [archivos, catalogo, etiquetas]);
 
-  async function tomarFoto() {
-    const permiso = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permiso.granted) return;
-    const r = await ImagePicker.launchCameraAsync({ quality: 0.85 });
-    if (!r.canceled) {
-      cambios.agregar(r.assets.map(archivoDeAssetDeCamara));
-      setVista({ paso: "revision" });
-    }
+  /** La cámara de la app: saca varias, pasa por el editor y vuelve acá. */
+  const [camara, setCamara] = useState(false);
+  /** Lo nuevo que trajo la galería, en el editor antes de entrar a la tanda. */
+  const [editando, setEditando] = useState<{
+    nuevos: ArchivoDeGaleria[];
+    todos: ArchivoDeGaleria[];
+  } | null>(null);
+
+  function alSacarConLaCamara(archivos: ArchivoLocal[]) {
+    setCamara(false);
+    if (archivos.length === 0) return;
+    cambios.agregar(archivos);
+    setVista({ paso: "revision" });
   }
 
   /**
@@ -491,10 +498,29 @@ export function ArchivosVisita({
     const yaEstaban = new Set(
       pendientes.flatMap((p) => (p.archivo.assetId ? [p.archivo.assetId] : []))
     );
-    cambios.reemplazarDeGaleria(archivos);
-    if (archivos.some((a) => !a.assetId || !yaEstaban.has(a.assetId))) {
-      setVista({ paso: "revision" });
+    const nuevos = archivos.filter((a) => !a.assetId || !yaEstaban.has(a.assetId));
+    // Las nuevas pasan antes por el editor, como en WhatsApp; las que ya
+    // estaban vuelven como quedaron.
+    if (nuevos.length > 0) {
+      setEditando({ nuevos, todos: archivos });
+      return;
     }
+    cambios.reemplazarDeGaleria(archivos);
+  }
+
+  function alEditarDeGaleria(editados: ArchivoLocal[]) {
+    const e = editando;
+    setEditando(null);
+    if (!e) return;
+    // El editor devuelve en el mismo orden; las que quitó ahí no vuelven.
+    const sinAsset = editados.filter((a) => !a.assetId);
+    const porAsset = new Map(editados.filter((a) => a.assetId).map((a) => [a.assetId!, a]));
+    const nuevosIds = new Set(e.nuevos.flatMap((a) => (a.assetId ? [a.assetId] : [])));
+    const todos = e.todos.flatMap((a) =>
+      !a.assetId ? [] : nuevosIds.has(a.assetId) ? (porAsset.has(a.assetId) ? [porAsset.get(a.assetId)!] : []) : [a]
+    );
+    cambios.reemplazarDeGaleria([...todos, ...sinAsset]);
+    setVista({ paso: "revision" });
   }
 
   function elegirTarea(tareaId: string) {
@@ -537,7 +563,7 @@ export function ArchivosVisita({
 
       <View style={styles.acciones}>
         <PressableScale
-          onPress={tomarFoto}
+          onPress={() => setCamara(true)}
           estiloExterno={styles.mitad}
           style={styles.accion}
           estiloPresionado={styles.accionTocada}
@@ -578,6 +604,23 @@ export function ArchivosVisita({
           onCerrar={() => setGaleria(false)}
           onConfirmar={alConfirmarGaleria}
           sugeridas={sugeridas}
+        />
+      ) : null}
+
+      {camara ? (
+        <CamaraPropia
+          conVideos
+          maximo={Math.max(MAX_ARCHIVOS_POR_SUBIDA - pendientes.length, 0)}
+          onCerrar={() => setCamara(false)}
+          onListo={alSacarConLaCamara}
+        />
+      ) : null}
+
+      {editando ? (
+        <EditorDeFotos
+          archivos={editando.nuevos}
+          onCerrar={() => setEditando(null)}
+          onListo={alEditarDeGaleria}
         />
       ) : null}
 

@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import {
   MAX_FOTOS_NOVEDAD,
   MOTIVOS_NOVEDAD,
@@ -20,7 +19,9 @@ import { HojaInferior } from "@vivero/app-ui/components/ui/HojaInferior";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { Campo } from "@vivero/app-ui/components/ui/Formulario";
 import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
-import type { ArchivoDeGaleria } from "@vivero/app-ui/lib/galeria";
+import type { ArchivoDeGaleria, ArchivoLocal } from "@vivero/app-ui/lib/galeria";
+import { CamaraPropia } from "@/components/camara/CamaraPropia";
+import { EditorDeFotos } from "@/components/camara/EditorDeFotos";
 import { tema } from "@vivero/app-ui/lib/tema";
 
 export interface FotoElegida {
@@ -94,36 +95,17 @@ function Contenido({
   /** Las de la cámara ocupan lugar pero no están en la galería. */
   const deLaCamara = fotos.filter((f) => !f.assetId);
 
-  function agregar(assets: ImagePicker.ImagePickerAsset[]) {
+  const [camara, setCamara] = useState(false);
+  /** Lo nuevo de la galería, en el editor antes de sumarse. */
+  const [editando, setEditando] = useState<{
+    nuevos: ArchivoDeGaleria[];
+    todos: ArchivoDeGaleria[];
+  } | null>(null);
+
+  function agregar(archivos: ArchivoLocal[]) {
     setFotos((actuales) =>
       [
         ...actuales,
-        ...assets.map((asset) => ({
-          uri: asset.uri,
-          fileName:
-            asset.fileName ?? asset.uri.split("/").pop() ?? `novedad-${Date.now()}.jpg`,
-          contentType: asset.mimeType ?? "image/jpeg",
-        })),
-      ].slice(0, MAX_FOTOS_NOVEDAD)
-    );
-  }
-
-  async function conLaCamara() {
-    const permiso = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permiso.granted) return;
-    const r = await ImagePicker.launchCameraAsync({ quality: 0.7 });
-    if (!r.canceled) agregar(r.assets);
-  }
-
-  /**
-   * La galería propia, con las que ya están marcadas. Lo que devuelve
-   * reemplaza lo que había venido de la galería; las de la cámara se quedan.
-   */
-  function alConfirmarGaleria(archivos: ArchivoDeGaleria[]) {
-    setGaleria(false);
-    setFotos((actuales) =>
-      [
-        ...actuales.filter((f) => !f.assetId),
         ...archivos.map((a) => ({
           uri: a.uri,
           fileName: a.fileName,
@@ -133,6 +115,61 @@ function Contenido({
       ].slice(0, MAX_FOTOS_NOVEDAD)
     );
   }
+
+  /**
+   * La galería propia, con las que ya están marcadas. Lo que devuelve
+   * reemplaza lo que había venido de la galería; las de la cámara se quedan.
+   */
+  function alConfirmarGaleria(archivos: ArchivoDeGaleria[]) {
+    setGaleria(false);
+    const yaEstaban = new Set(fotos.flatMap((f) => (f.assetId ? [f.assetId] : [])));
+    const nuevos = archivos.filter((a) => !a.assetId || !yaEstaban.has(a.assetId));
+    if (nuevos.length > 0) {
+      setEditando({ nuevos, todos: archivos });
+      return;
+    }
+    reemplazarDeGaleria(archivos);
+  }
+
+  /** Las que ya estaban conservan su archivo: si se editaron, vale lo editado. */
+  function reemplazarDeGaleria(archivos: ArchivoLocal[]) {
+    setFotos((actuales) => {
+      const porAsset = new Map(actuales.filter((f) => f.assetId).map((f) => [f.assetId!, f]));
+      return [
+        ...actuales.filter((f) => !f.assetId),
+        ...archivos.map(
+          (a) =>
+            (a.assetId ? porAsset.get(a.assetId) : undefined) ?? {
+              uri: a.uri,
+              fileName: a.fileName,
+              contentType: a.contentType,
+              assetId: a.assetId,
+            }
+        ),
+      ].slice(0, MAX_FOTOS_NOVEDAD);
+    });
+  }
+
+  function alEditarDeGaleria(editados: ArchivoLocal[]) {
+    const e = editando;
+    setEditando(null);
+    if (!e) return;
+    const porAsset = new Map(editados.filter((a) => a.assetId).map((a) => [a.assetId!, a]));
+    const nuevosIds = new Set(e.nuevos.flatMap((a) => (a.assetId ? [a.assetId] : [])));
+    reemplazarDeGaleria(
+      e.todos.flatMap((a) =>
+        !a.assetId
+          ? []
+          : !nuevosIds.has(a.assetId)
+            ? [a]
+            : porAsset.has(a.assetId)
+              ? [porAsset.get(a.assetId)!]
+              : []
+      )
+    );
+    agregar(editados.filter((a) => !a.assetId));
+  }
+
 
   return (
     <KeyboardAvoidingView behavior="padding">
@@ -202,7 +239,7 @@ function Contenido({
         {/* Agregan, no reemplazan. Se van cuando ya no cabe ninguna más. */}
         {lugarLibre > 0 ? (
           <View style={styles.fotoFila}>
-            <PressableScale onPress={conLaCamara} style={styles.pildora}>
+            <PressableScale onPress={() => setCamara(true)} style={styles.pildora}>
               <Ionicons name="camera-outline" size={18} color={tema.verde700} />
               <Text style={styles.pildoraTexto}>Cámara</Text>
             </PressableScale>
@@ -211,6 +248,25 @@ function Contenido({
               <Text style={styles.pildoraTexto}>Galería</Text>
             </PressableScale>
           </View>
+        ) : null}
+
+        {camara ? (
+          <CamaraPropia
+            maximo={lugarLibre}
+            onCerrar={() => setCamara(false)}
+            onListo={(archivos) => {
+              setCamara(false);
+              agregar(archivos);
+            }}
+          />
+        ) : null}
+
+        {editando ? (
+          <EditorDeFotos
+            archivos={editando.nuevos}
+            onCerrar={() => setEditando(null)}
+            onListo={alEditarDeGaleria}
+          />
         ) : null}
 
         {galeria ? (

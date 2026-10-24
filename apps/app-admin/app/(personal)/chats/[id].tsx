@@ -12,7 +12,6 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import {
@@ -45,7 +44,9 @@ import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
 import { PanelAdjuntar, type OpcionDeAdjuntar } from "@/components/chats/PanelAdjuntar";
 import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
-import type { ArchivoDeGaleria } from "@vivero/app-ui/lib/galeria";
+import type { ArchivoDeGaleria, ArchivoLocal } from "@vivero/app-ui/lib/galeria";
+import { CamaraPropia } from "@/components/camara/CamaraPropia";
+import { EditorDeFotos } from "@/components/camara/EditorDeFotos";
 import { VistaPreviaDeFicha } from "@/components/chats/VistaPreviaDeFicha";
 import {
   etiquetaDeAdjuntos,
@@ -145,6 +146,13 @@ export default function ChatScreen() {
   const [pendientes, setPendientes] = useState<FotoEnCola[]>([]);
   /** La galería propia, abierta desde *Multimedia*. */
   const [galeriaAbierta, setGaleriaAbierta] = useState(false);
+  /** La cámara de la app, abierta desde el + o desde el botón del campo. */
+  const [camaraAbierta, setCamaraAbierta] = useState(false);
+  /** Lo nuevo de la galería, en el editor antes de llegar a la bandeja. */
+  const [editandoDeGaleria, setEditandoDeGaleria] = useState<{
+    nuevos: ArchivoDeGaleria[];
+    todos: ArchivoDeGaleria[];
+  } | null>(null);
   const [tocado, setTocado] = useState<MensajeDeChat | null>(null);
   /** La ficha para compartir —visita, cliente o producto—, esperando arriba del campo. */
   const [referencia, setReferencia] = useState<ReferenciaEnMensaje | null>(null);
@@ -451,16 +459,17 @@ export default function ChatScreen() {
   }
 
   /** Elegir **no manda**: el archivo espera arriba del campo hasta que se envíe. */
-  function agregar(assets: ImagePicker.ImagePickerAsset[]) {
-    if (assets.length === 0) return;
-    const nuevos: FotoEnCola[] = assets.map((a, i) => ({
+  function agregar(archivos: ArchivoLocal[]) {
+    if (archivos.length === 0) return;
+    const nuevos: FotoEnCola[] = archivos.map((a) => ({
       uri: a.uri,
       // El nombre del archivo viaja porque es lo único por lo que después
       // se puede buscar una foto.
-      nombre: a.fileName ?? (a.type === "video" ? `video-${i}.mp4` : `foto-${i}.jpg`),
-      contentType: a.mimeType ?? (a.type === "video" ? "video/mp4" : "image/jpeg"),
-      tipo: a.type === "video" ? "video" : "imagen",
-      tamano: a.fileSize ?? null,
+      nombre: a.fileName,
+      contentType: a.contentType,
+      tipo: a.tipo,
+      tamano: null,
+      assetId: a.assetId,
     }));
     setPendientes((actuales) => [...actuales, ...nuevos].slice(0, 10));
   }
@@ -517,34 +526,67 @@ export default function ChatScreen() {
 
   function alConfirmarGaleria(archivos: ArchivoDeGaleria[]) {
     setGaleriaAbierta(false);
+    const yaEstaban = new Set(pendientes.flatMap((a) => (a.assetId ? [a.assetId] : [])));
+    const nuevos = archivos.filter((a) => !a.assetId || !yaEstaban.has(a.assetId));
+    // Las nuevas pasan antes por el editor, como en WhatsApp.
+    if (nuevos.length > 0) {
+      setEditandoDeGaleria({ nuevos, todos: archivos });
+      return;
+    }
+    reemplazarDeGaleria(archivos);
+  }
+
+  /**
+   * Lo de la galería **reemplaza** lo que había venido de ella; lo de la
+   * cámara y los documentos se queda. Una que ya estaba conserva su archivo:
+   * si pasó por el editor, lo que vale es lo editado.
+   */
+  function reemplazarDeGaleria(archivos: ArchivoLocal[]) {
     setPendientes((actuales) => {
       const otros = actuales.filter((a) => !a.assetId);
-      const deGaleria: FotoEnCola[] = archivos.map((f) => ({
-        uri: f.uri,
-        nombre: f.fileName,
-        contentType: f.contentType,
-        tipo: f.tipo,
-        tamano: null,
-        assetId: f.assetId,
-      }));
+      const porAsset = new Map(actuales.filter((a) => a.assetId).map((a) => [a.assetId!, a]));
+      const deGaleria: FotoEnCola[] = archivos.map(
+        (f) =>
+          (f.assetId ? porAsset.get(f.assetId) : undefined) ?? {
+            uri: f.uri,
+            nombre: f.fileName,
+            contentType: f.contentType,
+            tipo: f.tipo,
+            tamano: null,
+            assetId: f.assetId,
+          }
+      );
       return [...otros, ...deGaleria].slice(0, 10);
     });
   }
 
+  function alEditarDeGaleria(editados: ArchivoLocal[]) {
+    const e = editandoDeGaleria;
+    setEditandoDeGaleria(null);
+    if (!e) return;
+    const porAsset = new Map(editados.filter((a) => a.assetId).map((a) => [a.assetId!, a]));
+    const nuevosIds = new Set(e.nuevos.flatMap((a) => (a.assetId ? [a.assetId] : [])));
+    const conAsset = e.todos.flatMap((a) =>
+      !a.assetId
+        ? []
+        : !nuevosIds.has(a.assetId)
+          ? [a]
+          : porAsset.has(a.assetId)
+            ? [porAsset.get(a.assetId)!]
+            : []
+    );
+    // Sin `assetId` (el selector del sistema, en Android) no reemplazan nada:
+    // se suman, como lo de la cámara.
+    reemplazarDeGaleria(conAsset);
+    agregar(editados.filter((a) => !a.assetId));
+  }
+
   /**
-   * La cámara del sistema. Con fotos y videos juntos, iOS abre la cámara con
-   * el selector de foto/video; Android (`toCameraIntentAction` en
-   * expo-image-picker) solo graba video cuando se le pide *únicamente* video,
-   * así que ahí saca fotos y el video se manda desde la galería.
+   * La cámara de la app (`CamaraPropia`): saca varias seguidas, fotos o
+   * videos, y pasa por el editor antes de llegar a la bandeja.
    */
-  async function sacarFoto() {
-    const permiso = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permiso.granted) return;
-    const r = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images", "videos"],
-      quality: 0.7,
-    });
-    if (!r.canceled) agregar(r.assets);
+  function sacarFoto() {
+    setCamaraAbierta(true);
   }
 
   /**
@@ -962,6 +1004,26 @@ export default function ChatScreen() {
           preseleccion={pendientes.flatMap((a) => (a.assetId ? [a.assetId] : []))}
           onCerrar={() => setGaleriaAbierta(false)}
           onConfirmar={alConfirmarGaleria}
+        />
+      ) : null}
+
+      {camaraAbierta ? (
+        <CamaraPropia
+          conVideos
+          maximo={Math.max(10 - pendientes.length, 0)}
+          onCerrar={() => setCamaraAbierta(false)}
+          onListo={(archivos) => {
+            setCamaraAbierta(false);
+            agregar(archivos);
+          }}
+        />
+      ) : null}
+
+      {editandoDeGaleria ? (
+        <EditorDeFotos
+          archivos={editandoDeGaleria.nuevos}
+          onCerrar={() => setEditandoDeGaleria(null)}
+          onListo={alEditarDeGaleria}
         />
       ) : null}
 
