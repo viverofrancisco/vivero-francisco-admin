@@ -122,3 +122,20 @@ Datos recopilados, **vinculados a la identidad**, **sin rastreo**, uso
 - Compras: historial de compras (*Purchases › Purchase History*, entre
   *Identifiers* y *Usage Data* en la lista), por los pedidos. Publicado el 20-oct
   con la 1.1.0.
+
+## Permisos de fotos y videos en Play Console (declaración)
+
+*Contenido de la app → Permisos de fotos y videos*. Es lo que está declarado
+(copiado el 24-oct-2026). Se escribió cuando esta era la app única, para
+todos, y **describe funciones del equipo que esta app ya no tiene**. La app
+del equipo tenía una justificación equivalente y Play la rechazó el 23-oct
+(ver el punto 4 de *Pendientes* en `.claude/docs/publicacion-de-la-app.md`).
+
+- **READ_MEDIA_IMAGES**: «Registrar con fotos el trabajo de jardinería es la
+  función principal: el personal sube a diario varias fotos por visita desde
+  la galería de la app, que marca las ya elegidas y arma con ellas el informe
+  que recibe el cliente.»
+- **READ_MEDIA_VIDEO**: «El personal graba videos del trabajo en cada visita y
+  los envía al equipo por el chat de la app, varias veces al día. La galería
+  propia muestra fotos y videos juntos para elegir varios a la vez sin salir
+  de la visita.»
