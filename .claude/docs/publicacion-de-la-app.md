@@ -413,6 +413,22 @@ una vez aprobadas las dos tiendas.
    Play Console, *Contenido de la app → Permisos de fotos y videos*, declarar
    que la app ya no los usa; luego *Resumen de publicación → Enviar*. La de
    clientes tenía el mismo permiso justificado: va en su próximo envío.
+   **Pendiente: recuperar la galería propia en Android.** El selector del
+   sistema quita funcionalidad (lo ya elegido no vuelve a salir marcado, y no
+   es la grilla de WhatsApp que tenemos en iOS). Caminos, de más a menos
+   probable: (a) el **selector insertado** (*embedded photo picker*,
+   `androidx.photopicker`), que se dibuja dentro de nuestra pantalla, recuerda
+   lo marcado y no pide permiso — pide un módulo nativo propio (Expo no lo
+   trae) y solo existe desde Android 14, con el selector normal debajo; (b)
+   distribuirla como **app privada** por Managed Google Play, que la política
+   exime — pero obliga a los teléfonos del equipo a tener perfil de trabajo
+   (Android Enterprise), y se decidió el 19-oct publicarla normal; (c)
+   apelar con la declaración, que la política casi no deja: solo admite
+   acceso amplio cuando la función principal lo necesita (galerías, editores,
+   respaldo), y una galería propia no califica por sí sola. WhatsApp y
+   compañía pasan como apps cuyo uso principal es compartir fotos a cada
+   rato; la nuestra adjunta fotos a un chat o a una visita, que es el caso
+   para el que Google dice que alcanza el selector.
 5. **Los textos de las tiendas todavía son solo del equipo**: con el
    modo invitado, agregar la parte de los clientes (catálogo,
    solicitudes, ver sus visitas) a las dos fichas —ya está en
