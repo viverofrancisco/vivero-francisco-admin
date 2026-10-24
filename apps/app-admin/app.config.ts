@@ -14,6 +14,20 @@ import type { ConfigContext, ExpoConfig } from "@expo/config";
  * `react-native-maps` 1.20 no trae plugin propio: es el prebuild de Expo el
  * que lee estos dos campos.
  */
+/**
+ * `GALERIA_PROPIA_EN_ANDROID=1` saca `READ_MEDIA_IMAGES`/`READ_MEDIA_VIDEO` de
+ * `blockedPermissions`, y con eso vuelven la galería propia y las *sacadas
+ * durante la visita* en Android. Es para probarlas en un build local mientras
+ * Play no apruebe el permiso (ver `.claude/docs/publicacion-de-la-app.md`);
+ * el build de la tienda va sin la variable.
+ */
+const PERMISOS_DE_LA_GALERIA = [
+  "android.permission.READ_MEDIA_IMAGES",
+  "android.permission.READ_MEDIA_VIDEO",
+  "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+];
+const galeriaPropiaEnAndroid = process.env.GALERIA_PROPIA_EN_ANDROID === "1";
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: config.name ?? "Vivero Francisco",
@@ -27,6 +41,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     ...config.android,
+    blockedPermissions: galeriaPropiaEnAndroid
+      ? config.android?.blockedPermissions?.filter(
+          (p) => !PERMISOS_DE_LA_GALERIA.includes(p)
+        )
+      : config.android?.blockedPermissions,
     config: {
       ...config.android?.config,
       googleMaps: { apiKey: process.env.GOOGLE_MAPS_ANDROID_KEY },

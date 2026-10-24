@@ -690,6 +690,11 @@ export default function PersonalVisitaScreen() {
               onVer={setActiveMedia}
               onReintentar={reintentar}
               onDescartar={descartar}
+              sugeridas={
+                mio?.entradaEl
+                  ? { desde: mio.entradaEl, hasta: mio.salidaEl ?? null }
+                  : null
+              }
             />
           </View>
         ) : null}

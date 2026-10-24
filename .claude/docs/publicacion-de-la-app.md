@@ -415,6 +415,20 @@ una vez aprobadas las dos tiendas.
    clientes tiene el mismo permiso y ya estaba aprobada: se dejó como
    está (sin `blockedPermissions`, con su galería propia también en
    Android). Si Play la rechaza igual, basta con copiarle esa lista.
+   **En marcha (24-oct): «Sacadas durante la visita».** La galería propia
+   pone arriba las fotos y videos que la cámara del teléfono sacó desde la
+   entrada de quien la abre, y el botón *Galería* de la visita dice cuántas
+   hay. Eso es lo que el selector del sistema no puede hacer (no filtra por
+   el horario de la visita) y es la base para volver a declarar el permiso.
+   Pasos: build sin `READ_MEDIA_IMAGES`/`READ_MEDIA_VIDEO` en
+   `blockedPermissions` (sacarlos del `app.json`; para probar en local,
+   `GALERIA_PROPIA_EN_ANDROID=1 npx expo prebuild -p android --clean` y
+   `expo run:android` con la misma variable), declaración nueva con un video
+   que muestre marcar entrada, sacar fotos con la cámara del teléfono y
+   abrir *Galería*. Texto propuesto (≤250): «El jardinero saca las fotos del
+   trabajo con la cámara del teléfono. Al abrir la galería, la app le muestra
+   arriba las sacadas entre su entrada y su salida de la visita para subirlas
+   juntas; el selector del sistema no puede filtrar por ese horario.»
    **Pendiente: recuperar la galería propia en Android.** El selector del
    sistema quita funcionalidad (lo ya elegido no vuelve a salir marcado, y no
    es la grilla de WhatsApp que tenemos en iOS). Caminos, de más a menos

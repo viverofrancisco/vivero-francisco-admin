@@ -13,14 +13,16 @@ import {
 import { ActivityIndicator, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import Constants from "expo-constants";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ARRIBA_DE_LA_HOJA } from "./ui/CabeceraDeHoja";
 import {
+  GALERIA_PROPIA,
   archivoDeAssetDeGaleria,
   archivoDeAssetDelSelector,
+  fotosDeLaVentana,
+  type VentanaDeFotos,
   duracionCorta,
   type ArchivoDeGaleria,
 } from "../lib/galeria";
@@ -72,6 +74,11 @@ interface Props {
   preseleccion: string[];
   onCerrar: () => void;
   onConfirmar: (archivos: ArchivoDeGaleria[]) => void;
+  /**
+   * Sugerir arriba de todo las sacadas en esta ventana —en una visita, desde
+   * la entrada de quien la abre—. La galería sigue mostrando todas debajo.
+   */
+  sugeridas?: VentanaDeFotos | null;
 }
 
 /**
@@ -87,20 +94,12 @@ interface Props {
  * cámara —la reemplazan solo las que traen `assetId`, que en Android no hay—,
  * y cada una se quita con su ✕. En iOS sigue siendo la galería propia.
  *
- * **Lo decide el `app.json` de cada app, no la plataforma sola**: es el
- * selector del sistema en Android solo si esa app bloquea
- * `READ_MEDIA_IMAGES`. Hoy lo hace la del equipo; la de clientes ya estaba
- * aprobada con el permiso y se dejó como estaba. Así la galería no puede
- * pedir un permiso que el manifiesto ya no tiene.
+ * Cuál de las dos lo decide `GALERIA_PROPIA` (`lib/galeria.ts`): el
+ * `app.json` de cada app, no la plataforma sola.
  */
-const SELECTOR_DEL_SISTEMA =
-  Platform.OS === "android" &&
-  (Constants.expoConfig?.android?.blockedPermissions ?? []).includes(
-    "android.permission.READ_MEDIA_IMAGES"
-  );
 
 export function SelectorDeGaleria(props: Props) {
-  return SELECTOR_DEL_SISTEMA ? (
+  return !GALERIA_PROPIA ? (
     <SelectorDelSistema {...props} />
   ) : (
     <GaleriaPropia {...props} />
@@ -152,6 +151,7 @@ function GaleriaPropia({
   preseleccion,
   onCerrar,
   onConfirmar,
+  sugeridas: ventana,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -168,6 +168,8 @@ function GaleriaPropia({
   const [preparando, setPreparando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const porId = useRef(new Map<string, MediaLibrary.Asset>());
+  /** Las sacadas durante la visita, si hay ventana: van arriba de la grilla. */
+  const [deLaVentana, setDeLaVentana] = useState<MediaLibrary.Asset[]>([]);
 
   const cargarPagina = useCallback(
     async (despuesDe: string | undefined) => {
@@ -194,6 +196,22 @@ function GaleriaPropia({
     [conVideos]
   );
 
+  const desdeVentana = ventana?.desde;
+  const hastaVentana = ventana?.hasta;
+  const cargarDeLaVentana = useCallback(async () => {
+    if (!desdeVentana) return;
+    try {
+      const { assets: sacadas } = await fotosDeLaVentana(
+        { desde: desdeVentana, hasta: hastaVentana },
+        { conVideos }
+      );
+      for (const a of sacadas) porId.current.set(a.id, a);
+      setDeLaVentana(sacadas);
+    } catch {
+      setDeLaVentana([]);
+    }
+  }, [conVideos, desdeVentana, hastaVentana]);
+
   /** Pide el permiso y trae la primera página. */
   const arrancar = useCallback(async () => {
     const r = await MediaLibrary.requestPermissionsAsync(false, ["photo", "video"]);
@@ -203,8 +221,8 @@ function GaleriaPropia({
     }
     setPermiso(r.accessPrivileges === "limited" ? "limitado" : "si");
     porId.current.clear();
-    await cargarPagina(undefined);
-  }, [cargarPagina]);
+    await Promise.all([cargarPagina(undefined), cargarDeLaVentana()]);
+  }, [cargarPagina, cargarDeLaVentana]);
 
   useEffect(() => {
     void arrancar();
@@ -226,6 +244,29 @@ function GaleriaPropia({
         return prev;
       }
       return [...prev, id];
+    });
+  }
+
+  const sinMarcarDeLaVentana = deLaVentana.filter((a) => !elegidas.includes(a.id));
+
+  /**
+   * *Marcar todas* las sacadas durante la visita, en el orden en que se
+   * sacaron, hasta donde alcance el tope; si ya están todas, las desmarca.
+   */
+  function alternarLaVentana() {
+    setAviso(null);
+    if (sinMarcarDeLaVentana.length === 0) {
+      const ids = new Set(deLaVentana.map((a) => a.id));
+      setElegidas((prev) => prev.filter((id) => !ids.has(id)));
+      return;
+    }
+    const enOrden = [...sinMarcarDeLaVentana].sort((a, b) => a.creationTime - b.creationTime);
+    setElegidas((prev) => {
+      const lugar = Math.max(maximo - prev.length, 0);
+      if (enOrden.length > lugar) {
+        setAviso(`Hasta ${maximo} ${maximo === 1 ? "archivo" : "archivos"} por vez.`);
+      }
+      return [...prev, ...enOrden.slice(0, lugar).map((a) => a.id)];
     });
   }
 
@@ -255,7 +296,42 @@ function GaleriaPropia({
   async function elegirMasFotos() {
     await MediaLibrary.presentPermissionsPickerAsync();
     porId.current.clear();
-    await cargarPagina(undefined);
+    await Promise.all([cargarPagina(undefined), cargarDeLaVentana()]);
+  }
+
+  /** Una foto de la grilla: la misma en la sección de la visita y en *Todas*. */
+  function celda(a: MediaLibrary.Asset) {
+    const posicion = elegidas.indexOf(a.id);
+    const marcada = posicion >= 0;
+    return (
+      <Pressable
+        onPress={() => alternar(a.id)}
+        style={[styles.celda, { width: lado, height: lado }, marcada && styles.celdaMarcada]}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: marcada }}
+        accessibilityLabel={a.filename}
+      >
+        <Image
+          source={{ uri: a.uri }}
+          style={styles.imagen}
+          contentFit="cover"
+          recyclingKey={a.id}
+          transition={0}
+        />
+        {a.mediaType === "video" ? (
+          <View style={styles.video}>
+            <Ionicons name="videocam" size={12} color="#fff" />
+            <Text style={styles.videoTexto}>{duracionCorta(a.duration)}</Text>
+          </View>
+        ) : null}
+        {/* El número y no una tilde: el orden en que se tocaron es
+            el orden en que salen, y con seis fotos hay que poder
+            verlo antes de mandar. */}
+        <View style={[styles.casilla, marcada && styles.casillaMarcada]}>
+          {marcada ? <Text style={styles.numero}>{posicion + 1}</Text> : null}
+        </View>
+      </Pressable>
+    );
   }
 
   return (
@@ -369,39 +445,29 @@ function GaleriaPropia({
                 <ActivityIndicator style={styles.pie} color={tema.verde} />
               ) : null
             }
-            renderItem={({ item: a }) => {
-              const posicion = elegidas.indexOf(a.id);
-              const marcada = posicion >= 0;
-              return (
-                <Pressable
-                  onPress={() => alternar(a.id)}
-                  style={[styles.celda, { width: lado, height: lado }, marcada && styles.celdaMarcada]}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: marcada }}
-                  accessibilityLabel={a.filename}
-                >
-                  <Image
-                    source={{ uri: a.uri }}
-                    style={styles.imagen}
-                    contentFit="cover"
-                    recyclingKey={a.id}
-                    transition={0}
-                  />
-                  {a.mediaType === "video" ? (
-                    <View style={styles.video}>
-                      <Ionicons name="videocam" size={12} color="#fff" />
-                      <Text style={styles.videoTexto}>{duracionCorta(a.duration)}</Text>
-                    </View>
-                  ) : null}
-                  {/* El número y no una tilde: el orden en que se tocaron es
-                      el orden en que salen, y con seis fotos hay que poder
-                      verlo antes de mandar. */}
-                  <View style={[styles.casilla, marcada && styles.casillaMarcada]}>
-                    {marcada ? <Text style={styles.numero}>{posicion + 1}</Text> : null}
+            ListHeaderComponent={
+              !soloMarcadas && deLaVentana.length > 0 ? (
+                <View style={styles.seccion}>
+                  <View style={styles.seccionEncabezado}>
+                    <Text style={styles.seccionTitulo}>
+                      Sacadas durante la visita · {deLaVentana.length}
+                    </Text>
+                    <Pressable onPress={alternarLaVentana} hitSlop={8} accessibilityRole="button">
+                      <Text style={styles.seccionAccion}>
+                        {sinMarcarDeLaVentana.length === 0 ? "Desmarcar" : "Marcar todas"}
+                      </Text>
+                    </Pressable>
                   </View>
-                </Pressable>
-              );
-            }}
+                  <View style={styles.seccionGrilla}>
+                    {deLaVentana.map((a) => (
+                      <View key={a.id}>{celda(a)}</View>
+                    ))}
+                  </View>
+                  <Text style={[styles.seccionTitulo, styles.seccionTodas]}>Todas</Text>
+                </View>
+              ) : null
+            }
+            renderItem={({ item: a }) => celda(a)}
           />
         )}
 
@@ -440,6 +506,17 @@ function GaleriaPropia({
 }
 
 const styles = StyleSheet.create({
+  seccion: { paddingBottom: 4 },
+  seccionEncabezado: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingBottom: 8,
+  },
+  seccionTitulo: { fontSize: 13, fontWeight: "700", color: tema.texto2 },
+  seccionAccion: { fontSize: 13, fontWeight: "600", color: tema.verde },
+  seccionGrilla: { flexDirection: "row", flexWrap: "wrap", gap: SEPARACION },
+  seccionTodas: { paddingTop: 16, paddingBottom: 8 },
   pantalla: { flex: 1, backgroundColor: tema.superficie },
   encabezado: {
     flexDirection: "row",

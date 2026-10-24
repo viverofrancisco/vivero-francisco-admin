@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AppState, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -15,8 +15,10 @@ import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
 import {
   archivoDeAssetDeCamara,
+  fotosDeLaVentana,
   type ArchivoDeGaleria,
   type ArchivoLocal,
+  type VentanaDeFotos,
 } from "@vivero/app-ui/lib/galeria";
 import { MAX_ARCHIVOS_POR_SUBIDA } from "@vivero/shared";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -372,6 +374,43 @@ export function useCambiosDeArchivos(
   };
 }
 
+/**
+ * Cuántas fotos y videos sacó la persona con la cámara del teléfono desde que
+ * marcó su entrada. Se vuelve a contar al volver a la app —lo normal es salir
+ * a la cámara y regresar— y cada minuto mientras está abierta. No pide
+ * permiso: sin él, cero, y el número aparece después de abrir la galería una
+ * vez y aceptar.
+ */
+function useCuantasDeLaVisita(ventana: VentanaDeFotos | null): number {
+  const [cuantas, setCuantas] = useState(0);
+  const desde = ventana?.desde ?? null;
+  const hasta = ventana?.hasta ?? null;
+
+  useEffect(() => {
+    if (!desde) return;
+    let vivo = true;
+    const contar = () => {
+      fotosDeLaVentana({ desde, hasta }, { cuantas: 1 })
+        .then((r) => {
+          if (vivo) setCuantas(r.total);
+        })
+        .catch(() => {});
+    };
+    contar();
+    const sub = AppState.addEventListener("change", (estado) => {
+      if (estado === "active") contar();
+    });
+    const reloj = setInterval(contar, 60_000);
+    return () => {
+      vivo = false;
+      sub.remove();
+      clearInterval(reloj);
+    };
+  }, [desde, hasta]);
+
+  return desde ? cuantas : 0;
+}
+
 export function ArchivosVisita({
   archivos,
   enCola = [],
@@ -380,6 +419,7 @@ export function ArchivosVisita({
   onVer,
   onReintentar,
   onDescartar,
+  sugeridas,
 }: {
   archivos: VisitaMedia[];
   /** Las tandas que esperan señal para subir, con sus fotos del teléfono. */
@@ -391,8 +431,14 @@ export function ArchivosVisita({
   onVer: (media: { url: string; tipo: string }) => void;
   onReintentar?: (id: string) => void;
   onDescartar?: (id: string) => void;
+  /**
+   * Desde cuándo sugerir fotos del teléfono: la entrada de quien mira (y su
+   * salida, si ya la marcó). Sin entrada no hay nada que sugerir.
+   */
+  sugeridas?: VentanaDeFotos | null;
 }) {
   const [vista, setVista] = useState<Vista | null>(null);
+  const deLaVisita = useCuantasDeLaVisita(sugeridas ?? null);
   /** La galería propia, abierta desde *Galería*. */
   const [galeria, setGaleria] = useState(false);
   const { pendientes, quitadas, etiquetas, error, sinTarea } = cambios;
@@ -507,6 +553,13 @@ export function ArchivosVisita({
         >
           <Ionicons name="images-outline" size={20} color={tema.verde} />
           <Text style={styles.accionTexto}>Galería</Text>
+          {/* Cuántas sacó con la cámara del teléfono desde su entrada: lo
+              que la galería le pone arriba de todo para subir de una vez. */}
+          {deLaVisita > 0 ? (
+            <View style={styles.contador} accessibilityLabel={`${deLaVisita} de esta visita`}>
+              <Text style={styles.contadorTexto}>{deLaVisita}</Text>
+            </View>
+          ) : null}
         </PressableScale>
       </View>
 
@@ -524,6 +577,7 @@ export function ArchivosVisita({
           )}
           onCerrar={() => setGaleria(false)}
           onConfirmar={alConfirmarGaleria}
+          sugeridas={sugeridas}
         />
       ) : null}
 
@@ -954,6 +1008,16 @@ const styles = StyleSheet.create({
   },
   accionTocada: { backgroundColor: "#e3f1e4" },
   accionTexto: { color: tema.verde, fontWeight: "600" },
+  contador: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: tema.verde,
+  },
+  contadorTexto: { color: "#fff", fontSize: 12, fontWeight: "700" },
   error: { color: "#b3261e" },
   vacio: { color: "#888" },
 
