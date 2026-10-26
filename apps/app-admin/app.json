@@ -90,7 +90,7 @@
         "expo-media-library",
         {
           "photosPermission": "Vivero Francisco muestra tus fotos y videos para que elijas cuáles mandar en un chat o adjuntar a una novedad.",
-          "savePhotosPermission": "Vivero Francisco no guarda fotos en tu galería.",
+          "savePhotosPermission": "Vivero Francisco guarda en tu galería las fotos que descargas del editor.",
           "isAccessMediaLocationEnabled": false,
           "granularPermissions": [
             "photo",

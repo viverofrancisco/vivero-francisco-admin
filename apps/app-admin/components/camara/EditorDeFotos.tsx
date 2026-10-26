@@ -21,6 +21,7 @@ import * as Haptics from "expo-haptics";
 import * as MediaLibrary from "expo-media-library";
 import { captureRef } from "react-native-view-shot";
 import { useVideoPlayer, VideoView } from "expo-video";
+import { useEvent } from "expo";
 import type { ArchivoLocal } from "@vivero/app-ui/lib/galeria";
 import { RecortarFoto, type EdicionDeFoto } from "@/components/informes/RecortarFoto";
 import { Lienzo, estiloDelTexto } from "@/components/camara/Lienzo";
@@ -738,6 +739,15 @@ const styles = StyleSheet.create({
   listoLapizTexto: { color: "#000", fontSize: 14, fontWeight: "600" },
   area: { flex: 1, alignItems: "center", justifyContent: "center" },
   video: { alignItems: "center", justifyContent: "center", backgroundColor: "#222" },
+  centroDelVideo: { alignItems: "center", justifyContent: "center" },
+  playGrande: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: "rgba(255,255,255,0.85)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   paleta: { position: "absolute", right: 8, top: 12 },
   abajoTodo: { paddingTop: 10, gap: 10 },
   abajo: {
@@ -809,17 +819,47 @@ const styles = StyleSheet.create({
   oculto: { position: "absolute", left: 0, top: 0, opacity: 0 },
 });
 
-/** Un video en el editor: se reproduce con los controles del sistema; no se dibuja encima. */
+/**
+ * Un video en el editor, como en WhatsApp: el primer cuadro con un play
+ * grande en el medio; tocar reproduce y vuelve a tocar pausa. No se dibuja
+ * encima.
+ *
+ * `textureView` y no la `surfaceView` de siempre: el editor es un `Modal`, y
+ * en Android una `SurfaceView` dentro de un `Modal` reproduce (los controles
+ * avanzaban) pero no se ve, queda en negro.
+ */
 function VideoEnEditor({ uri, ancho, alto }: { uri: string; ancho: number; alto: number }) {
   const player = useVideoPlayer(uri, (p) => {
     p.loop = false;
   });
+  const { isPlaying } = useEvent(player, "playingChange", { isPlaying: player.playing });
+
+  function alternar() {
+    if (player.playing) {
+      player.pause();
+      return;
+    }
+    // Terminado, vuelve a empezar.
+    if (player.duration > 0 && player.currentTime >= player.duration - 0.1) player.currentTime = 0;
+    player.play();
+  }
+
   return (
-    <VideoView
-      player={player}
-      style={[styles.video, { width: ancho, height: alto }]}
-      contentFit="contain"
-      nativeControls
-    />
+    <Pressable onPress={alternar} accessibilityRole="button" accessibilityLabel={isPlaying ? "Pausar" : "Reproducir"}>
+      <VideoView
+        player={player}
+        style={[styles.video, { width: ancho, height: alto }]}
+        contentFit="contain"
+        nativeControls={false}
+        surfaceType="textureView"
+      />
+      {!isPlaying ? (
+        <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.centroDelVideo]}>
+          <View style={styles.playGrande}>
+            <Ionicons name="play" size={40} color="#222" style={{ marginLeft: 5 }} />
+          </View>
+        </View>
+      ) : null}
+    </Pressable>
   );
 }

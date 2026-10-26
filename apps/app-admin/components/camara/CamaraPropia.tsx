@@ -5,6 +5,7 @@ import {
   Image,
   Linking,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -12,6 +13,7 @@ import {
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import * as MediaLibrary from "expo-media-library";
 import {
@@ -85,6 +87,10 @@ export function CamaraPropia({
   /** Lo dibujado, escrito y recortado de cada foto, para volver al editor tal como se dejó. */
   const ediciones = useRef(new Map<string, FotoEnEdicion>()).current;
   const [aviso, setAviso] = useState<string | null>(null);
+  /** El zoom de la barra, de 0 (sin zoom) a 1 (el máximo del teléfono). */
+  const [zoom, setZoom] = useState(0);
+  const [pellizcando, setPellizcando] = useState(false);
+  const zoomAlEmpezar = useRef(0);
 
   useEffect(() => {
     if (permiso && !permiso.granted && permiso.canAskAgain) void pedirPermiso();
@@ -111,6 +117,18 @@ export function CamaraPropia({
   }, [conVideos]);
 
   const lleno = elegidos.length >= maximo;
+
+  // Pellizcar acerca o aleja, también grabando, como en WhatsApp.
+  const pellizco = Gesture.Pinch()
+    .runOnJS(true)
+    .onBegin(() => {
+      zoomAlEmpezar.current = zoom;
+      setPellizcando(true);
+    })
+    .onUpdate((e) => {
+      setZoom(Math.min(1, Math.max(0, zoomAlEmpezar.current + (e.scale - 1) * 0.35)));
+    })
+    .onFinalize(() => setPellizcando(false));
 
   function sumar(archivo: ArchivoLocal) {
     setAviso(null);
@@ -214,7 +232,8 @@ export function CamaraPropia({
 
   return (
     <Modal visible animationType="slide" onRequestClose={onCerrar} statusBarTranslucent>
-      <View style={styles.pantalla}>
+      {/* Un Modal es su propia ventana: sin esto, en Android el pellizco no llega. */}
+      <GestureHandlerRootView style={styles.pantalla}>
         {!permiso ? (
           <View style={styles.centro}>
             <ActivityIndicator color="#fff" />
@@ -233,14 +252,19 @@ export function CamaraPropia({
             </Pressable>
           </View>
         ) : (
-          <CameraView
-            ref={camara}
-            style={StyleSheet.absoluteFill}
-            facing={lado}
-            flash={flash}
-            mode={modo}
-            onCameraReady={() => setLista(true)}
-          />
+          <GestureDetector gesture={pellizco}>
+            <View style={StyleSheet.absoluteFill}>
+              <CameraView
+                ref={camara}
+                style={StyleSheet.absoluteFill}
+                facing={lado}
+                flash={flash}
+                mode={modo}
+                zoom={zoomDeLaCamara(zoom)}
+                onCameraReady={() => setLista(true)}
+              />
+            </View>
+          </GestureDetector>
         )}
 
         <View style={[styles.arriba, { paddingTop: insets.top + 8 }]}>
@@ -264,6 +288,10 @@ export function CamaraPropia({
 
         <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
+
+          {pellizcando || zoom > 0 ? (
+            <BarraDeZoom zoom={zoom} onCambio={setZoom} />
+          ) : null}
 
           {(recientes.length > 0 || tomados.length > 0) && !grabando ? (
             <FlatList
@@ -377,7 +405,7 @@ export function CamaraPropia({
             </View>
           ) : null}
         </View>
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
@@ -443,6 +471,23 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.45)",
   },
   puntoRojo: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#e53935" },
+  zoom: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 24,
+    marginBottom: 12,
+  },
+  zoomPista: { flex: 1, height: 32, justifyContent: "center" },
+  zoomLinea: { height: 2, borderRadius: 1, backgroundColor: "rgba(255,255,255,0.85)" },
+  zoomPunto: {
+    position: "absolute",
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: "#ffd60a",
+  },
   grabandoTexto: { color: "#fff", fontSize: 13, fontWeight: "600" },
   abajo: { position: "absolute", left: 0, right: 0, bottom: 0, gap: 12 },
   aviso: {
@@ -533,3 +578,40 @@ const styles = StyleSheet.create({
   modo: { color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: "600" },
   modoActivo: { color: "#fdd835" },
 });
+
+/**
+ * El zoom que se le pasa a la cámara. En Android expo-camera multiplica la
+ * fracción por el zoom máximo y no baja de 1×, así que el primer décimo de la
+ * barra no hacía nada (con un máximo de 10×, 0,1 ya es 1×): ahí la barra
+ * empieza en ese décimo.
+ */
+function zoomDeLaCamara(z: number): number {
+  if (Platform.OS !== "android" || z === 0) return z;
+  return 0.1 + z * 0.9;
+}
+
+/** La barra de WhatsApp: − y + a los lados, el punto donde está el zoom; se arrastra también. */
+function BarraDeZoom({ zoom, onCambio }: { zoom: number; onCambio: (z: number) => void }) {
+  const [ancho, setAncho] = useState(0);
+  const arrastre = Gesture.Pan()
+    .runOnJS(true)
+    .minDistance(0)
+    .onBegin((e) => ancho > 0 && onCambio(Math.min(1, Math.max(0, e.x / ancho))))
+    .onUpdate((e) => ancho > 0 && onCambio(Math.min(1, Math.max(0, e.x / ancho))));
+  return (
+    <View style={styles.zoom}>
+      <Pressable onPress={() => onCambio(Math.max(0, zoom - 0.1))} hitSlop={10} accessibilityLabel="Alejar">
+        <Ionicons name="remove" size={22} color="#fff" />
+      </Pressable>
+      <GestureDetector gesture={arrastre}>
+        <View style={styles.zoomPista} onLayout={(e) => setAncho(e.nativeEvent.layout.width)}>
+          <View style={styles.zoomLinea} />
+          <View style={[styles.zoomPunto, { left: zoom * ancho - 9 }]} />
+        </View>
+      </GestureDetector>
+      <Pressable onPress={() => onCambio(Math.min(1, zoom + 0.1))} hitSlop={10} accessibilityLabel="Acercar">
+        <Ionicons name="add" size={22} color="#fff" />
+      </Pressable>
+    </View>
+  );
+}

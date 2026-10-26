@@ -25,6 +25,11 @@ const PERMISOS_DE_LA_GALERIA = [
   "android.permission.READ_MEDIA_IMAGES",
   "android.permission.READ_MEDIA_VIDEO",
   "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+  // Android 12 y anteriores no tienen los de arriba: ahí la galería se lee con
+  // estos dos. Bloqueados, expo-media-library los pedía sin estar en el
+  // manifiesto y el teléfono decía que no sin mostrar nada.
+  "android.permission.READ_EXTERNAL_STORAGE",
+  "android.permission.WRITE_EXTERNAL_STORAGE",
 ];
 const galeriaPropiaEnAndroid = process.env.GALERIA_PROPIA_EN_ANDROID === "1";
 
