@@ -16,6 +16,7 @@ import { SelectorDeCategorias } from "@/components/productos/SelectorDeCategoria
 import { EditorDeOpciones } from "@/components/productos/EditorDeOpciones";
 import { ListaDeVariantes } from "@/components/productos/ListaDeVariantes";
 import { apiRequest } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import type { ServicioDetail } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -45,7 +46,9 @@ export default function ServicioDetailScreen() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "ADMIN" || role === "STAFF";
-  const [data, setData] = useState<ServicioDetail | null>(null);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<ServicioDetail>(id ? `servicio:${id}` : null, (d) => setData(d));
+  const [data, setData] = useState<ServicioDetail | null>(() => copia.inicial ?? null);
   const [loading, setLoading] = useState(true);
   /** Lo que tiró la carga, tal cual: la pantalla dice si fue acceso, borrado o señal. */
   const [error, setError] = useState<unknown>(null);
@@ -59,6 +62,7 @@ export default function ServicioDetailScreen() {
       if (!silencioso) setLoading(true);
       try {
         const res = await apiRequest<ServicioDetail>(`/api/mobile/servicios/${id}`);
+        copia.alResponder(res);
         setData(res);
         setError(null);
       } catch (e) {
@@ -67,6 +71,7 @@ export default function ServicioDetailScreen() {
         setLoading(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [id]
   );
 
@@ -82,7 +87,7 @@ export default function ServicioDetailScreen() {
     }, [load])
   );
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <View style={estilosDeFicha.flex}>
         <EncabezadoDeFicha titulo="Producto" />
@@ -93,7 +98,8 @@ export default function ServicioDetailScreen() {
     );
   }
 
-  if (error || !data) {
+  // Con la copia en pantalla, una carga fallida (sin señal) la deja a la vista.
+  if (!data) {
     return (
       <AvisoDeCarga
         error={error}

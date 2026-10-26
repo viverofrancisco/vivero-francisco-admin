@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades, textoPlanoDeHtml } from "@vivero/shared";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { BotonRedondoDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import { MiniaturaDePdf, VisorDePdf } from "@/components/informes/VisorDePdf";
@@ -65,7 +66,9 @@ export default function InformeDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [data, setData] = useState<InformeDetail | null>(null);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<InformeDetail>(id ? `informe:${id}` : null, (d) => setData(d));
+  const [data, setData] = useState<InformeDetail | null>(() => copia.inicial ?? null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -76,12 +79,15 @@ export default function InformeDetailScreen() {
     setLoading(true);
     setError(null);
     try {
-      setData(await apiRequest<InformeDetail>(`/api/mobile/informes/${id}`));
+      const r = await apiRequest<InformeDetail>(`/api/mobile/informes/${id}`);
+      copia.alResponder(r);
+      setData(r);
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos cargar el informe"));
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {

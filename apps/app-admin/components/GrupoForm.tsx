@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BotonEliminar, Campo, Titulo } from "@vivero/app-ui/components/ui/Formulario";
 import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import type { PersonalFicha } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
 
@@ -59,8 +60,11 @@ export function GrupoForm({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiRequest<{ items: PersonalFicha[] }>("/api/mobile/personal")
-      .then((res) => setGente(res.items))
+    conCopia(
+      "selector:personal-ficha",
+      () => apiRequest<{ items: PersonalFicha[] }>("/api/mobile/personal"),
+      (res) => setGente(res.items)
+    )
       .catch(() => {});
   }, []);
 

@@ -13,6 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import { SelectorCliente } from "@/components/clientes/SelectorCliente";
 import {
   SelectorProductos,
@@ -93,8 +94,14 @@ export default function NuevaOrdenScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiRequest<ClientesListResponse>("/api/mobile/clientes", { query: { limit: 500 } })
-      .then((r) => setClientes(r.items))
+    conCopia(
+      "selector:clientes",
+      () => apiRequest<ClientesListResponse>("/api/mobile/clientes", { query: { limit: 500 } }),
+      (r) => {
+        setClientes(r.items);
+        setCargando(false);
+      }
+    )
       .catch((e) => setError(mensajeDeError(e, "No pudimos cargar los clientes")))
       .finally(() => setCargando(false));
   }, []);

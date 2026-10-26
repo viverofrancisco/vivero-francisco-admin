@@ -33,6 +33,7 @@ import {
   textoPlanoDeHtml,
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import type {
   ClienteListItem,
   ClientesListResponse,
@@ -192,12 +193,16 @@ export default function NuevoInformeScreen() {
   // Load reference data on mount.
   useEffect(() => {
     Promise.all([
-      apiRequest<ClientesListResponse>("/api/mobile/clientes", {
-        query: { limit: 500 },
-      }).then((r) => setClientes(r.items)),
-      apiRequest<{ items: TareaCatalogo[] }>("/api/mobile/tareas")
-        .then((r) => setCatalogoTareas(r.items))
-        .catch(() => {}),
+      conCopia(
+        "selector:clientes",
+        () => apiRequest<ClientesListResponse>("/api/mobile/clientes", { query: { limit: 500 } }),
+        (r) => setClientes(r.items)
+      ),
+      conCopia(
+        "selector:tareas",
+        () => apiRequest<{ items: TareaCatalogo[] }>("/api/mobile/tareas"),
+        (r) => setCatalogoTareas(r.items)
+      ).catch(() => {}),
       apiRequest<{ items: SavedFirmante[] }>("/api/mobile/firmantes")
         .then((r) => {
           setFirmantesCatalog(r.items);

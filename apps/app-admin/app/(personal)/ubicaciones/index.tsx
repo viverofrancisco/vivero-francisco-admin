@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { direccionDeUbicacion, type Ubicacion } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -16,9 +17,14 @@ import { tema } from "@vivero/app-ui/lib/tema";
  */
 export default function UbicacionesScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<Ubicacion[]>([]);
+  // La lista sin filtro de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<Ubicacion[]>("ubicaciones", (d) => {
+    setItems(d);
+    setCargando(false);
+  });
+  const [items, setItems] = useState<Ubicacion[]>(() => copia.inicial ?? []);
   const [estado, setEstado] = useState("");
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,11 +32,11 @@ export default function UbicacionesScreen() {
     if (inicial) setCargando(true);
     else setRefrescando(true);
     try {
-      setItems(
-        await apiRequest<Ubicacion[]>("/api/mobile/ubicaciones", {
-          query: { estado: filtro || undefined },
-        })
-      );
+      const res = await apiRequest<Ubicacion[]>("/api/mobile/ubicaciones", {
+        query: { estado: filtro || undefined },
+      });
+      copia.alResponder(res, !filtro);
+      setItems(res);
       setError(null);
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos cargar las ubicaciones"));
@@ -38,6 +44,7 @@ export default function UbicacionesScreen() {
       setCargando(false);
       setRefrescando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFocusEffect(

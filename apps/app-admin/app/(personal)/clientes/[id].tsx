@@ -13,6 +13,7 @@ import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFich
 import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import { EstadoDelCliente } from "@/components/clientes/EstadoDelCliente";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
 import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import type { ClienteStaffDetail } from "@vivero/app-ui/lib/types";
@@ -23,10 +24,17 @@ export default function ClienteDetailScreen() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "ADMIN" || role === "STAFF";
-  const [data, setData] = useState<ClienteStaffDetail | null>(null);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<ClienteStaffDetail>(id ? `cliente:${id}` : null, (d) => setData(d));
+  const [data, setData] = useState<ClienteStaffDetail | null>(() => copia.inicial ?? null);
   const [loading, setLoading] = useState(true);
   /** Lo que tiró la carga, tal cual: la pantalla dice si fue acceso, borrado o señal. */
   const [error, setError] = useState<unknown>(null);
+  /**
+   * Si la carga falla con la copia de la última vez en pantalla (sin señal),
+   * se sigue viendo la copia: el aviso de error es para cuando no hay nada.
+   */
+  const [errorDeCarga, setErrorDeCarga] = useState<unknown>(null);
 
   const load = useCallback(async (silencioso = false) => {
     if (!id) return;
@@ -35,12 +43,15 @@ export default function ClienteDetailScreen() {
       const res = await apiRequest<ClienteStaffDetail>(
         `/api/mobile/clientes/${id}`
       );
+      copia.alResponder(res);
       setData(res);
+      setErrorDeCarga(null);
     } catch (e) {
-      setError(e);
+      setErrorDeCarga(e);
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   /**
@@ -74,7 +85,7 @@ export default function ClienteDetailScreen() {
     }, [load])
   );
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <View style={styles.flex}>
         <EncabezadoDeFicha titulo="Cliente" />
@@ -88,7 +99,7 @@ export default function ClienteDetailScreen() {
   if (error || !data) {
     return (
       <AvisoDeCarga
-        error={error}
+        error={error ?? errorDeCarga}
         tipo="cliente"
         onVolver={() => router.back()}
         onReintentar={() => load()}

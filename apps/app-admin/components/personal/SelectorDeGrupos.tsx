@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import type { GrupoConMiembros } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
 import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
@@ -38,8 +39,11 @@ export function SelectorDeGrupos({
   const teclado = useAltoDelTeclado();
 
   useEffect(() => {
-    apiRequest<{ items: GrupoConMiembros[] }>("/api/mobile/grupos")
-      .then((r) => setGrupos(r.items))
+    conCopia(
+      "selector:grupos-con-miembros",
+      () => apiRequest<{ items: GrupoConMiembros[] }>("/api/mobile/grupos"),
+      (r) => setGrupos(r.items)
+    )
       .catch((e) => setError(mensajeDeError(e, "No pudimos cargar los grupos")));
   }, []);
 

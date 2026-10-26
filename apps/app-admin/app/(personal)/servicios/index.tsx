@@ -4,6 +4,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   FILA_LISTA,
@@ -59,14 +60,20 @@ function resumen(p: ServicioListItem): string {
  */
 export default function ProductosListScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<ServicioListItem[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
+  // La primera página sin búsqueda y en el orden de siempre de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<ServiciosListResponse>("servicios", (d) => {
+    setItems(d.items);
+    setCursor(d.nextCursor);
+    setCargando(false);
+  });
+  const [items, setItems] = useState<ServicioListItem[]>(() => copia.inicial?.items ?? []);
+  const [cursor, setCursor] = useState<string | null>(() => copia.inicial?.nextCursor ?? null);
   const [busqueda, setBusqueda] = useState("");
   /** Por qué campo y hacia dónde. Nace con los últimos creados primero. */
   const [orden, setOrden] = useState<OrdenProductos>(ORDEN_PRODUCTOS_POR_DEFECTO);
   const [tipo, setTipo] = useState("");
   const [estado, setEstado] = useState("");
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +115,10 @@ export default function ProductosListScreen() {
             },
           }
         );
+        copia.alResponder(
+          res,
+          !desde && !q && codificarOrden(o) === codificarOrden(ORDEN_PRODUCTOS_POR_DEFECTO)
+        );
         if (mio !== pedido.current) return;
         setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
         setCursor(res.nextCursor);
@@ -123,6 +134,7 @@ export default function ProductosListScreen() {
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

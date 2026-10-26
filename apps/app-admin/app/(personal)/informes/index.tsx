@@ -11,6 +11,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { apiRequest } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -50,16 +51,22 @@ export default function InformesListScreen() {
    */
   const [busqueda, setBusqueda] = useState("");
 
-  const [items, setItems] = useState<InformeItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  // La primera página sin búsqueda ni filtros de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<{ items: InformeItem[]; total: number }>("informes", (d) => {
+    setItems(d.items);
+    setTotal(d.total);
+    setLoading(false);
+  });
+  const [items, setItems] = useState<InformeItem[]>(() => copia.inicial?.items ?? []);
+  const [total, setTotal] = useState(() => copia.inicial?.total ?? 0);
+  const [loading, setLoading] = useState(!copia.inicial);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const load = useCallback(
     async (opts: { initial?: boolean; refresh?: boolean } = {}) => {
       const { initial = false, refresh = false } = opts;
-      if (initial) setLoading(true);
+      if (initial && !copia.inicial) setLoading(true);
       else if (refresh) setRefreshing(true);
       try {
         const res = await apiRequest<{
@@ -74,6 +81,7 @@ export default function InformesListScreen() {
             ...(to ? { to } : {}),
           },
         });
+        copia.alResponder(res, !busqueda.trim() && !from && !to);
         setItems(res.items);
         setTotal(res.total);
       } catch {
@@ -83,6 +91,7 @@ export default function InformesListScreen() {
         setRefreshing(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [busqueda, from, to]
   );
 

@@ -12,6 +12,7 @@ import {
   resumenDePropiedades,
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
 import { MenuDeEncabezado, type OpcionDeMenu } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
@@ -54,7 +55,9 @@ const FORMAS_DE_PAGO: { clave: FormaDePago; etiqueta: string }[] = [
 export default function OrdenScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [orden, setOrden] = useState<OrdenDetalle | null>(null);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<OrdenDetalle>(id ? `orden:${id}` : null, (d) => setOrden(d));
+  const [orden, setOrden] = useState<OrdenDetalle | null>(() => copia.inicial ?? null);
   const [error, setError] = useState<string | null>(null);
   const [cobrando, setCobrando] = useState(false);
   const [acreditando, setAcreditando] = useState(false);
@@ -65,8 +68,12 @@ export default function OrdenScreen() {
 
   const cargar = useCallback(() => {
     apiRequest<OrdenDetalle>(`/api/mobile/ordenes/${id}`)
-      .then(setOrden)
+      .then((o) => {
+        copia.alResponder(o);
+        setOrden(o);
+      })
       .catch((e) => setError(mensajeDeError(e, "No pudimos cargar el pedido")));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useFocusEffect(

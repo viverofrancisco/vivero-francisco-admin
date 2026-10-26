@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
 import { Button, Dialog, Portal, Searchbar, Text } from "react-native-paper";
 import { apiRequest } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import type { SectorOption, SectoresListResponse } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
 import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
@@ -30,8 +31,11 @@ export function SelectorSector({
   const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
-    apiRequest<SectoresListResponse>("/api/mobile/sectores")
-      .then((res) => setSectores(res.items))
+    conCopia(
+      "selector:sectores",
+      () => apiRequest<SectoresListResponse>("/api/mobile/sectores"),
+      (res) => setSectores(res.items)
+    )
       .catch(() => {});
   }, []);
 

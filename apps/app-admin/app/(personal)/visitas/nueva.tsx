@@ -19,6 +19,7 @@ import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { EncabezadoDePasos } from "@vivero/app-ui/components/ui/EncabezadoDePasos";
 import { describirPlan, nombreCliente, type SolicitudItem } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import type {
   ClienteListItem,
   ClientesListResponse,
@@ -208,10 +209,14 @@ export default function CrearVisitaScreen() {
 
   useEffect(() => {
     Promise.all([
-      apiRequest<ClientesListResponse>("/api/mobile/clientes", {
-        query: { limit: 500 },
-      }).then((r) => {
+      // Todo con la copia de la última vez primero: el asistente se usa a
+      // diario y estas listas casi no cambian de un día a otro.
+      conCopia(
+        "selector:clientes",
+        () => apiRequest<ClientesListResponse>("/api/mobile/clientes", { query: { limit: 500 } }),
+        (r) => {
         setClientes(r.items);
+        setLoadingRefs(false);
         // Con un plan preseleccionado, el cliente y la propiedad salen de él.
         const dueno = r.items.find((c) =>
           c.suscripciones.some((s) => s.id === suscripcionInicial)
@@ -235,17 +240,24 @@ export default function CrearVisitaScreen() {
                 : null)
           );
         }
-      }),
-      apiRequest<GruposListResponse>("/api/mobile/grupos").then((r) =>
-        setGrupos(r.items)
+        }
       ),
-      apiRequest<PersonalListResponse>("/api/mobile/personal").then((r) =>
-        setPersonal(r.items)
+      conCopia(
+        "selector:grupos",
+        () => apiRequest<GruposListResponse>("/api/mobile/grupos"),
+        (r) => setGrupos(r.items)
+      ),
+      conCopia(
+        "selector:personal",
+        () => apiRequest<PersonalListResponse>("/api/mobile/personal"),
+        (r) => setPersonal(r.items)
       ),
       // El catálogo de tareas, para poder exigir alguna. Va completo: exigir
       // una tarea no depende de qué tenga contratado el cliente.
-      apiRequest<{ items: TareaDelCatalogo[] }>("/api/mobile/tareas").then((r) =>
-        setCatalogo(r.items)
+      conCopia(
+        "selector:tareas",
+        () => apiRequest<{ items: TareaDelCatalogo[] }>("/api/mobile/tareas"),
+        (r) => setCatalogo(r.items)
       ),
     ])
       .catch(() => {})

@@ -15,6 +15,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombresDeServicios, type SolicitudItem } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { fechaYHora12 } from "@vivero/app-ui/lib/hora";
 import { EncabezadoDeFicha } from "@vivero/app-ui/components/ui/EncabezadoDeFicha";
 import { MiniaturasDeAdjuntos } from "@vivero/app-ui/components/MiniaturasDeAdjuntos";
@@ -31,20 +32,25 @@ import { tema } from "@vivero/app-ui/lib/tema";
 export default function SolicitudScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [s, setS] = useState<SolicitudItem | null>(null);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<SolicitudItem>(id ? `solicitud:${id}` : null, (d) => setS(d));
+  const [s, setS] = useState<SolicitudItem | null>(() => copia.inicial ?? null);
   const [error, setError] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
-      setS(await apiRequest<SolicitudItem>(`/api/mobile/solicitudes/${id}`));
+      const r = await apiRequest<SolicitudItem>(`/api/mobile/solicitudes/${id}`);
+      copia.alResponder(r);
+      setS(r);
       setError(false);
     } catch {
       setError(true);
     } finally {
       setRefrescando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useFocusEffect(

@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CabeceraDeHoja, PastillaDeHoja } from "@vivero/app-ui/components/ui/CabeceraDeHoja";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import type { CategoriaListItem } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
 import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
@@ -42,8 +43,11 @@ export function SelectorDeCategorias({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiRequest<{ categorias: CategoriaListItem[] }>("/api/mobile/categorias")
-      .then((r) => setCategorias(r.categorias))
+    conCopia(
+      "selector:categorias",
+      () => apiRequest<{ categorias: CategoriaListItem[] }>("/api/mobile/categorias"),
+      (r) => setCategorias(r.categorias)
+    )
       .catch((e) => setError(mensajeDeError(e, "No pudimos cargar las categorías")));
   }, []);
 

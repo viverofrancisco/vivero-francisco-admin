@@ -5,6 +5,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { nombreCliente, resumenDeCliente } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
 import {
@@ -39,15 +40,21 @@ export default function ClientesListScreen() {
   const rol = useAuthStore((s) => s.user?.role);
   const puedeCrear = rol === "ADMIN" || rol === "STAFF";
 
-  const [items, setItems] = useState<ClienteListItem[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
+  // La primera página sin búsqueda ni filtro de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<ClientesListResponse>("clientes", (d) => {
+    setItems(d.items);
+    setCursor(d.nextCursor);
+    setCargando(false);
+  });
+  const [items, setItems] = useState<ClienteListItem[]>(() => copia.inicial?.items ?? []);
+  const [cursor, setCursor] = useState<string | null>(() => copia.inicial?.nextCursor ?? null);
   const [busqueda, setBusqueda] = useState("");
   const [sector, setSector] = useState("");
   /** "" todos, "activos" o "inactivos". Viaja al servidor, como la búsqueda. */
   const [estado, setEstado] = useState("");
   const estadoRef = useRef("");
   const [cambiandoEstado, setCambiandoEstado] = useState(false);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +88,7 @@ export default function ClientesListScreen() {
             },
           }
         );
+        copia.alResponder(res, !desde && !q && !estadoRef.current);
         if (mio !== pedido.current) return;
         setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
         setCursor(res.nextCursor);
@@ -96,6 +104,7 @@ export default function ClientesListScreen() {
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

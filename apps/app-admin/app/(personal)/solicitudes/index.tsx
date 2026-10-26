@@ -15,6 +15,7 @@ import {
   type SolicitudItem,
 } from "@vivero/shared";
 import { apiRequest } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { fechaYHora12 } from "@vivero/app-ui/lib/hora";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -36,18 +37,23 @@ interface Respuesta {
 export default function SolicitudesScreen() {
   const router = useRouter();
   const [estado, setEstado] = useState<Estado>("pendientes");
-  const [datos, setDatos] = useState<Respuesta | null>(null);
+  // Las pendientes de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<Respuesta>("solicitudes", (d) => setDatos(d));
+  const [datos, setDatos] = useState<Respuesta | null>(() => copia.inicial ?? null);
   const [refrescando, setRefrescando] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
   const cargar = useCallback(async (e: Estado) => {
     try {
-      setDatos(await apiRequest<Respuesta>("/api/mobile/solicitudes", { query: { estado: e, limit: 100 } }));
+      const res = await apiRequest<Respuesta>("/api/mobile/solicitudes", { query: { estado: e, limit: 100 } });
+      copia.alResponder(res, e === "pendientes");
+      setDatos(res);
     } catch {
       setDatos((prev) => prev ?? { items: [], total: 0, pendientes: 0 });
     } finally {
       setRefrescando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFocusEffect(

@@ -9,6 +9,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { diaISO } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import { SelectorCliente } from "@/components/clientes/SelectorCliente";
 import { EncabezadoDeFormulario } from "@vivero/app-ui/components/ui/EncabezadoDeFormulario";
 import { Titulo } from "@vivero/app-ui/components/ui/Formulario";
@@ -46,17 +47,19 @@ export default function NuevaSuscripcionScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiRequest<ClientesListResponse>("/api/mobile/clientes", {
-      query: { limit: 500 },
-    })
-      .then((r) => {
+    conCopia(
+      "selector:clientes",
+      () => apiRequest<ClientesListResponse>("/api/mobile/clientes", { query: { limit: 500 } }),
+      (r) => {
         setClientes(r.items);
+        setCargando(false);
         // Con cliente en la URL, su propiedad sale sola si tiene una.
         const c = r.items.find((x) => x.id === clienteInicial);
         if (c?.propiedades.length === 1) {
           setValores((v) => ({ ...v, propiedadId: c.propiedades[0].id }));
         }
-      })
+      }
+    )
       .catch((e) => setError(mensajeDeError(e, "No pudimos cargar los clientes")))
       .finally(() => setCargando(false));
   }, [clienteInicial]);

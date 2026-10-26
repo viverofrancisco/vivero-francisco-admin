@@ -10,6 +10,7 @@ import { AvisoDeCarga } from "@vivero/app-ui/components/ui/AvisoDeCarga";
 import { HojaDeEnlace } from "@/components/personal/HojaDeEnlace";
 import { PastillaDeAcceso } from "@/components/personal/PastillaDeAcceso";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import type { EnlaceGenerado, UsuarioDelEquipo } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -27,7 +28,9 @@ export default function UsuarioFichaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const yo = useAuthStore((s) => s.user?.id);
-  const [u, setU] = useState<UsuarioDelEquipo | null>(null);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<UsuarioDelEquipo>(id ? `usuario:${id}` : null, (d) => setU(d));
+  const [u, setU] = useState<UsuarioDelEquipo | null>(() => copia.inicial ?? null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -38,13 +41,16 @@ export default function UsuarioFichaScreen() {
   const cargar = useCallback(async () => {
     if (!id) return;
     try {
-      setU(await apiRequest<UsuarioDelEquipo>(`/api/mobile/users/${id}`));
+      const r = await apiRequest<UsuarioDelEquipo>(`/api/mobile/users/${id}`);
+      copia.alResponder(r);
+      setU(r);
       setError(null);
     } catch (e) {
       setError(e);
     } finally {
       setCargando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // Al volver de editar, la ficha tiene que mostrar lo nuevo.
@@ -103,7 +109,8 @@ export default function UsuarioFichaScreen() {
       </View>
     );
   }
-  if (error || !u) {
+  // Con la copia en pantalla, una carga fallida (sin señal) la deja a la vista.
+  if (!u) {
     return (
       <AvisoDeCarga
         error={error}

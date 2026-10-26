@@ -4,6 +4,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import {
@@ -78,7 +79,12 @@ export default function PersonalListScreen() {
   const router = useRouter();
   const rol = useAuthStore((s) => s.user?.role);
   const puedeEditar = rol === "ADMIN" || rol === "STAFF";
-  const [items, setItems] = useState<PersonalFicha[]>([]);
+  // La lista de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<{ items: PersonalFicha[] }>("personal", (d) => {
+    setItems(d.items);
+    setCargando(false);
+  });
+  const [items, setItems] = useState<PersonalFicha[]>(() => copia.inicial?.items ?? []);
   const [busqueda, setBusqueda] = useState("");
   const [estado, setEstado] = useState("");
   const [tipo, setTipo] = useState("");
@@ -91,7 +97,7 @@ export default function PersonalListScreen() {
   const [seleccionando, setSeleccionando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,6 +108,7 @@ export default function PersonalListScreen() {
       const res = await apiRequest<{ items: PersonalFicha[] }>(
         "/api/mobile/personal"
       );
+      copia.alResponder(res);
       setItems(res.items);
       setError(null);
     } catch (e) {
@@ -110,6 +117,7 @@ export default function PersonalListScreen() {
       setCargando(false);
       setRefrescando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFocusEffect(

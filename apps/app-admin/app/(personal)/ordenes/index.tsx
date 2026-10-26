@@ -11,6 +11,7 @@ import {
   type EstadoCobro,
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   FILA_LISTA,
@@ -41,11 +42,20 @@ const plata = (n: number) =>
  */
 export default function OrdenesListScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<OrdenListItem[]>([]);
-  const [total, setTotal] = useState(0);
+  // La primera página sin filtros de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<{ items: OrdenListItem[]; total: number }>(
+    "ordenes",
+    (d) => {
+      setItems(d.items);
+      setTotal(d.total);
+      setCargando(false);
+    }
+  );
+  const [items, setItems] = useState<OrdenListItem[]>(() => copia.inicial?.items ?? []);
+  const [total, setTotal] = useState(() => copia.inicial?.total ?? 0);
   const [busqueda, setBusqueda] = useState("");
   const [cobro, setCobro] = useState("");
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +70,7 @@ export default function OrdenesListScreen() {
       modo: "inicial" | "mas" | "refrescar",
       filtros: { q: string; cobro: string }
     ) => {
-      if (modo === "inicial") setCargando(true);
+      if (modo === "inicial" && !copia.inicial) setCargando(true);
       if (modo === "mas") setCargandoMas(true);
       if (modo === "refrescar") setRefrescando(true);
       try {
@@ -75,6 +85,7 @@ export default function OrdenesListScreen() {
             },
           }
         );
+        copia.alResponder(res, desde === 0 && !filtros.q.trim() && !filtros.cobro);
         setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
         setTotal(res.total);
         setError(null);
@@ -86,6 +97,7 @@ export default function OrdenesListScreen() {
         setRefrescando(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
   const cargar = useCallback(

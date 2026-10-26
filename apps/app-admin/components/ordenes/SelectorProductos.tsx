@@ -4,6 +4,7 @@ import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, View } from 
 import { ActivityIndicator, Searchbar, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest } from "@vivero/app-ui/lib/api";
+import { conCopia } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { PieDeLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import type { ProductoVendible } from "@vivero/app-ui/lib/types";
@@ -74,13 +75,10 @@ export function SelectorProductos({
    */
   const traer = useCallback(
     async (desde: number, q: string) => {
-      if (desde === 0) setCargando(true);
-      else setCargandoMas(true);
-      try {
-        const r = await apiRequest<{ items: ProductoVendible[]; hayMas: boolean }>(
-          "/api/mobile/ordenes/catalogo",
-          { query: { q: q.trim() || undefined, offset: desde, limit: POR_TANDA } }
-        );
+      // La primera tanda sin búsqueda se guarda: abrir el selector la
+      // muestra al instante mientras llega la de ahora.
+      const deSiempre = desde === 0 && !q.trim();
+      const poner = (r: { items: ProductoVendible[]; hayMas: boolean }) => {
         setItems((antes) => (desde ? [...antes, ...r.items] : r.items));
         setHayMas(r.hayMas);
         setConocidos((prev) => {
@@ -88,6 +86,23 @@ export function SelectorProductos({
           for (const p of r.items) m.set(p.id, p);
           return m;
         });
+      };
+      if (desde === 0) setCargando(true);
+      else setCargandoMas(true);
+      try {
+        const pedir = () =>
+          apiRequest<{ items: ProductoVendible[]; hayMas: boolean }>(
+            "/api/mobile/ordenes/catalogo",
+            { query: { q: q.trim() || undefined, offset: desde, limit: POR_TANDA } }
+          );
+        if (deSiempre) {
+          await conCopia("selector:catalogo", pedir, (r) => {
+            poner(r);
+            setCargando(false);
+          });
+        } else {
+          poner(await pedir());
+        }
       } catch {
         if (desde === 0) setItems([]);
       } finally {

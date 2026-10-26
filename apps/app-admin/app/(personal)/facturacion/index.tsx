@@ -4,6 +4,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { PastillasDeEmisor } from "@/components/facturacion/PastillasDeEmisor";
@@ -17,9 +18,18 @@ import { tema } from "@vivero/app-ui/lib/tema";
  */
 export default function FacturacionScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<EmisorConfig[]>([]);
-  const [cifradoListo, setCifradoListo] = useState(true);
-  const [cargando, setCargando] = useState(true);
+  // Los emisores de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<{ items: EmisorConfig[]; cifradoListo: boolean }>(
+    "facturacion",
+    (d) => {
+      setItems(d.items);
+      setCifradoListo(d.cifradoListo);
+      setCargando(false);
+    }
+  );
+  const [items, setItems] = useState<EmisorConfig[]>(() => copia.inicial?.items ?? []);
+  const [cifradoListo, setCifradoListo] = useState(() => copia.inicial?.cifradoListo ?? true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +40,7 @@ export default function FacturacionScreen() {
       const r = await apiRequest<{ items: EmisorConfig[]; cifradoListo: boolean }>(
         "/api/mobile/configuracion/emisores"
       );
+      copia.alResponder(r);
       setItems(r.items);
       setCifradoListo(r.cifradoListo);
       setError(null);
@@ -39,6 +50,7 @@ export default function FacturacionScreen() {
       setCargando(false);
       setRefrescando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFocusEffect(

@@ -9,6 +9,7 @@ import { DialogoConfirmar } from "@vivero/app-ui/components/ui/DialogoConfirmar"
 import { PastillasDeEmisor } from "@/components/facturacion/PastillasDeEmisor";
 import { HojaDeCertificado } from "@/components/facturacion/HojaDeCertificado";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import type { EmisorConfig } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
 
@@ -40,8 +41,16 @@ const porVencer = (iso: string) => new Date(iso).getTime() - Date.now() < 30 * 2
 export default function EmisorFichaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [emisor, setEmisor] = useState<EmisorConfig | null>(null);
-  const [cifradoListo, setCifradoListo] = useState(true);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<{ emisor: EmisorConfig | null; cifradoListo: boolean }>(
+    id ? `emisor:${id}` : null,
+    (d) => {
+      setEmisor(d.emisor);
+      setCifradoListo(d.cifradoListo);
+    }
+  );
+  const [emisor, setEmisor] = useState<EmisorConfig | null>(() => copia.inicial?.emisor ?? null);
+  const [cifradoListo, setCifradoListo] = useState(() => copia.inicial?.cifradoListo ?? true);
   const [cargando, setCargando] = useState(true);
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -55,13 +64,17 @@ export default function EmisorFichaScreen() {
       const r = await apiRequest<{ items: EmisorConfig[]; cifradoListo: boolean }>(
         "/api/mobile/configuracion/emisores"
       );
-      setEmisor(r.items.find((e) => e.id === id) ?? null);
+      const e = r.items.find((x) => x.id === id) ?? null;
+      // Uno que ya no existe cuenta como respuesta, pero no se guarda.
+      copia.alResponder({ emisor: e, cifradoListo: r.cifradoListo }, e != null);
+      setEmisor(e);
       setCifradoListo(r.cifradoListo);
     } catch (e) {
       setAviso(mensajeDeError(e, "No pudimos cargar el emisor"));
     } finally {
       setCargando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useFocusEffect(

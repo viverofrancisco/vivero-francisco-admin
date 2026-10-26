@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { olvidarIndiceEnMemoria } from "./cache-de-visitas";
+import { olvidarCopiasEnMemoria } from "./cache-de-pantallas";
 import { useColaDeEnvio } from "./cola-de-envio";
 import { useColaDeVisitas } from "./cola-de-visitas";
 
@@ -21,7 +22,7 @@ import { useColaDeVisitas } from "./cola-de-visitas";
  * las copias, que se vuelven a pedir: las colas pueden ser de quien entra.
  */
 const CLAVE_DUENO = "sesion:dueno";
-const PREFIJOS_DE_COPIAS = ["visitas:cache:", "chats:cache:"];
+const PREFIJOS_DE_COPIAS = ["visitas:cache:", "chats:cache:", "pantallas:cache:"];
 const COLAS = ["chats:cola-de-envio", "visitas:cola-de-trabajo"];
 
 export async function prepararDatosPara(userId: string): Promise<void> {
@@ -44,6 +45,7 @@ export async function prepararDatosPara(userId: string): Promise<void> {
     // lo reemplaza enseguida.
   }
   olvidarIndiceEnMemoria();
+  olvidarCopiasEnMemoria();
   if (dueno !== null) {
     useColaDeEnvio.setState({ items: [], hidratada: false });
     useColaDeVisitas.setState({ items: [], hidratada: false });

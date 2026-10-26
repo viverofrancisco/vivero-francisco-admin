@@ -11,6 +11,7 @@ import { SelectorDeGrupos } from "@/components/personal/SelectorDeGrupos";
 import { HojaDeEnlace } from "@/components/personal/HojaDeEnlace";
 import { PastillaDeAcceso } from "@/components/personal/PastillaDeAcceso";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { useAuthStore } from "@vivero/app-ui/lib/auth-store";
 import type { EnlaceGenerado, PersonalFicha } from "@vivero/app-ui/lib/types";
 import { tema } from "@vivero/app-ui/lib/tema";
@@ -36,7 +37,9 @@ export default function PersonalFichaScreen() {
   const rol = useAuthStore((s) => s.user?.role);
   const esAdmin = rol === "ADMIN";
   const puedeEditar = rol === "ADMIN" || rol === "STAFF";
-  const [ficha, setFicha] = useState<PersonalFicha | null>(null);
+  // La ficha de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<PersonalFicha>(id ? `personal:${id}` : null, (d) => setFicha(d));
+  const [ficha, setFicha] = useState<PersonalFicha | null>(() => copia.inicial ?? null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -50,7 +53,9 @@ export default function PersonalFichaScreen() {
       if (!id) return;
       if (!silencioso) setCargando(true);
       try {
-        setFicha(await apiRequest<PersonalFicha>(`/api/mobile/personal/${id}`));
+        const f = await apiRequest<PersonalFicha>(`/api/mobile/personal/${id}`);
+        copia.alResponder(f);
+        setFicha(f);
         setError(null);
       } catch (e) {
         setError(e);
@@ -58,6 +63,7 @@ export default function PersonalFichaScreen() {
         setCargando(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [id]
   );
 
@@ -143,7 +149,8 @@ export default function PersonalFichaScreen() {
       </View>
     );
   }
-  if (error || !ficha) {
+  // Con la copia en pantalla, una carga fallida (sin señal) la deja a la vista.
+  if (!ficha) {
     return (
       <AvisoDeCarga
         error={error}

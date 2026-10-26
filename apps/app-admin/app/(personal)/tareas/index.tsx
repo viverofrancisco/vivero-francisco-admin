@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ordenarTareas, type ModoOrdenTareas } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   BOTON_JUNTO_AL_BUSCADOR,
@@ -37,11 +38,17 @@ interface Tarea {
  */
 export default function TareasListScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<Tarea[]>([]);
-  const [modo, setModo] = useState<ModoOrdenTareas>("PERSONALIZADO");
+  // El catálogo de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<{ items: Tarea[]; orden: ModoOrdenTareas }>("tareas", (d) => {
+    setItems(d.items);
+    setModo(d.orden);
+    setCargando(false);
+  });
+  const [items, setItems] = useState<Tarea[]>(() => copia.inicial?.items ?? []);
+  const [modo, setModo] = useState<ModoOrdenTareas>(() => copia.inicial?.orden ?? "PERSONALIZADO");
   const [ordenando, setOrdenando] = useState(false);
   const [busqueda, setBusqueda] = useState("");
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +59,7 @@ export default function TareasListScreen() {
       const res = await apiRequest<{ items: Tarea[]; orden: ModoOrdenTareas }>(
         "/api/mobile/tareas"
       );
+      copia.alResponder(res);
       setItems(res.items);
       setModo(res.orden);
       setError(null);
@@ -61,6 +69,7 @@ export default function TareasListScreen() {
       setCargando(false);
       setRefrescando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFocusEffect(

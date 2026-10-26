@@ -9,6 +9,7 @@ import {
   fechaSola,
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
   FILA_LISTA,
@@ -47,11 +48,16 @@ const MESES: Record<string, number> = {
  */
 export default function SuscripcionesListScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<SuscripcionListItem[]>([]);
+  // La lista de la última vez, mientras contesta el servidor.
+  const copia = useCopiaDePantalla<{ items: SuscripcionListItem[] }>("suscripciones", (d) => {
+    setItems(d.items);
+    setCargando(false);
+  });
+  const [items, setItems] = useState<SuscripcionListItem[]>(() => copia.inicial?.items ?? []);
   const [busqueda, setBusqueda] = useState("");
   const [estado, setEstado] = useState("ACTIVO");
   const [pendientes, setPendientes] = useState("");
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!copia.inicial);
   const [refrescando, setRefrescando] = useState(false);
   const [generando, setGenerando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +69,7 @@ export default function SuscripcionesListScreen() {
       const res = await apiRequest<{ items: SuscripcionListItem[] }>(
         "/api/mobile/suscripciones"
       );
+      copia.alResponder(res);
       setItems(res.items);
       setError(null);
     } catch (e) {
@@ -71,6 +78,7 @@ export default function SuscripcionesListScreen() {
       setCargando(false);
       setRefrescando(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFocusEffect(
