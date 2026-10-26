@@ -57,7 +57,6 @@ export function CamaraPropia({
   conVideos = false,
   maximo,
   textoDeListo,
-  conComentario = false,
   onCerrar,
   onListo,
 }: {
@@ -66,10 +65,8 @@ export function CamaraPropia({
   /** Cuántas caben todavía. */
   maximo: number;
   textoDeListo?: string;
-  /** En el chat: el editor pide un comentario y su botón envía. */
-  conComentario?: boolean;
   onCerrar: () => void;
-  onListo: (archivos: ArchivoLocal[], comentario?: string) => void;
+  onListo: (archivos: ArchivoLocal[]) => void;
 }) {
   const insets = useSafeAreaInsets();
   const camara = useRef<CameraView>(null);
@@ -203,7 +200,6 @@ export function CamaraPropia({
         inicio={editando}
         memoria={ediciones}
         textoDeListo={textoDeListo}
-        conComentario={conComentario}
         // Volver (la flecha, el + o quitar la última) es a la cámara con lo sacado, no tirarlo.
         onVolver={() => setEditando(null)}
         onQuitar={quitar}

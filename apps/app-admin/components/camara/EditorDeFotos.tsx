@@ -67,8 +67,7 @@ type Herramienta = null | "lapiz";
  * en vez de bajada a 2048 de lado), **recortar y rotar** (`RecortarFoto`, la
  * misma pantalla de los informes, aplicada acá en el teléfono), **texto** y
  * **lápiz**. Abajo, las miniaturas para pasar de una foto a otra (la ✕ de la
- * actual la quita) y el botón que termina; en el chat, además, el comentario,
- * y el botón envía. Abierto desde la cámara, la flecha de arriba y el + de las
+ * actual la quita) y el botón que termina. Abierto desde la cámara, la flecha de arriba y el + de las
  * miniaturas vuelven a ella sin perder lo editado. Un video pasa sin
  * herramientas: no hay nada que dibujarle.
  *
@@ -84,7 +83,6 @@ export function EditorDeFotos({
   textoDeListo = "Listo",
   inicio = 0,
   memoria,
-  conComentario = false,
   onVolver,
   onQuitar,
   onCerrar,
@@ -96,8 +94,6 @@ export function EditorDeFotos({
   inicio?: number;
   /** Lo editado de cada foto, por su `origen`: sobrevive a volver a la cámara y regresar. */
   memoria?: Map<string, FotoEnEdicion>;
-  /** En el chat, como en WhatsApp: un campo para el comentario y el botón de enviar, que manda. */
-  conComentario?: boolean;
   /**
    * Abierto desde la cámara: arriba una flecha que vuelve a ella sin perder
    * nada, y un + al final de las miniaturas para sacar más.
@@ -106,12 +102,11 @@ export function EditorDeFotos({
   /** Se quitó una foto (por su `origen`): quien la eligió la saca de lo suyo. */
   onQuitar?: (origen: string) => void;
   onCerrar: () => void;
-  onListo: (archivos: ArchivoLocal[], comentario?: string) => void;
+  onListo: (archivos: ArchivoLocal[]) => void;
 }) {
   const insets = useSafeAreaInsets();
   const [fotos, setFotos] = useState<FotoEnEdicion[] | null>(null);
   const [actual, setActual] = useState(inicio);
-  const [comentario, setComentario] = useState("");
   const [hd, setHd] = useState(false);
   const [herramienta, setHerramienta] = useState<Herramienta>(null);
   const [color, setColor] = useState(() => colorEnLaBarra(POSICION_DEL_ROJO));
@@ -310,7 +305,7 @@ export function EditorDeFotos({
     try {
       const salida: ArchivoLocal[] = [];
       for (const f of fotos) salida.push(await aplanar(f, hd));
-      onListo(salida, comentario.trim() || undefined);
+      onListo(salida);
     } catch {
       Alert.alert("No pudimos preparar las fotos", "Prueba otra vez.");
     } finally {
@@ -382,9 +377,6 @@ export function EditorDeFotos({
   // ── Pantalla ───────────────────────────────────────────────────────────────
 
   const dibujando = herramienta === "lapiz";
-  // El teclado del comentario (no el del texto sobre la foto, que tiene su propia pantalla).
-  const tecladoDelComentario =
-    !escribiendo && altoDelTeclado > 0 ? altoDelTeclado + (Platform.OS === "android" ? insets.bottom : 0) : 0;
 
   return (
     // De borde a borde también abajo: la ventana llega al piso, así el alto del
@@ -474,27 +466,11 @@ export function EditorDeFotos({
           ) : null}
         </View>
 
-        {/* Abajo: el comentario (en el chat), las miniaturas y el botón que
-            termina. Con el teclado del comentario abierto, todo sube con él. */}
+        {/* Abajo: las miniaturas y el botón que termina. */}
         <View
-          style={[
-            styles.abajoTodo,
-            { paddingBottom: tecladoDelComentario ? tecladoDelComentario + 8 : insets.bottom + 16 },
-            escribiendo && styles.escondido,
-          ]}
+          style={[styles.abajoTodo, { paddingBottom: insets.bottom + 16 }, escribiendo && styles.escondido]}
           pointerEvents={escribiendo ? "none" : "auto"}
         >
-          {conComentario ? (
-            <TextInput
-              value={comentario}
-              onChangeText={setComentario}
-              placeholder="Añade un comentario…"
-              placeholderTextColor="rgba(255,255,255,0.55)"
-              selectionColor="#25d366"
-              multiline
-              style={styles.comentario}
-            />
-          ) : null}
           <View style={styles.abajo}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.miniaturas}>
               {(fotos ?? []).map((f, i) => (
@@ -539,9 +515,9 @@ export function EditorDeFotos({
               disabled={!fotos || Boolean(trabajando)}
               style={({ pressed }) => [styles.enviar, pressed && styles.tocado]}
               accessibilityRole="button"
-              accessibilityLabel={conComentario ? "Enviar" : textoDeListo}
+              accessibilityLabel={textoDeListo}
             >
-              <Ionicons name={conComentario ? "send" : "checkmark"} size={conComentario ? 22 : 26} color="#fff" />
+              <Ionicons name="checkmark" size={26} color="#fff" />
             </Pressable>
           </View>
         </View>
@@ -770,18 +746,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     paddingHorizontal: 12,
-  },
-  comentario: {
-    marginHorizontal: 12,
-    minHeight: 44,
-    maxHeight: 110,
-    paddingHorizontal: 16,
-    paddingTop: 11,
-    paddingBottom: 11,
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.14)",
-    color: "#fff",
-    fontSize: 16,
   },
   // El ✕ de la miniatura asoma 6 por arriba y a la derecha: sin este aire,
   // el ScrollView lo corta.
