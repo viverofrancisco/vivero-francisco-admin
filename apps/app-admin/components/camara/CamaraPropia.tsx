@@ -162,7 +162,18 @@ export function CamaraPropia({
       const z = zoomAlEmpezar.current + Math.log(e.scale) / Math.log(AUMENTO_MAXIMO);
       setZoom(Math.min(1, Math.max(0, Math.round(z * 200) / 200)));
     })
-    .onFinalize(() => setPellizcando(false));
+    .onFinalize(() => mostrarZoom());
+
+  /**
+   * La barra de zoom se ve mientras se pellizca o se toca, y un rato después
+   * de soltar. Ocupa el lugar de la tira de fotos (ver abajo), así que se
+   * esconde sola para devolverla.
+   */
+  function mostrarZoom() {
+    setPellizcando(true);
+    if (finDelPellizco.current) clearTimeout(finDelPellizco.current);
+    finDelPellizco.current = setTimeout(() => setPellizcando(false), 1500);
+  }
 
   /**
    * En Android el pellizco lo hace la cámara misma (parche a expo-camera, ver
@@ -175,9 +186,7 @@ export function CamaraPropia({
     if (maximo > 1) setAumentoMaximo(maximo);
     const z = maximo > 1 ? Math.log(Math.max(1, ratio)) / Math.log(maximo) : 0;
     setZoom(Math.min(1, Math.max(0, z)));
-    setPellizcando(true);
-    if (finDelPellizco.current) clearTimeout(finDelPellizco.current);
-    finDelPellizco.current = setTimeout(() => setPellizcando(false), 800);
+    mostrarZoom();
   }
 
   /** El toque enfoca y mide la luz ahí (en nativo); acá se dibuja el cuadrito. */
@@ -307,6 +316,13 @@ export function CamaraPropia({
     [elegidos]
   );
 
+  const hayTira = recientes.length > 0 || tomados.length > 0;
+
+  function cambiarZoomConLaBarra(z: number) {
+    setZoom(z);
+    mostrarZoom();
+  }
+
   if (editando !== null) {
     return (
       <EditorDeFotos
@@ -412,11 +428,17 @@ export function CamaraPropia({
         <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
 
-          {pellizcando || zoom > 0 || grabando ? (
-            <BarraDeZoom zoom={zoom} onCambio={setZoom} />
-          ) : null}
-
-          {(recientes.length > 0 || tomados.length > 0) && !grabando ? (
+          {/* La barra de zoom va donde está la tira, pegada al disparador y a
+              la altura del pulgar, como en WhatsApp: encima de la tira quedaba
+              a media pantalla. Mientras se usa, la tira se aparta; con la
+              misma altura, el disparador no salta. */}
+          {grabando || (pellizcando && !hayTira) || (zoom > 0 && !hayTira) ? (
+            <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} />
+          ) : pellizcando ? (
+            <View style={styles.lugarDeLaTira}>
+              <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} />
+            </View>
+          ) : hayTira ? (
             <TiraDeLaCamara
               recientes={recientes}
               tomados={tomados}
@@ -583,6 +605,8 @@ const styles = StyleSheet.create({
   },
   // Aire arriba y a la derecha para la ✕ de lo sacado, que asoma del borde.
   recientes: { gap: 4, paddingHorizontal: 12, paddingTop: 8 },
+  // El alto de la tira (64 más su aire de arriba), para que la barra ocupe su lugar exacto.
+  lugarDeLaTira: { height: 72, justifyContent: "center" },
   tomados: { flexDirection: "row", alignItems: "center", gap: 8, marginRight: 4 },
   tomado: { width: 64, height: 64 },
   tomadoImagen: { width: 64, height: 64, borderRadius: 6, borderWidth: 2, borderColor: "#fff" },
