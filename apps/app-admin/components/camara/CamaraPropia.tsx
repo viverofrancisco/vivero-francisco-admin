@@ -104,14 +104,15 @@ export function CamaraPropia({
   /** Lo dibujado, escrito y recortado de cada foto, para volver al editor tal como se dejó. */
   const ediciones = useRef(new Map<string, FotoEnEdicion>()).current;
   const [aviso, setAviso] = useState<string | null>(null);
-  /** El zoom de la barra, de 0 (sin zoom) a 1 (el máximo del teléfono). */
-  const [zoom, setZoom] = useState(0);
+  /** El aumento, tal cual se lee: 1 es 1×, 0.5 el gran angular. */
+  const [aumento, setAumento] = useState(1);
+  /** Entre cuánto y cuánto aumenta esta cámara; en Android lo dice ella al abrir. */
+  const [limites, setLimites] = useState<LimitesDeZoom>({ minimo: 1, maximo: AUMENTO_MAXIMO });
   const [pellizcando, setPellizcando] = useState(false);
   /** La tira escondida con el asa: entonces no vuelve sola después del zoom. */
   const [tiraEscondida, setTiraEscondida] = useState(false);
-  const zoomAlEmpezar = useRef(0);
+  const aumentoAlEmpezar = useRef(1);
   /** El aumento máximo de la cámara, que en Android cuenta el pellizco nativo. */
-  const [aumentoMaximo, setAumentoMaximo] = useState(AUMENTO_MAXIMO);
   const finDelPellizco = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Dónde se tocó para enfocar: el cuadrito amarillo de la cámara del teléfono. */
   const [enfoque, setEnfoque] = useState<{ x: number; y: number; vez: number } | null>(null);
@@ -161,19 +162,17 @@ export function CamaraPropia({
 
   const lleno = elegidos.length >= maximo;
 
-  // Pellizcar acerca o aleja, también grabando, como en WhatsApp. La barra va
-  // en escala logarítmica (ver `zoomDeLaCamara`), así que abrir los dedos al
-  // doble duplica el aumento, empiece donde empiece: lo que estaba entre los
-  // dedos se queda entre los dedos.
+  // Pellizcar acerca o aleja, también grabando, como en WhatsApp: abrir los
+  // dedos al doble duplica el aumento, empiece donde empiece. (En iOS; en
+  // Android lo hace la cámara nativa, ver `alZoomNativo`.)
   const pellizco = Gesture.Pinch()
     .runOnJS(true)
     .onBegin(() => {
-      zoomAlEmpezar.current = zoom;
+      aumentoAlEmpezar.current = aumento;
       setPellizcando(true);
     })
     .onUpdate((e) => {
-      const z = zoomAlEmpezar.current + Math.log(e.scale) / Math.log(AUMENTO_MAXIMO);
-      setZoom(Math.min(1, Math.max(0, Math.round(z * 200) / 200)));
+      setAumento(acotar(aumentoAlEmpezar.current * e.scale, limites));
     })
     .onFinalize(() => mostrarZoom());
 
@@ -194,12 +193,17 @@ export function CamaraPropia({
    * resultante, para que la barra lo siga. Pasado por JS, el zoom iba detrás
    * de los dedos.
    */
-  function alZoomNativo(e: { nativeEvent: { ratio: number; maximo: number } }) {
-    const { ratio, maximo } = e.nativeEvent;
-    if (maximo > 1) setAumentoMaximo(maximo);
-    const z = maximo > 1 ? Math.log(Math.max(1, ratio)) / Math.log(maximo) : 0;
-    setZoom(Math.min(1, Math.max(0, z)));
+  function alZoomNativo(e: { nativeEvent: { ratio: number } }) {
+    setAumento(e.nativeEvent.ratio);
     mostrarZoom();
+  }
+
+  /** La cámara dice hasta dónde llega: 0.5× si el teléfono expone su gran angular. */
+  function alSaberLimites(e: { nativeEvent: LimitesDeZoom }) {
+    const l = e.nativeEvent;
+    if (!(l.maximo >= l.minimo) || l.minimo <= 0) return;
+    setLimites(l);
+    setAumento((a) => acotar(a, l));
   }
 
   /** El toque enfoca y mide la luz ahí (en nativo); acá se dibuja el cuadrito. */
@@ -351,20 +355,26 @@ export function CamaraPropia({
         if (exito) setTiraEscondida((e) => !e);
       })
   );
-  const mostrarBarra = grabando || pellizcando || (zoom > 0 && !mostrarTira);
+  const mostrarBarra =
+    grabando || pellizcando || (Math.abs(aumento - 1) > 0.01 && !mostrarTira);
 
-  /** El aumento que se ve: el máximo de la cámara elevado a la posición de la barra. */
-  const aumentoActual = Math.pow(aumentoMaximo, zoom);
+  /**
+   * Los saltos del botón, los de WhatsApp: 0.5×, 1×, 2× y 5×, los que esta
+   * cámara alcance (0.5× solo con gran angular expuesto).
+   */
+  const saltos = SALTOS_DE_AUMENTO.filter(
+    (a) => a >= limites.minimo - 0.01 && a <= limites.maximo + 0.01
+  );
 
-  /** Del zoom que haya a 1×; desde 1×, a 2× (o al máximo si no llega). */
+  /** Al siguiente salto por encima del aumento que haya; después del último, al primero. */
   function alternarAumento() {
-    const a2 = Math.min(2, aumentoMaximo);
-    setZoom(aumentoActual > 1.05 ? 0 : Math.log(a2) / Math.log(aumentoMaximo));
+    const siguiente = saltos.find((a) => a > aumento + 0.05) ?? saltos[0] ?? 1;
+    setAumento(siguiente);
     mostrarZoom();
   }
 
-  function cambiarZoomConLaBarra(z: number) {
-    setZoom(z);
+  function cambiarZoomConLaBarra(posicion: number) {
+    setAumento(aumentoEn(posicion, limites));
     mostrarZoom();
   }
 
@@ -418,10 +428,19 @@ export function CamaraPropia({
                 facing={lado}
                 flash={flash}
                 mode={modo}
-                zoom={zoomDeLaCamara(zoom, aumentoMaximo)}
+                // En Android va el aumento tal cual (prop del parche); en iOS,
+                // la fracción que expo-camera aplica exponencial.
+                zoom={GESTOS_NATIVOS ? 0 : posicionDe(aumento, limites)}
                 onCameraReady={() => setLista(true)}
-                // Eventos del parche: CameraView los pasa tal cual a la vista nativa.
-                {...({ onZoomNativo: alZoomNativo, onEnfocar: alEnfocar } as object)}
+                // Props y eventos del parche: CameraView los pasa tal cual a la vista nativa.
+                {...((GESTOS_NATIVOS
+                  ? {
+                      aumento,
+                      onZoomNativo: alZoomNativo,
+                      onEnfocar: alEnfocar,
+                      onLimitesDeZoom: alSaberLimites,
+                    }
+                  : {}) as object)}
               />
               {enfoque ? (
                 <Animated.View
@@ -487,7 +506,7 @@ export function CamaraPropia({
                 exiting={FadeOut.duration(120)}
                 layout={TRANSICION}
               >
-                <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} />
+                <BarraDeZoom zoom={posicionDe(aumento, limites)} onCambio={cambiarZoomConLaBarra} />
               </Reanimated.View>
             ) : null}
             {hayTira && !grabando ? (
@@ -521,9 +540,12 @@ export function CamaraPropia({
           </View>
 
           <View style={styles.controles}>
-            {/* Lo sacado está en la tira de arriba; a la izquierda queda cambiar de cámara. */}
-            <View style={styles.lado}>
-              {!grabando ? (
+            {/* De ancho igual al de "siguiente", para que el disparador quede al centro. */}
+            <View style={styles.lado} />
+            {/* Cambiar de cámara, pegado al disparador como en WhatsApp. Grabando,
+                solo donde la grabación sigue (`CAMBIA_GRABANDO`). */}
+            <View style={styles.ladoChico}>
+              {!grabando || CAMBIA_GRABANDO ? (
                 <Boton
                   icono="camera-reverse-outline"
                   etiqueta="Cambiar de cámara"
@@ -531,8 +553,6 @@ export function CamaraPropia({
                 />
               ) : null}
             </View>
-            {/* Del ancho del aumento, para que el disparador quede al centro. */}
-            {GESTOS_NATIVOS ? <View style={styles.ladoChico} /> : null}
 
             <Pressable
               onPress={() => void disparar()}
@@ -550,9 +570,11 @@ export function CamaraPropia({
               />
             </Pressable>
 
-            {/* El aumento, como el «1.5×» de WhatsApp: tocarlo salta entre 1× y 2×.
-                Solo en Android, donde se sabe el máximo real de la cámara: en
-                iOS expo-camera no lo dice y el número sería inventado. */}
+            {/* El aumento, como el «1.5×» de WhatsApp: tocarlo salta al siguiente
+                (0.5×, 1×, 2×, 5×). Solo en Android, donde la cámara dice sus
+                límites: en iOS expo-camera no los da y el número sería inventado.
+                El hueco en iOS deja el disparador al centro. */}
+            {!GESTOS_NATIVOS ? <View style={styles.ladoChico} /> : null}
             {GESTOS_NATIVOS ? (
               <View style={styles.ladoChico}>
                 <Pressable
@@ -560,21 +582,15 @@ export function CamaraPropia({
                   hitSlop={8}
                   style={({ pressed }) => [styles.aumento, pressed && styles.tocado]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Zoom ${textoDelAumento(aumentoActual)}`}
+                  accessibilityLabel={`Zoom ${textoDelAumento(aumento)}`}
                 >
-                  <Text style={styles.aumentoTexto}>{textoDelAumento(aumentoActual)}</Text>
+                  <Text style={styles.aumentoTexto}>{textoDelAumento(aumento)}</Text>
                 </Pressable>
               </View>
             ) : null}
 
             <View style={styles.lado}>
-              {grabando && CAMBIA_GRABANDO ? (
-                <Boton
-                  icono="camera-reverse-outline"
-                  etiqueta="Cambiar de cámara"
-                  onPress={() => setLado((l) => (l === "back" ? "front" : "back"))}
-                />
-              ) : elegidos.length > 0 && !grabando ? (
+              {elegidos.length > 0 && !grabando ? (
                 <Pressable
                   onPress={() => setEditando(0)}
                   style={({ pressed }) => [styles.siguiente, pressed && styles.tocado]}
@@ -808,16 +824,30 @@ const styles = StyleSheet.create({
  */
 const AUMENTO_MAXIMO = 10;
 
+interface LimitesDeZoom {
+  minimo: number;
+  maximo: number;
+}
+
+const SALTOS_DE_AUMENTO = [0.5, 1, 2, 5];
+
+function acotar(a: number, l: LimitesDeZoom): number {
+  return Math.min(l.maximo, Math.max(l.minimo, a));
+}
+
 /**
- * El zoom que se le pasa a la cámara. En Android expo-camera lo toma lineal
- * (`fracción × máximo`, nunca menos de 1×), así que se pasa el aumento
- * buscado sobre el máximo —el real, que cuenta el pellizco nativo, o
- * `AUMENTO_MAXIMO` hasta saberlo—: 0 queda en 1×. En iOS expo-camera ya lo
- * aplica exponencial (`mínimo × (máximo / mínimo) ^ zoom`) y se pasa tal cual.
+ * Dónde va el punto de la barra (0 a 1) para un aumento: en escala
+ * logarítmica entre los límites, así el medio de 1× a 10× es ~3×. En iOS es
+ * también lo que se le pasa a expo-camera, que lo aplica exponencial
+ * (`mínimo × (máximo / mínimo) ^ zoom`).
  */
-function zoomDeLaCamara(z: number, maximo: number): number {
-  if (Platform.OS !== "android") return z;
-  return Math.pow(maximo, z) / maximo;
+function posicionDe(a: number, l: LimitesDeZoom): number {
+  if (l.maximo <= l.minimo) return 0;
+  return Math.min(1, Math.max(0, Math.log(a / l.minimo) / Math.log(l.maximo / l.minimo)));
+}
+
+function aumentoEn(posicion: number, l: LimitesDeZoom): number {
+  return l.minimo * Math.pow(l.maximo / l.minimo, posicion);
 }
 
 /**
@@ -957,7 +987,7 @@ function reloj(segundos: number): string {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-/** "1×", "1.5×", "2×": un decimal hasta 10×, sin el ".0". */
+/** "0.5×", "1×", "1.5×", "2×": un decimal hasta 10×, sin el ".0". */
 function textoDelAumento(a: number): string {
   const redondo = a < 10 ? Math.round(a * 10) / 10 : Math.round(a);
   return `${redondo}×`;

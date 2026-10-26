@@ -1,7 +1,7 @@
 diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt
 --- a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt
 +++ b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt
-@@ -46,7 +46,10 @@
+@@ -46,7 +46,11 @@
    "onFacesDetected",
    "onFaceDetectionError",
    "onPictureSaved",
@@ -9,10 +9,25 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
 +  "onAvailableLensesChanged",
 +  // Vivero: el pellizco y el toque para enfocar, nativos (ver ExpoCameraView).
 +  "onZoomNativo",
-+  "onEnfocar"
++  "onEnfocar",
++  "onLimitesDeZoom"
  )
  
  val cameraPermissions = if (VRUtilities.isQuest()) {
+@@ -285,6 +289,13 @@
+ 
+       Prop("animateShutter") { view, animate: Boolean? ->
+         view.animateShutter = animate ?: true
++      }
++
++      // Vivero: el aumento tal cual, que manda sobre `zoom` (ver ExpoCameraView).
++      Prop("aumento") { view, aumento: Float? ->
++        if (view.aumento != aumento) {
++          view.aumento = aumento
++        }
+       }
+ 
+       Prop("zoom") { view, zoom: Float? ->
 diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
 --- a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
 +++ b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
@@ -56,7 +71,26 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
    private var barcodeFormats: List<BarcodeType> = emptyList()
    private var glSurfaceTexture: SurfaceTexture? = null
    private var isRecording = false
-@@ -232,6 +241,75 @@
+@@ -161,6 +170,18 @@
+       setCameraZoom(value)
+     }
+ 
++  /**
++   * Vivero: el aumento pedido tal cual (1 = 1×, 0.5 = gran angular), que manda
++   * sobre `zoom`. `zoom` es una fracción del máximo y nunca baja de 1×, así que
++   * no hay forma de pedir 0.5× con ella; y sin saber el máximo, JS no puede
++   * calcular la fracción de "1×".
++   */
++  var aumento: Float? = null
++    set(value) {
++      field = value
++      aplicarAumento()
++    }
++
+   var autoFocus: FocusMode = FocusMode.OFF
+     set(value) {
+       field = value
+@@ -232,6 +253,96 @@
      }
    )
  
@@ -66,6 +100,9 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
 +  // el cuadrito de enfoque) pero no está en el camino.
 +  private val onZoomNativo by EventDispatcher<ZoomNativoEvent>()
 +  private val onEnfocar by EventDispatcher<EnfoqueEvent>()
++  /** Entre cuánto y cuánto aumenta esta cámara: 0.5× solo si el teléfono expone su gran angular. */
++  private val onLimitesDeZoom by EventDispatcher<LimitesDeZoomEvent>()
++  private var limitesAvisados: Pair<Float, Float>? = null
 +  /** El aumento que lleva el pellizco; el `zoomState` de CameraX se actualiza tarde. */
 +  private var ratioDelPellizco = 1f
 +  /**
@@ -87,8 +124,10 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
 +
 +        override fun onScale(detector: ScaleGestureDetector): Boolean {
 +          val c = camera ?: return false
-+          val maximo = c.cameraInfo.zoomState.value?.maxZoomRatio ?: 1f
-+          ratioDelPellizco = (ratioDelPellizco * detector.scaleFactor).coerceIn(1f, max(1f, maximo))
++          val estado = c.cameraInfo.zoomState.value
++          val minimo = estado?.minZoomRatio ?: 1f
++          val maximo = estado?.maxZoomRatio ?: 1f
++          ratioDelPellizco = (ratioDelPellizco * detector.scaleFactor).coerceIn(minimo, max(minimo, maximo))
 +          ignorarZoomHasta = SystemClock.uptimeMillis() + 600
 +          c.cameraControl.setZoomRatio(ratioDelPellizco)
 +          onZoomNativo(ZoomNativoEvent(ratioDelPellizco, maximo))
@@ -114,6 +153,22 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
 +    )
 +  }
 +
++  /**
++   * Los límites llegan por el `zoomState`, que se llena un momento después de
++   * abrir la cámara: se escucha y se avisa a JS cada vez que cambian (al
++   * voltear la cámara cambian), no en cada cambio de aumento.
++   */
++  private fun avisarLimitesDeZoom(cameraInfo: CameraInfo) {
++    cameraInfo.zoomState.observe(currentActivity) { estado ->
++      val limites = Pair(estado.minZoomRatio, estado.maxZoomRatio)
++      if (limites != limitesAvisados) {
++        limitesAvisados = limites
++        onLimitesDeZoom(LimitesDeZoomEvent(estado.minZoomRatio, estado.maxZoomRatio))
++        aplicarAumento()
++      }
++    }
++  }
++
 +  /** Enfocar y medir la luz donde se tocó, como la cámara del teléfono. */
 +  private fun enfocarEn(x: Float, y: Float) {
 +    val c = camera ?: return
@@ -132,7 +187,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
    // Scanning-related properties
    private var shouldScanBarcodes = false
  
-@@ -326,6 +404,7 @@
+@@ -326,6 +437,7 @@
      }
    }
  
@@ -140,7 +195,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
    fun record(options: RecordingOptions, promise: Promise, cacheDirectory: File) {
      val file = FileSystemUtils.generateOutputFile(cacheDirectory, "Camera", ".mp4")
      val fileOutputOptions = FileOutputOptions.Builder(file)
-@@ -343,6 +422,7 @@
+@@ -343,6 +455,7 @@
          return
        }
        activeRecording = it.prepareRecording(context, fileOutputOptions)
@@ -148,7 +203,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
          .apply {
            if (!mute) {
              withAudioEnabled()
-@@ -360,6 +440,7 @@
+@@ -360,6 +473,7 @@
                isRecording = true
              }
              is VideoRecordEvent.Finalize -> {
@@ -156,7 +211,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
                when (event.error) {
                  VideoRecordEvent.Finalize.ERROR_FILE_SIZE_LIMIT_REACHED,
                  VideoRecordEvent.Finalize.ERROR_DURATION_LIMIT_REACHED,
-@@ -449,7 +530,11 @@
+@@ -449,7 +563,11 @@
        .setFlashMode(flashMode.mapToLens())
        .build()
  
@@ -169,17 +224,47 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
      imageAnalysisUseCase = createImageAnalyzer()
  
      val useCases = UseCaseGroup.Builder().apply {
-@@ -588,6 +673,9 @@
+@@ -473,7 +591,7 @@
+         observeCameraState(it.cameraInfo)
+       }
+       // Set the previous zoom level after recreating the camera
+-      setCameraZoom(zoom)
++      if (aumento != null) aplicarAumento() else setCameraZoom(zoom)
+       this.cameraProvider = cameraProvider
+     } catch (_: Exception) {
+       onMountError(
+@@ -587,7 +705,22 @@
+     }
    }
  
-   private fun setCameraZoom(value: Float) {
++  private fun aplicarAumento() {
 +    if (SystemClock.uptimeMillis() < ignorarZoomHasta) {
++      return
++    }
++    val a = aumento ?: return
++    val c = camera ?: return
++    val estado = c.cameraInfo.zoomState.value
++    val minimo = estado?.minZoomRatio ?: 1f
++    val maximo = estado?.maxZoomRatio ?: 1f
++    c.cameraControl.setZoomRatio(a.coerceIn(minimo, max(minimo, maximo)))
++  }
++
+   private fun setCameraZoom(value: Float) {
++    if (SystemClock.uptimeMillis() < ignorarZoomHasta || aumento != null) {
 +      return
 +    }
      val maxZoomRatio = camera?.cameraInfo?.zoomState?.value?.maxZoomRatio ?: 1f
      val targetZoomRatio = max(1f, min(maxZoomRatio, value.coerceIn(0f, 1f) * maxZoomRatio))
      camera?.cameraControl?.setZoomRatio(targetZoomRatio)
-@@ -766,8 +854,23 @@
+@@ -599,6 +732,7 @@
+         CameraState.Type.OPEN -> {
+           onCameraReady(Unit)
+           setTorchEnabled(enableTorch)
++          avisarLimitesDeZoom(cameraInfo)
+         }
+ 
+         else -> {}
+@@ -766,8 +900,23 @@
  
    override fun getPreviewSizeAsArray() = intArrayOf(previewView.width, previewView.height)
  
@@ -203,7 +288,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
      previewView.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
        override fun onChildViewRemoved(parent: View?, child: View?) = Unit
        override fun onChildViewAdded(parent: View?, child: View?) {
-@@ -798,9 +901,23 @@
+@@ -798,9 +947,28 @@
    }
  
    fun cleanupCamera() {
@@ -220,6 +305,11 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
 +// Vivero: lo que el pellizco y el toque nativos le cuentan a JS.
 +class ZoomNativoEvent(
 +  @Field val ratio: Float,
++  @Field val maximo: Float
++) : Record
++
++class LimitesDeZoomEvent(
++  @Field val minimo: Float,
 +  @Field val maximo: Float
 +) : Record
 +
