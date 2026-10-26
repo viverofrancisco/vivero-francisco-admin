@@ -1,0 +1,59 @@
+diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
+--- a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
++++ b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
+@@ -126,6 +126,8 @@
+   private var imageCaptureUseCase: ImageCapture? = null
+   private var imageAnalysisUseCase: ImageAnalysis? = null
+   private var recorder: Recorder? = null
++  // Vivero: la VideoCapture de la grabación en curso, para volver a atarla al cambiar de cámara.
++  private var videoCaptureUseCase: VideoCapture<Recorder>? = null
+   private var barcodeFormats: List<BarcodeType> = emptyList()
+   private var glSurfaceTexture: SurfaceTexture? = null
+   private var isRecording = false
+@@ -326,6 +328,7 @@
+     }
+   }
+ 
++  @SuppressLint("UnsafeOptInUsageError")
+   fun record(options: RecordingOptions, promise: Promise, cacheDirectory: File) {
+     val file = FileSystemUtils.generateOutputFile(cacheDirectory, "Camera", ".mp4")
+     val fileOutputOptions = FileOutputOptions.Builder(file)
+@@ -343,6 +346,7 @@
+         return
+       }
+       activeRecording = it.prepareRecording(context, fileOutputOptions)
++        .asPersistentRecording()
+         .apply {
+           if (!mute) {
+             withAudioEnabled()
+@@ -360,6 +364,7 @@
+               isRecording = true
+             }
+             is VideoRecordEvent.Finalize -> {
++              activeRecording = null
+               when (event.error) {
+                 VideoRecordEvent.Finalize.ERROR_FILE_SIZE_LIMIT_REACHED,
+                 VideoRecordEvent.Finalize.ERROR_DURATION_LIMIT_REACHED,
+@@ -449,7 +454,11 @@
+       .setFlashMode(flashMode.mapToLens())
+       .build()
+ 
+-    val videoCapture = createVideoCapture()
++    // Vivero: grabando, se reusa la misma VideoCapture para que la grabación
++    // (persistente) siga en la otra cámara en vez de cortarse.
++    val videoCapture = videoCaptureUseCase?.takeIf { activeRecording != null && cameraMode == CameraMode.VIDEO }
++      ?: createVideoCapture()
++    videoCaptureUseCase = videoCapture
+     imageAnalysisUseCase = createImageAnalyzer()
+ 
+     val useCases = UseCaseGroup.Builder().apply {
+@@ -798,6 +807,9 @@
+   }
+ 
+   fun cleanupCamera() {
++    // Vivero: una grabación persistente no se corta al desatar la cámara.
++    activeRecording?.stop()
++    activeRecording = null
+     orientationEventListener.disable()
+     cancelCoroutineScope()
+     cameraProvider?.unbindAll()

@@ -78,6 +78,8 @@ export function CamaraPropia({
   const [flash, setFlash] = useState<FlashMode>("off");
   const [modo, setModo] = useState<"picture" | "video">("picture");
   const [grabando, setGrabando] = useState(false);
+  /** Segundos grabados, para el reloj rojo de arriba. */
+  const [segundos, setSegundos] = useState(0);
   const [sacando, setSacando] = useState(false);
   const [lista, setLista] = useState(false);
   const [elegidos, setElegidos] = useState<ArchivoLocal[]>([]);
@@ -115,6 +117,14 @@ export function CamaraPropia({
       vivo = false;
     };
   }, [conVideos]);
+
+  useEffect(() => {
+    if (!grabando) return;
+    setSegundos(0);
+    const desde = Date.now();
+    const reloj = setInterval(() => setSegundos(Math.floor((Date.now() - desde) / 1000)), 250);
+    return () => clearInterval(reloj);
+  }, [grabando]);
 
   const lleno = elegidos.length >= maximo;
 
@@ -267,7 +277,10 @@ export function CamaraPropia({
           </GestureDetector>
         )}
 
-        <View style={[styles.arriba, { paddingTop: insets.top + 8 }]}>
+        <View
+          style={[styles.arriba, { paddingTop: insets.top + 8 }, grabando && styles.escondido]}
+          pointerEvents={grabando ? "none" : "auto"}
+        >
           <Boton icono="close" etiqueta="Cerrar" onPress={onCerrar} />
           <View style={styles.flex} />
           {modo === "picture" ? (
@@ -280,16 +293,15 @@ export function CamaraPropia({
         </View>
 
         {grabando ? (
-          <View style={[styles.grabando, { top: insets.top + 60 }]}>
-            <View style={styles.puntoRojo} />
-            <Text style={styles.grabandoTexto}>Grabando</Text>
+          <View style={[styles.grabando, { top: insets.top + 12 }]}>
+            <Text style={styles.grabandoTexto}>{reloj(segundos)}</Text>
           </View>
         ) : null}
 
         <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
 
-          {pellizcando || zoom > 0 ? (
+          {pellizcando || zoom > 0 || grabando ? (
             <BarraDeZoom zoom={zoom} onCambio={setZoom} />
           ) : null}
 
@@ -377,7 +389,13 @@ export function CamaraPropia({
             </Pressable>
 
             <View style={styles.lado}>
-              {elegidos.length > 0 && !grabando ? (
+              {grabando && CAMBIA_GRABANDO ? (
+                <Boton
+                  icono="camera-reverse-outline"
+                  etiqueta="Cambiar de cámara"
+                  onPress={() => setLado((l) => (l === "back" ? "front" : "back"))}
+                />
+              ) : elegidos.length > 0 && !grabando ? (
                 <Pressable
                   onPress={() => setEditando(0)}
                   style={({ pressed }) => [styles.siguiente, pressed && styles.tocado]}
@@ -462,15 +480,12 @@ const styles = StyleSheet.create({
   grabando: {
     position: "absolute",
     alignSelf: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: "#d0103a",
   },
-  puntoRojo: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#e53935" },
+  escondido: { opacity: 0 },
   zoom: {
     flexDirection: "row",
     alignItems: "center",
@@ -488,7 +503,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#ffd60a",
   },
-  grabandoTexto: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  grabandoTexto: { color: "#fff", fontSize: 17, fontWeight: "500", fontVariant: ["tabular-nums"] },
   abajo: { position: "absolute", left: 0, right: 0, bottom: 0, gap: 12 },
   aviso: {
     alignSelf: "center",
@@ -565,7 +580,7 @@ const styles = StyleSheet.create({
   },
   disparadorCentro: { width: 60, height: 60, borderRadius: 30, backgroundColor: "#fff" },
   disparadorVideo: { backgroundColor: "#e53935" },
-  disparadorGrabando: { width: 28, height: 28, borderRadius: 6 },
+  disparadorGrabando: { width: 30, height: 30, borderRadius: 7 },
   siguiente: {
     width: 52,
     height: 52,
@@ -614,4 +629,19 @@ function BarraDeZoom({ zoom, onCambio }: { zoom: number; onCambio: (z: number) =
       </Pressable>
     </View>
   );
+}
+
+/**
+ * Si se puede cambiar de cámara grabando. En Android sí: expo-camera va con un
+ * parche (`patches/expo-camera+*.patch`) que hace la grabación persistente y
+ * reusa la misma VideoCapture, así que sigue en la otra cámara. En iOS la
+ * librería corta la grabación al cambiar la entrada.
+ */
+const CAMBIA_GRABANDO = Platform.OS === "android";
+
+/** "00:13" del reloj rojo de arriba mientras se graba. */
+function reloj(segundos: number): string {
+  const m = Math.floor(segundos / 60);
+  const s = segundos % 60;
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
