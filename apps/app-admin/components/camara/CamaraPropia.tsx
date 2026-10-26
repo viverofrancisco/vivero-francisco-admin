@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Linking,
   Modal,
@@ -40,6 +41,8 @@ const ICONO_FLASH: Record<FlashMode, React.ComponentProps<typeof Ionicons>["name
 };
 /** Cuántas de las últimas fotos del teléfono muestra la tira de abajo. */
 const RECIENTES = 30;
+/** El cuadrito amarillo que marca dónde se enfocó. */
+const LADO_DEL_ENFOQUE = 72;
 
 /**
  * La cámara de la app, la de WhatsApp: se abre dentro de la app, saca varias
@@ -94,6 +97,12 @@ export function CamaraPropia({
   const [zoom, setZoom] = useState(0);
   const [pellizcando, setPellizcando] = useState(false);
   const zoomAlEmpezar = useRef(0);
+  /** El aumento máximo de la cámara, que en Android cuenta el pellizco nativo. */
+  const [aumentoMaximo, setAumentoMaximo] = useState(AUMENTO_MAXIMO);
+  const finDelPellizco = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Dónde se tocó para enfocar: el cuadrito amarillo de la cámara del teléfono. */
+  const [enfoque, setEnfoque] = useState<{ x: number; y: number; vez: number } | null>(null);
+  const brilloDelEnfoque = useRef(new Animated.Value(0)).current;
   /**
    * Las de la tira que se tocaron y todavía se están abriendo: se ven
    * marcadas al instante, y un segundo toque mientras tanto no las suma de
@@ -154,6 +163,41 @@ export function CamaraPropia({
       setZoom(Math.min(1, Math.max(0, Math.round(z * 200) / 200)));
     })
     .onFinalize(() => setPellizcando(false));
+
+  /**
+   * En Android el pellizco lo hace la cámara misma (parche a expo-camera, ver
+   * `patches/`): cada cuadro va directo a CameraX y acá solo llega el aumento
+   * resultante, para que la barra lo siga. Pasado por JS, el zoom iba detrás
+   * de los dedos.
+   */
+  function alZoomNativo(e: { nativeEvent: { ratio: number; maximo: number } }) {
+    const { ratio, maximo } = e.nativeEvent;
+    if (maximo > 1) setAumentoMaximo(maximo);
+    const z = maximo > 1 ? Math.log(Math.max(1, ratio)) / Math.log(maximo) : 0;
+    setZoom(Math.min(1, Math.max(0, z)));
+    setPellizcando(true);
+    if (finDelPellizco.current) clearTimeout(finDelPellizco.current);
+    finDelPellizco.current = setTimeout(() => setPellizcando(false), 800);
+  }
+
+  /** El toque enfoca y mide la luz ahí (en nativo); acá se dibuja el cuadrito. */
+  function alEnfocar(e: { nativeEvent: { x: number; y: number } }) {
+    setEnfoque({ x: e.nativeEvent.x, y: e.nativeEvent.y, vez: Date.now() });
+    brilloDelEnfoque.setValue(1);
+    Animated.timing(brilloDelEnfoque, {
+      toValue: 0,
+      duration: 400,
+      delay: 900,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  useEffect(
+    () => () => {
+      if (finDelPellizco.current) clearTimeout(finDelPellizco.current);
+    },
+    []
+  );
 
   function sumar(archivo: ArchivoLocal) {
     setAviso(null);
@@ -302,7 +346,10 @@ export function CamaraPropia({
             </Pressable>
           </View>
         ) : (
-          <GestureDetector gesture={pellizco}>
+          // En Android el pellizco y el toque los atiende la cámara nativa, y
+          // un GestureDetector encima se los quitaría; en iOS el pellizco
+          // sigue siendo el de gesture-handler.
+          <ConPellizco gesto={GESTOS_NATIVOS ? null : pellizco}>
             <View style={StyleSheet.absoluteFill}>
               <CameraView
                 ref={camara}
@@ -310,11 +357,35 @@ export function CamaraPropia({
                 facing={lado}
                 flash={flash}
                 mode={modo}
-                zoom={zoomDeLaCamara(zoom)}
+                zoom={zoomDeLaCamara(zoom, aumentoMaximo)}
                 onCameraReady={() => setLista(true)}
+                // Eventos del parche: CameraView los pasa tal cual a la vista nativa.
+                {...({ onZoomNativo: alZoomNativo, onEnfocar: alEnfocar } as object)}
               />
+              {enfoque ? (
+                <Animated.View
+                  key={enfoque.vez}
+                  pointerEvents="none"
+                  style={[
+                    styles.enfoque,
+                    {
+                      left: enfoque.x - LADO_DEL_ENFOQUE / 2,
+                      top: enfoque.y - LADO_DEL_ENFOQUE / 2,
+                      opacity: brilloDelEnfoque,
+                      transform: [
+                        {
+                          scale: brilloDelEnfoque.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.9, 1],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                />
+              ) : null}
             </View>
-          </GestureDetector>
+          </ConPellizco>
         )}
 
         <View
@@ -588,6 +659,14 @@ const styles = StyleSheet.create({
   modos: { flexDirection: "row", justifyContent: "center", gap: 24, paddingBottom: 4 },
   modo: { color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: "600" },
   modoActivo: { color: "#fdd835" },
+  enfoque: {
+    position: "absolute",
+    width: LADO_DEL_ENFOQUE,
+    height: LADO_DEL_ENFOQUE,
+    borderWidth: 1.5,
+    borderColor: "#ffd60a",
+    borderRadius: 4,
+  },
 });
 
 /**
@@ -601,12 +680,30 @@ const AUMENTO_MAXIMO = 10;
 /**
  * El zoom que se le pasa a la cámara. En Android expo-camera lo toma lineal
  * (`fracción × máximo`, nunca menos de 1×), así que se pasa el aumento
- * buscado sobre `AUMENTO_MAXIMO`: 0 queda en 1×. En iOS expo-camera ya lo
+ * buscado sobre el máximo —el real, que cuenta el pellizco nativo, o
+ * `AUMENTO_MAXIMO` hasta saberlo—: 0 queda en 1×. En iOS expo-camera ya lo
  * aplica exponencial (`mínimo × (máximo / mínimo) ^ zoom`) y se pasa tal cual.
  */
-function zoomDeLaCamara(z: number): number {
+function zoomDeLaCamara(z: number, maximo: number): number {
   if (Platform.OS !== "android") return z;
-  return Math.pow(AUMENTO_MAXIMO, z) / AUMENTO_MAXIMO;
+  return Math.pow(maximo, z) / maximo;
+}
+
+/**
+ * Si el pellizco y el toque para enfocar los hace la cámara nativa. En
+ * Android sí, por el parche a expo-camera; en iOS no hay toque para enfocar
+ * y el pellizco va por gesture-handler.
+ */
+const GESTOS_NATIVOS = Platform.OS === "android";
+
+function ConPellizco({
+  gesto,
+  children,
+}: {
+  gesto: ReturnType<typeof Gesture.Pinch> | null;
+  children: React.ReactElement;
+}) {
+  return gesto ? <GestureDetector gesture={gesto}>{children}</GestureDetector> : children;
 }
 
 /**

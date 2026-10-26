@@ -1,7 +1,53 @@
+diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt
+--- a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt
++++ b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/CameraViewModule.kt
+@@ -46,7 +46,10 @@
+   "onFacesDetected",
+   "onFaceDetectionError",
+   "onPictureSaved",
+-  "onAvailableLensesChanged"
++  "onAvailableLensesChanged",
++  // Vivero: el pellizco y el toque para enfocar, nativos (ver ExpoCameraView).
++  "onZoomNativo",
++  "onEnfocar"
+ )
+ 
+ val cameraPermissions = if (VRUtilities.isQuest()) {
 diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
 --- a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
 +++ b/node_modules/expo-camera/android/src/main/java/expo/modules/camera/ExpoCameraView.kt
-@@ -126,6 +126,8 @@
+@@ -11,9 +11,13 @@
+ import android.media.AudioManager
+ import android.media.MediaActionSound
+ import android.os.Bundle
++import android.os.SystemClock
+ import android.util.Log
+ import android.util.Size
++import android.view.GestureDetector
++import android.view.MotionEvent
+ import android.view.OrientationEventListener
++import android.view.ScaleGestureDetector
+ import android.view.Surface
+ import android.view.View
+ import android.view.ViewGroup
+@@ -75,6 +79,8 @@
+ import expo.modules.kotlin.Promise
+ import expo.modules.kotlin.RuntimeContext
+ import expo.modules.kotlin.exception.Exceptions
++import expo.modules.kotlin.records.Field
++import expo.modules.kotlin.records.Record
+ import expo.modules.kotlin.viewevent.EventDispatcher
+ import expo.modules.kotlin.views.ExpoView
+ import kotlinx.coroutines.CoroutineScope
+@@ -84,6 +90,7 @@
+ import java.io.File
+ import java.lang.Float.max
+ import java.lang.Float.min
++import java.util.concurrent.TimeUnit
+ import kotlin.math.roundToInt
+ import kotlin.properties.Delegates
+ 
+@@ -126,6 +133,8 @@
    private var imageCaptureUseCase: ImageCapture? = null
    private var imageAnalysisUseCase: ImageAnalysis? = null
    private var recorder: Recorder? = null
@@ -10,7 +56,83 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
    private var barcodeFormats: List<BarcodeType> = emptyList()
    private var glSurfaceTexture: SurfaceTexture? = null
    private var isRecording = false
-@@ -326,6 +328,7 @@
+@@ -232,6 +241,75 @@
+     }
+   )
+ 
++  // Vivero: el pellizco y el toque para enfocar van en nativo, directo a CameraX.
++  // Desde JS cada cuadro del pellizco cruzaba al hilo de JS y volvía como prop,
++  // y el zoom llegaba tarde. JS se entera por estos eventos (la barra de zoom,
++  // el cuadrito de enfoque) pero no está en el camino.
++  private val onZoomNativo by EventDispatcher<ZoomNativoEvent>()
++  private val onEnfocar by EventDispatcher<EnfoqueEvent>()
++  /** El aumento que lleva el pellizco; el `zoomState` de CameraX se actualiza tarde. */
++  private var ratioDelPellizco = 1f
++  /**
++   * Hasta cuándo no se aplica la prop `zoom`: JS la devuelve con lo que el
++   * pellizco ya puso, y ese eco llega con unos cuadros de atraso y lo deshacía.
++   */
++  private var ignorarZoomHasta = 0L
++  private var huboPellizco = false
++
++  private val pellizco by lazy {
++    ScaleGestureDetector(
++      context,
++      object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
++        override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
++          huboPellizco = true
++          ratioDelPellizco = camera?.cameraInfo?.zoomState?.value?.zoomRatio ?: 1f
++          return camera != null
++        }
++
++        override fun onScale(detector: ScaleGestureDetector): Boolean {
++          val c = camera ?: return false
++          val maximo = c.cameraInfo.zoomState.value?.maxZoomRatio ?: 1f
++          ratioDelPellizco = (ratioDelPellizco * detector.scaleFactor).coerceIn(1f, max(1f, maximo))
++          ignorarZoomHasta = SystemClock.uptimeMillis() + 600
++          c.cameraControl.setZoomRatio(ratioDelPellizco)
++          onZoomNativo(ZoomNativoEvent(ratioDelPellizco, maximo))
++          return true
++        }
++      }
++    )
++  }
++
++  private val toque by lazy {
++    GestureDetector(
++      context,
++      object : GestureDetector.SimpleOnGestureListener() {
++        override fun onDown(e: MotionEvent) = true
++
++        override fun onSingleTapUp(e: MotionEvent): Boolean {
++          if (!huboPellizco) {
++            enfocarEn(e.x, e.y)
++          }
++          return true
++        }
++      }
++    )
++  }
++
++  /** Enfocar y medir la luz donde se tocó, como la cámara del teléfono. */
++  private fun enfocarEn(x: Float, y: Float) {
++    val c = camera ?: return
++    val punto = previewView.meteringPointFactory.createPoint(x, y)
++    val accion = FocusMeteringAction.Builder(
++      punto,
++      FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE
++    )
++      .setAutoCancelDuration(5, TimeUnit.SECONDS)
++      .build()
++    c.cameraControl.startFocusAndMetering(accion)
++    val densidad = resources.displayMetrics.density
++    onEnfocar(EnfoqueEvent(x / densidad, y / densidad))
++  }
++
+   // Scanning-related properties
+   private var shouldScanBarcodes = false
+ 
+@@ -326,6 +404,7 @@
      }
    }
  
@@ -18,7 +140,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
    fun record(options: RecordingOptions, promise: Promise, cacheDirectory: File) {
      val file = FileSystemUtils.generateOutputFile(cacheDirectory, "Camera", ".mp4")
      val fileOutputOptions = FileOutputOptions.Builder(file)
-@@ -343,6 +346,7 @@
+@@ -343,6 +422,7 @@
          return
        }
        activeRecording = it.prepareRecording(context, fileOutputOptions)
@@ -26,7 +148,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
          .apply {
            if (!mute) {
              withAudioEnabled()
-@@ -360,6 +364,7 @@
+@@ -360,6 +440,7 @@
                isRecording = true
              }
              is VideoRecordEvent.Finalize -> {
@@ -34,7 +156,7 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
                when (event.error) {
                  VideoRecordEvent.Finalize.ERROR_FILE_SIZE_LIMIT_REACHED,
                  VideoRecordEvent.Finalize.ERROR_DURATION_LIMIT_REACHED,
-@@ -449,7 +454,11 @@
+@@ -449,7 +530,11 @@
        .setFlashMode(flashMode.mapToLens())
        .build()
  
@@ -47,7 +169,41 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
      imageAnalysisUseCase = createImageAnalyzer()
  
      val useCases = UseCaseGroup.Builder().apply {
-@@ -798,6 +807,9 @@
+@@ -588,6 +673,9 @@
+   }
+ 
+   private fun setCameraZoom(value: Float) {
++    if (SystemClock.uptimeMillis() < ignorarZoomHasta) {
++      return
++    }
+     val maxZoomRatio = camera?.cameraInfo?.zoomState?.value?.maxZoomRatio ?: 1f
+     val targetZoomRatio = max(1f, min(maxZoomRatio, value.coerceIn(0f, 1f) * maxZoomRatio))
+     camera?.cameraControl?.setZoomRatio(targetZoomRatio)
+@@ -766,8 +854,23 @@
+ 
+   override fun getPreviewSizeAsArray() = intArrayOf(previewView.width, previewView.height)
+ 
++  @SuppressLint("ClickableViewAccessibility")
++  private fun escucharToques() {
++    previewView.setOnTouchListener { _, e ->
++      // Los dos ven todo: GestureDetector descarta el toque solo cuando entra
++      // un segundo dedo, y `huboPellizco` cubre el resto del gesto.
++      if (e.actionMasked == MotionEvent.ACTION_DOWN) {
++        huboPellizco = false
++      }
++      pellizco.onTouchEvent(e)
++      toque.onTouchEvent(e)
++      true
++    }
++  }
++
+   init {
+     orientationEventListener.enable()
++    escucharToques()
+     previewView.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
+       override fun onChildViewRemoved(parent: View?, child: View?) = Unit
+       override fun onChildViewAdded(parent: View?, child: View?) {
+@@ -798,9 +901,23 @@
    }
  
    fun cleanupCamera() {
@@ -57,3 +213,17 @@ diff --git a/node_modules/expo-camera/android/src/main/java/expo/modules/camera/
      orientationEventListener.disable()
      cancelCoroutineScope()
      cameraProvider?.unbindAll()
+     glSurfaceTexture?.release()
+   }
+ }
++
++// Vivero: lo que el pellizco y el toque nativos le cuentan a JS.
++class ZoomNativoEvent(
++  @Field val ratio: Float,
++  @Field val maximo: Float
++) : Record
++
++class EnfoqueEvent(
++  @Field val x: Float,
++  @Field val y: Float
++) : Record
