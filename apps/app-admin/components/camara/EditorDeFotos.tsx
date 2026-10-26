@@ -3,12 +3,12 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  KeyboardAvoidingView,
   Modal,
   PixelRatio,
   Pressable,
   ScrollView,
   StyleSheet,
+  Text as TextoNativo,
   TextInput,
   View,
 } from "react-native";
@@ -21,21 +21,37 @@ import * as MediaLibrary from "expo-media-library";
 import { captureRef } from "react-native-view-shot";
 import type { ArchivoLocal } from "@vivero/app-ui/lib/galeria";
 import { RecortarFoto, type EdicionDeFoto } from "@/components/informes/RecortarFoto";
-import { Lienzo } from "@/components/camara/Lienzo";
+import { Lienzo, estiloDelTexto } from "@/components/camara/Lienzo";
+import { BarraDeColor } from "@/components/camara/BarraDeColor";
+import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
 import {
+  FUENTES,
   LADO_ESTANDAR,
+  POSICION_DEL_ROJO,
+  colorEnLaBarra,
   conCalidad,
   enEdicion,
   medidasDe,
   recortar,
   tieneDibujos,
+  type AlineacionDeTexto,
+  type FondoDeTexto,
   type FotoEnEdicion,
   type TextoEnFoto,
   type Trazo,
 } from "@/lib/edicion-de-fotos";
 
-/** Los colores del lápiz y del texto, los de WhatsApp: blanco primero. */
-const COLORES = ["#ffffff", "#000000", "#e53935", "#fdd835", "#43a047", "#1e88e5", "#8e24aa"];
+/** Lo que sigue a cada alineación y a cada fondo al tocar su botón. */
+const SIGUIENTE_ALINEACION: Record<AlineacionDeTexto, AlineacionDeTexto> = {
+  center: "left",
+  left: "right",
+  right: "center",
+};
+const SIGUIENTE_FONDO: Record<FondoDeTexto, FondoDeTexto> = {
+  ninguno: "solido",
+  solido: "suave",
+  suave: "ninguno",
+};
 /** Grosor del lápiz y tamaño del texto, en fracción del ancho de la foto. */
 const GROSOR = 0.012;
 const TAMANO_TEXTO = 0.07;
@@ -75,9 +91,13 @@ export function EditorDeFotos({
   const [actual, setActual] = useState(0);
   const [hd, setHd] = useState(false);
   const [herramienta, setHerramienta] = useState<Herramienta>(null);
-  const [color, setColor] = useState(COLORES[2]);
+  const [color, setColor] = useState(() => colorEnLaBarra(POSICION_DEL_ROJO));
+  const [posicionDelColor, setPosicionDelColor] = useState(POSICION_DEL_ROJO);
   const [enCurso, setEnCurso] = useState<Trazo | null>(null);
   const [escribiendo, setEscribiendo] = useState<TextoEnFoto | null>(null);
+  /** El ancho del texto que se escribe, medido aparte: un TextInput no se encoge solo. */
+  const [anchoDelTexto, setAnchoDelTexto] = useState(0);
+  const altoDelTeclado = useAltoDelTeclado();
   const [recortando, setRecortando] = useState(false);
   const [trabajando, setTrabajando] = useState<string | null>(null);
   const [area, setArea] = useState<{ w: number; h: number } | null>(null);
@@ -192,10 +212,14 @@ export function EditorDeFotos({
     setEscribiendo({
       id: `${Date.now()}`,
       texto: "",
-      color: COLORES[0],
+      color: "#ffffff",
+      posicionDelColor: 0,
       x: 0.5,
       y: 0.5,
       tamano: TAMANO_TEXTO,
+      fuente: 0,
+      alineacion: "center",
+      fondo: "ninguno",
     });
   }
 
@@ -234,8 +258,9 @@ export function EditorDeFotos({
     const a = aplanando;
     if (!a) return;
     try {
-      // Un cuadro para que el SVG termine de dibujar encima de la foto.
-      await new Promise((r) => setTimeout(r, 60));
+      // Unos cuadros para que el SVG y los textos, que se miden antes de
+      // dibujarse, terminen encima de la foto.
+      await new Promise((r) => setTimeout(r, 150));
       const uri = await captureRef(lienzoOculto, {
         format: "jpg",
         quality: hd ? 0.92 : 0.8,
@@ -324,7 +349,12 @@ export function EditorDeFotos({
   return (
     <Modal visible animationType="fade" onRequestClose={onCerrar} statusBarTranslucent>
       <GestureHandlerRootView style={styles.pantalla}>
-        <View style={[styles.arriba, { paddingTop: insets.top + 8 }]}>
+        {/* Mientras se escribe, las barras del editor se esconden sin dejar
+            su lugar, así la foto no se mueve. */}
+        <View
+          style={[styles.arriba, { paddingTop: insets.top + 8 }, escribiendo && styles.escondido]}
+          pointerEvents={escribiendo ? "none" : "auto"}
+        >
           {dibujando ? (
             <>
               <BotonDeEditor icono="arrow-undo" etiqueta="Deshacer" onPress={deshacer} disabled={!foto?.trazos.length} />
@@ -369,7 +399,13 @@ export function EditorDeFotos({
           ) : esFoto ? (
             <GestureDetector gesture={Gesture.Exclusive(gesto, toque)}>
               <View>
-                <Lienzo foto={foto} ancho={caja.w} alto={caja.h} enCurso={enCurso} />
+                <Lienzo
+                  foto={foto}
+                  ancho={caja.w}
+                  alto={caja.h}
+                  enCurso={enCurso}
+                  sinElTexto={escribiendo?.id}
+                />
               </View>
             </GestureDetector>
           ) : (
@@ -379,19 +415,21 @@ export function EditorDeFotos({
           )}
           {dibujando ? (
             <View style={styles.paleta}>
-              {COLORES.map((c) => (
-                <Pressable
-                  key={c}
-                  onPress={() => setColor(c)}
-                  style={[styles.color, { backgroundColor: c }, color === c && styles.colorElegido]}
-                  accessibilityLabel={`Color ${c}`}
-                />
-              ))}
+              <BarraDeColor
+                posicion={posicionDelColor}
+                onCambio={(p, c) => {
+                  setPosicionDelColor(p);
+                  setColor(c);
+                }}
+              />
             </View>
           ) : null}
         </View>
 
-        <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
+        <View
+          style={[styles.abajo, { paddingBottom: insets.bottom + 16 }, escribiendo && styles.escondido]}
+          pointerEvents={escribiendo ? "none" : "auto"}
+        >
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.miniaturas}>
             {(fotos ?? []).map((f, i) => (
               <Pressable
@@ -437,36 +475,122 @@ export function EditorDeFotos({
         ) : null}
 
         {escribiendo ? (
-          <KeyboardAvoidingView behavior="padding" style={styles.escribir}>
+          <View style={[styles.escribir, { paddingBottom: altoDelTeclado }]}>
             <View style={[styles.arriba, { paddingTop: insets.top + 8 }]}>
-              <View style={styles.flex} />
-              <Pressable onPress={terminarTexto} style={styles.listoLapiz} accessibilityRole="button">
-                <Text style={styles.listoLapizTexto}>Listo</Text>
+              <Pressable
+                onPress={terminarTexto}
+                style={[styles.boton, styles.botonActivo]}
+                accessibilityRole="button"
+                accessibilityLabel="Listo"
+              >
+                <Ionicons name="checkmark" size={24} color="#000" />
               </Pressable>
-            </View>
-            <View style={styles.escribirCentro}>
-              <TextInput
-                autoFocus
-                multiline
-                value={escribiendo.texto}
-                onChangeText={(texto) => setEscribiendo((t) => (t ? { ...t, texto } : t))}
-                placeholder="Escribe…"
-                placeholderTextColor="rgba(255,255,255,0.5)"
-                style={[styles.campo, { color: escribiendo.color }]}
-                textAlign="center"
-              />
-            </View>
-            <View style={[styles.paletaFila, { paddingBottom: 12 }]}>
-              {COLORES.map((c) => (
+              <View style={[styles.flex, styles.herramientasDeTexto]}>
                 <Pressable
-                  key={c}
-                  onPress={() => setEscribiendo((t) => (t ? { ...t, color: c } : t))}
-                  style={[styles.color, { backgroundColor: c }, escribiendo.color === c && styles.colorElegido]}
-                  accessibilityLabel={`Color ${c}`}
-                />
-              ))}
+                  onPress={() =>
+                    setEscribiendo((t) => (t ? { ...t, alineacion: SIGUIENTE_ALINEACION[t.alineacion] } : t))
+                  }
+                  style={styles.boton}
+                  accessibilityRole="button"
+                  accessibilityLabel="Alineación"
+                >
+                  <MaterialCommunityIcons
+                    name={
+                      escribiendo.alineacion === "left"
+                        ? "format-align-left"
+                        : escribiendo.alineacion === "right"
+                          ? "format-align-right"
+                          : "format-align-center"
+                    }
+                    size={22}
+                    color="#fff"
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={() => setEscribiendo((t) => (t ? { ...t, fondo: SIGUIENTE_FONDO[t.fondo] } : t))}
+                  style={[styles.boton, escribiendo.fondo !== "ninguno" && styles.botonActivo]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fondo del texto"
+                >
+                  <MaterialCommunityIcons
+                    name={escribiendo.fondo === "suave" ? "alpha-a-box-outline" : "alpha-a-box"}
+                    size={24}
+                    color={escribiendo.fondo === "ninguno" ? "#fff" : "#000"}
+                  />
+                </Pressable>
+              </View>
+              {/* El mismo ancho que el ✓, para que los dos del medio queden al centro. */}
+              <View style={styles.boton_espacio} />
             </View>
-          </KeyboardAvoidingView>
+
+            <View style={styles.escribirCentro}>
+              {(() => {
+                const tamano = escribiendo.tamano * (caja?.w ?? 390);
+                const estilo = estiloDelTexto(escribiendo, tamano);
+                return (
+                  <>
+                    {/* Medido aparte para dar al campo el ancho de lo escrito. */}
+                    <TextoNativo
+                      allowFontScaling={false}
+                      textBreakStrategy="simple"
+                      style={[estilo.letra, styles.medida, { maxWidth: (caja?.w ?? 390) * 0.9 }]}
+                      onLayout={(e) => setAnchoDelTexto(e.nativeEvent.layout.width)}
+                    >
+                      {escribiendo.texto || "Agrega texto"}
+                    </TextoNativo>
+                    <View style={estilo.caja}>
+                      <TextInput
+                        autoFocus
+                        multiline
+                        allowFontScaling={false}
+                        value={escribiendo.texto}
+                        onChangeText={(texto) => setEscribiendo((t) => (t ? { ...t, texto } : t))}
+                        placeholder="Agrega texto"
+                        placeholderTextColor="rgba(255,255,255,0.6)"
+                        selectionColor="#25d366"
+                        style={[estilo.letra, styles.campo, { width: anchoDelTexto + 6 }]}
+                      />
+                    </View>
+                  </>
+                );
+              })()}
+              <View style={styles.barraDelTexto}>
+                <BarraDeColor
+                  posicion={escribiendo.posicionDelColor}
+                  onCambio={(p, c) =>
+                    setEscribiendo((t) => (t ? { ...t, posicionDelColor: p, color: c } : t))
+                  }
+                />
+              </View>
+            </View>
+
+            <ScrollView
+              horizontal
+              keyboardShouldPersistTaps="always"
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.fuentes}
+            >
+              {FUENTES.map((f, i) => {
+                const elegida = escribiendo.fuente === i;
+                return (
+                  <Pressable
+                    key={i}
+                    onPress={() => setEscribiendo((t) => (t ? { ...t, fuente: i } : t))}
+                    style={[styles.fuente, elegida && styles.fuenteElegida]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Letra ${i + 1}`}
+                  >
+                    <TextoNativo
+                      allowFontScaling={false}
+                      style={[styles.fuenteTexto, f, elegida && styles.fuenteTextoElegida]}
+                    >
+                      Aa
+                    </TextoNativo>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
         ) : null}
 
         {/* Donde se aplana: a la resolución de la foto, invisible. */}
@@ -552,18 +676,7 @@ const styles = StyleSheet.create({
   listoLapizTexto: { color: "#000", fontSize: 14, fontWeight: "600" },
   area: { flex: 1, alignItems: "center", justifyContent: "center" },
   video: { alignItems: "center", justifyContent: "center", backgroundColor: "#222" },
-  paleta: {
-    position: "absolute",
-    right: 12,
-    top: 12,
-    gap: 10,
-    padding: 6,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.35)",
-  },
-  paletaFila: { flexDirection: "row", justifyContent: "center", gap: 12 },
-  color: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: "rgba(255,255,255,0.7)" },
-  colorElegido: { borderColor: "#fff", borderWidth: 3, transform: [{ scale: 1.15 }] },
+  paleta: { position: "absolute", right: 8, top: 12 },
   abajo: {
     flexDirection: "row",
     alignItems: "center",
@@ -605,8 +718,26 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
   },
   cubiertaTexto: { color: "#fff", fontSize: 14 },
-  escribir: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.75)" },
-  escribirCentro: { flex: 1, justifyContent: "center", paddingHorizontal: 24 },
-  campo: { fontSize: 30, fontWeight: "700" },
+  // La foto se sigue viendo detrás, apenas oscurecida, como en WhatsApp.
+  escribir: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.3)" },
+  herramientasDeTexto: { flexDirection: "row", justifyContent: "center", gap: 12 },
+  boton_espacio: { width: 40 },
+  escribirCentro: { flex: 1, alignItems: "center", justifyContent: "center" },
+  medida: { position: "absolute", opacity: 0, left: 0, top: 0 },
+  campo: { padding: 0, margin: 0, textAlignVertical: "center" },
+  barraDelTexto: { position: "absolute", right: 8, top: 8 },
+  fuentes: { gap: 10, paddingHorizontal: 12, paddingVertical: 10 },
+  fuente: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+  fuenteElegida: { backgroundColor: "#fff" },
+  fuenteTexto: { color: "#fff", fontSize: 17 },
+  fuenteTextoElegida: { color: "#000" },
+  escondido: { opacity: 0 },
   oculto: { position: "absolute", left: 0, top: 0, opacity: 0 },
 });

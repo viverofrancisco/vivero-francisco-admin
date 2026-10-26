@@ -1,7 +1,13 @@
-import { forwardRef } from "react";
-import { Image, View } from "react-native";
-import Svg, { Path, Text as SvgText } from "react-native-svg";
-import type { FotoEnEdicion, TextoEnFoto, Trazo } from "@/lib/edicion-de-fotos";
+import { forwardRef, useState } from "react";
+import { Image, Text, View } from "react-native";
+import Svg, { Path } from "react-native-svg";
+import {
+  FUENTES,
+  coloresDelTexto,
+  type FotoEnEdicion,
+  type TextoEnFoto,
+  type Trazo,
+} from "@/lib/edicion-de-fotos";
 
 /** El camino SVG de un trazo, en los puntos de esta caja. */
 export function caminoDe(t: Trazo, ancho: number, alto: number): string {
@@ -19,7 +25,9 @@ export function caminoDe(t: Trazo, ancho: number, alto: number): string {
  *
  * Es **el mismo componente** en el editor, a lo ancho del teléfono, y al
  * aplanar (`react-native-view-shot`), a la resolución de la foto: todo se
- * guarda en fracciones, así que lo que se ve es lo que sale.
+ * guarda en fracciones, así que lo que se ve es lo que sale. Los trazos son
+ * SVG; los textos, `Text` de React Native, porque el fondo, la alineación y
+ * las letras tienen que salir iguales que en el campo donde se escriben.
  */
 export const Lienzo = forwardRef<
   View,
@@ -29,18 +37,21 @@ export const Lienzo = forwardRef<
     alto: number;
     /** El trazo que se está dibujando, todavía sin soltar. */
     enCurso?: Trazo | null;
-    /** Textos que se dibujan aparte (el editor los hace arrastrables). */
-    sinTextos?: boolean;
+    /** El texto que se está escribiendo encima, que no se dibuja dos veces. */
+    sinElTexto?: string | null;
     onCargada?: () => void;
   }
->(function Lienzo({ foto, ancho, alto, enCurso, sinTextos = false, onCargada }, ref) {
+>(function Lienzo({ foto, ancho, alto, enCurso, sinElTexto, onCargada }, ref) {
   const trazos = enCurso ? [...foto.trazos, enCurso] : foto.trazos;
   return (
-    <View ref={ref} collapsable={false} style={{ width: ancho, height: alto }}>
+    <View ref={ref} collapsable={false} style={{ width: ancho, height: alto, overflow: "hidden" }}>
       <Image
         source={{ uri: foto.archivo.uri }}
         style={{ width: ancho, height: alto }}
         resizeMode="stretch"
+        // Android aparece las imágenes en 300 ms: al aplanar, la captura
+        // agarraba la foto a medio aparecer y salía oscura.
+        fadeDuration={0}
         onLoadEnd={onCargada}
       />
       <Svg width={ancho} height={alto} style={{ position: "absolute", left: 0, top: 0 }}>
@@ -55,37 +66,84 @@ export const Lienzo = forwardRef<
             fill="none"
           />
         ))}
-        {sinTextos ? null : foto.textos.map((t) => <TextoSvg key={t.id} t={t} ancho={ancho} alto={alto} />)}
       </Svg>
+      {foto.textos
+        .filter((t) => t.id !== sinElTexto)
+        .map((t) => (
+          <TextoEnLienzo key={t.id} t={t} ancho={ancho} alto={alto} />
+        ))}
     </View>
   );
 });
 
-/**
- * Un texto sobre la foto: centrado en su punto, con un borde oscuro fino
- * para que se lea sobre el pasto claro y sobre la sombra.
- */
-export function TextoSvg({ t, ancho, alto }: { t: TextoEnFoto; ancho: number; alto: number }) {
+/** Cómo se ve un texto a una letra de `tamano` puntos: lo comparten el lienzo y el campo. */
+export function estiloDelTexto(t: TextoEnFoto, tamano: number) {
+  const { letra, fondo } = coloresDelTexto(t);
+  return {
+    caja: fondo
+      ? {
+          backgroundColor: fondo,
+          borderRadius: tamano * 0.3,
+          paddingHorizontal: tamano * 0.35,
+          paddingVertical: tamano * 0.12,
+        }
+      : null,
+    letra: {
+      ...FUENTES[t.fuente],
+      color: letra,
+      fontSize: tamano,
+      lineHeight: tamano * 1.25,
+      textAlign: t.alineacion,
+      // Sin fondo, una sombra suave para que se lea sobre el pasto claro.
+      ...(fondo
+        ? null
+        : {
+            textShadowColor: "rgba(0,0,0,0.45)",
+            textShadowRadius: tamano * 0.08,
+            textShadowOffset: { width: 0, height: tamano * 0.02 },
+          }),
+    },
+  };
+}
+
+/** Un texto sobre la foto, centrado en su punto. */
+function TextoEnLienzo({ t, ancho, alto }: { t: TextoEnFoto; ancho: number; alto: number }) {
   const tamano = t.tamano * ancho;
-  const lineas = t.texto.split("\n");
-  const primera = t.y * alto - ((lineas.length - 1) * tamano * 1.2) / 2 + tamano * 0.35;
+  const estilo = estiloDelTexto(t, tamano);
+  const [medido, setMedido] = useState(0);
   return (
-    <>
-      {lineas.map((linea, i) => (
-        <SvgText
-          key={i}
-          x={t.x * ancho}
-          y={primera + i * tamano * 1.2}
-          fontSize={tamano}
-          fontWeight="700"
-          fill={t.color}
-          stroke={t.color === "#000000" ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)"}
-          strokeWidth={Math.max(tamano * 0.03, 0.5)}
-          textAnchor="middle"
+    // Una caja del doble de la foto centrada en el punto: lo de adentro se
+    // centra solo, sin medirlo.
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        left: t.x * ancho - ancho,
+        top: t.y * alto - alto,
+        width: ancho * 2,
+        height: alto * 2,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* Medido aparte y dibujado con ese ancho y un poco más: con letras
+          como la manuscrita, Android mide la línea corta y al dibujarla manda
+          la última palabra a una línea que no cabe en la caja. */}
+      <Text
+        allowFontScaling={false}
+        style={[estilo.letra, { position: "absolute", opacity: 0, maxWidth: ancho * 0.9 }]}
+        onLayout={(e) => setMedido(e.nativeEvent.layout.width)}
+      >
+        {t.texto}
+      </Text>
+      <View style={estilo.caja}>
+        <Text
+          allowFontScaling={false}
+          style={[estilo.letra, medido ? { width: medido + tamano * 0.1 } : { maxWidth: ancho * 0.9 }]}
         >
-          {linea}
-        </SvgText>
-      ))}
-    </>
+          {t.texto}
+        </Text>
+      </View>
+    </View>
   );
 }

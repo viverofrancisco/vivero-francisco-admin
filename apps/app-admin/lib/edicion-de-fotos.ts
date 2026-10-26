@@ -1,4 +1,4 @@
-import { Image } from "react-native";
+import { Image, Platform } from "react-native";
 import { FlipType, SaveFormat, manipulateAsync, type Action } from "expo-image-manipulator";
 import type { ArchivoLocal } from "@vivero/app-ui/lib/galeria";
 import type { EdicionDeFoto } from "@/components/informes/RecortarFoto";
@@ -17,15 +17,98 @@ export interface Trazo {
   puntos: { x: number; y: number }[];
 }
 
+export type AlineacionDeTexto = "left" | "center" | "right";
+/**
+ * El fondo del texto, los tres de WhatsApp: ninguno (letra con sombra), el
+ * color lleno con la letra en contraste, o el color translúcido.
+ */
+export type FondoDeTexto = "ninguno" | "solido" | "suave";
+
 export interface TextoEnFoto {
   id: string;
   texto: string;
   color: string;
+  /** Dónde está el color en la barra (0–1), para volver a abrirlo ahí. */
+  posicionDelColor: number;
   /** El centro del texto. */
   x: number;
   y: number;
   /** Tamaño de la letra, en fracción del ancho de la foto. */
   tamano: number;
+  /** Índice en `FUENTES`. */
+  fuente: number;
+  alineacion: AlineacionDeTexto;
+  fondo: FondoDeTexto;
+}
+
+/**
+ * Las letras de la fila de WhatsApp, con lo que trae el sistema —ninguna se
+ * descarga—: la de siempre en negrita, una con serifa, una manuscrita, una
+ * angosta, una de máquina, la fina y la cursiva gruesa.
+ */
+export const FUENTES: {
+  fontFamily?: string;
+  fontWeight?: "400" | "700" | "800";
+  fontStyle?: "italic";
+}[] = [
+  { fontWeight: "700" },
+  { fontFamily: Platform.select({ ios: "Georgia", default: "serif" }) },
+  { fontFamily: Platform.select({ ios: "SnellRoundhand", default: "cursive" }) },
+  {
+    fontFamily: Platform.select({ ios: "AvenirNextCondensed-Heavy", default: "sans-serif-condensed" }),
+    fontWeight: "700",
+  },
+  { fontFamily: Platform.select({ ios: "Courier New", default: "monospace" }), fontWeight: "700" },
+  { fontWeight: "400" },
+  { fontWeight: "800", fontStyle: "italic" },
+];
+
+/** La parte de arriba de la barra de colores va de blanco a negro. */
+const GRISES = 0.15;
+
+function hex(r: number, g: number, b: number): string {
+  return `#${[r, g, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * El color en ese punto de la barra (0 arriba, 1 abajo): blanco a negro y
+ * después el arco iris de rojo a rosa, como la de WhatsApp.
+ */
+export function colorEnLaBarra(posicion: number): string {
+  const v = Math.min(Math.max(posicion, 0), 1);
+  if (v < GRISES) {
+    const g = 255 * (1 - v / GRISES);
+    return hex(g, g, g);
+  }
+  const h = ((v - GRISES) / (1 - GRISES)) * 330;
+  // HSL con saturación 0,9 y luz 0,55.
+  const s = 0.9;
+  const l = 0.55;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => 255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)));
+  return hex(f(0), f(8), f(4));
+}
+
+/** Dónde queda el rojo en la barra: el primer color después de los grises. */
+export const POSICION_DEL_ROJO = GRISES;
+
+function esClaro(color: string): boolean {
+  const n = parseInt(color.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b > 160;
+}
+
+/** El color de la letra y el del fondo, según el fondo elegido. */
+export function coloresDelTexto(t: Pick<TextoEnFoto, "color" | "fondo">): {
+  letra: string;
+  fondo: string | null;
+} {
+  if (t.fondo === "ninguno") return { letra: t.color, fondo: null };
+  if (t.fondo === "solido") return { letra: esClaro(t.color) ? "#000000" : "#ffffff", fondo: t.color };
+  return { letra: esClaro(t.color) ? "#000000" : "#ffffff", fondo: `${t.color}99` };
 }
 
 /** Una foto (o un video) en el editor, con lo que se le hizo. */
