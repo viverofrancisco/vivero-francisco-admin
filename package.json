@@ -15,7 +15,7 @@
     "migrate:dev": "npm run migrate:dev -w apps/admin",
     "migrate:deploy": "npm run migrate:deploy -w apps/admin",
     "migrate:status": "npm run migrate:status -w apps/admin",
-    "postinstall": "patch-package"
+    "postinstall": "if command -v patch-package >/dev/null 2>&1; then patch-package; fi"
   },
   "overrides": {
     "react": "19.1.0",
