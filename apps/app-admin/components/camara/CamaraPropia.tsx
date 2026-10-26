@@ -711,8 +711,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
   },
   // Aire arriba y a la derecha para la ✕ de lo sacado, que asoma del borde.
-  // Cuadradas y de borde a borde, como las de WhatsApp.
-  recientes: { gap: 2 },
+  // Cuadradas y casi pegadas, como las de WhatsApp, con aire en los extremos
+  // para que la primera no quede contra el borde de la pantalla.
+  recientes: { gap: 2, paddingHorizontal: 8 },
   zonaDeLaTira: { gap: 2 },
   // El asa de WhatsApp: una raya blanca corta. El área que se toca o arrastra
   // es mucho más grande que la raya: en Android el `hitSlop` no pasa del
