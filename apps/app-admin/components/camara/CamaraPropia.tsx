@@ -321,6 +321,8 @@ export function CamaraPropia({
   );
 
   const hayTira = recientes.length > 0 || tomados.length > 0;
+  const mostrarTira = hayTira && !tiraEscondida && !grabando && !pellizcando;
+  const mostrarBarra = grabando || pellizcando || (zoom > 0 && !mostrarTira);
 
   /** El aumento que se ve: el máximo de la cámara elevado a la posición de la barra. */
   const aumentoActual = Math.pow(aumentoMaximo, zoom);
@@ -442,14 +444,24 @@ export function CamaraPropia({
         <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
 
-          {/* Como en WhatsApp: la tira de miniaturas se esconde sola al hacer
-              zoom y la barra de zoom toma su lugar, pegada al asa; al soltar
-              la tira vuelve, salvo que se la haya escondido a mano con el asa.
-              El bloque crece hacia arriba desde el disparador, que no se mueve. */}
+          {/* Como en WhatsApp: el asa va **encima** de la tira y la esconde o
+              la muestra; escondida, el asa baja hasta el disparador y la barra
+              de zoom queda arriba de ella. Al hacer zoom la tira se aparta sola
+              y vuelve al soltar, salvo que se la haya escondido a mano. El
+              bloque crece hacia arriba desde el disparador, que no se mueve. */}
           <View style={styles.zonaDeLaTira}>
-            {grabando || pellizcando || (zoom > 0 && (!hayTira || tiraEscondida)) ? (
-              <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} />
-            ) : hayTira && !tiraEscondida ? (
+            {mostrarBarra ? <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} /> : null}
+            {hayTira && !grabando ? (
+              <Pressable
+                onPress={() => setTiraEscondida((e) => !e)}
+                style={styles.asa}
+                accessibilityRole="button"
+                accessibilityLabel={tiraEscondida ? "Mostrar las fotos" : "Esconder las fotos"}
+              >
+                <View style={styles.asaRaya} />
+              </Pressable>
+            ) : null}
+            {mostrarTira ? (
               <TiraDeLaCamara
                 recientes={recientes}
                 tomados={tomados}
@@ -458,17 +470,6 @@ export function CamaraPropia({
                 onEditar={setEditando}
                 onQuitar={quitar}
               />
-            ) : null}
-            {hayTira && !grabando ? (
-              <Pressable
-                onPress={() => setTiraEscondida((e) => !e)}
-                hitSlop={{ top: 10, bottom: 10, left: 30, right: 30 }}
-                style={styles.asa}
-                accessibilityRole="button"
-                accessibilityLabel={tiraEscondida ? "Mostrar las fotos" : "Esconder las fotos"}
-              >
-                <View style={styles.asaRaya} />
-              </Pressable>
             ) : null}
           </View>
 
@@ -649,9 +650,11 @@ const styles = StyleSheet.create({
   // Aire arriba y a la derecha para la ✕ de lo sacado, que asoma del borde.
   // Cuadradas y de borde a borde, como las de WhatsApp.
   recientes: { gap: 2 },
-  zonaDeLaTira: { gap: 6 },
-  // El asa de WhatsApp: una raya blanca corta sobre el disparador.
-  asa: { alignSelf: "center", paddingVertical: 4, paddingHorizontal: 12 },
+  zonaDeLaTira: { gap: 2 },
+  // El asa de WhatsApp: una raya blanca corta. El área que se toca es mucho
+  // más grande que la raya: en Android el `hitSlop` no pasa del padre, y con
+  // la raya sola no había cómo acertarle.
+  asa: { alignSelf: "center", paddingVertical: 10, paddingHorizontal: 40 },
   asaRaya: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)" },
   tomados: { flexDirection: "row", alignItems: "center", gap: 2, marginRight: 2 },
   tomado: { width: LADO_MINIATURA, height: LADO_MINIATURA },
