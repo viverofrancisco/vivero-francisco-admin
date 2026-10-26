@@ -15,6 +15,13 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import Reanimated, {
+  FadeIn,
+  FadeInDown,
+  FadeOut,
+  FadeOutDown,
+  LinearTransition,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as MediaLibrary from "expo-media-library";
 import {
@@ -43,6 +50,8 @@ const ICONO_FLASH: Record<FlashMode, React.ComponentProps<typeof Ionicons>["name
 const RECIENTES = 30;
 /** El cuadrito amarillo que marca dónde se enfocó. */
 const LADO_DEL_ENFOQUE = 72;
+/** Cómo se acomoda lo que queda cuando la tira entra o sale. */
+const TRANSICION = LinearTransition.duration(200);
 /** Las miniaturas de la tira: unas cinco a lo ancho, como en WhatsApp. */
 const LADO_MINIATURA = 78;
 
@@ -470,28 +479,44 @@ export function CamaraPropia({
               y vuelve al soltar, salvo que se la haya escondido a mano. El
               bloque crece hacia arriba desde el disparador, que no se mueve. */}
           <View style={styles.zonaDeLaTira}>
-            {mostrarBarra ? <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} /> : null}
+            {/* Todo entra y sale suave: la tira baja desvaneciéndose, la barra
+                aparece, y el asa se desliza a su lugar nuevo en vez de saltar. */}
+            {mostrarBarra ? (
+              <Reanimated.View
+                entering={FadeIn.duration(150)}
+                exiting={FadeOut.duration(120)}
+                layout={TRANSICION}
+              >
+                <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} />
+              </Reanimated.View>
+            ) : null}
             {hayTira && !grabando ? (
               <GestureDetector gesture={gestoDelAsa}>
-                <View
+                <Reanimated.View
+                  layout={TRANSICION}
                   style={styles.asa}
                   accessible
                   accessibilityRole="button"
                   accessibilityLabel={tiraEscondida ? "Mostrar las fotos" : "Esconder las fotos"}
                 >
                   <View style={styles.asaRaya} />
-                </View>
+                </Reanimated.View>
               </GestureDetector>
             ) : null}
             {mostrarTira ? (
-              <TiraDeLaCamara
-                recientes={recientes}
-                tomados={tomados}
-                marcados={marcados}
-                onTocarReciente={alternarReciente}
-                onEditar={setEditando}
-                onQuitar={quitar}
-              />
+              <Reanimated.View
+                entering={FadeInDown.duration(220)}
+                exiting={FadeOutDown.duration(180)}
+              >
+                <TiraDeLaCamara
+                  recientes={recientes}
+                  tomados={tomados}
+                  marcados={marcados}
+                  onTocarReciente={alternarReciente}
+                  onEditar={setEditando}
+                  onQuitar={quitar}
+                />
+              </Reanimated.View>
             ) : null}
           </View>
 
