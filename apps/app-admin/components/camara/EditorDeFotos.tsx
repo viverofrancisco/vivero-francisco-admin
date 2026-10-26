@@ -20,6 +20,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-g
 import * as Haptics from "expo-haptics";
 import * as MediaLibrary from "expo-media-library";
 import { captureRef } from "react-native-view-shot";
+import { useVideoPlayer, VideoView } from "expo-video";
 import type { ArchivoLocal } from "@vivero/app-ui/lib/galeria";
 import { RecortarFoto, type EdicionDeFoto } from "@/components/informes/RecortarFoto";
 import { Lienzo, estiloDelTexto } from "@/components/camara/Lienzo";
@@ -449,9 +450,7 @@ export function EditorDeFotos({
               </View>
             </GestureDetector>
           ) : (
-            <View style={[styles.video, { width: caja.w, height: caja.h }]}>
-              <Ionicons name="play" size={48} color="#fff" />
-            </View>
+            <VideoEnEditor key={foto.archivo.uri} uri={foto.archivo.uri} ancho={caja.w} alto={caja.h} />
           )}
           {dibujando ? (
             <View style={styles.paleta}>
@@ -809,3 +808,18 @@ const styles = StyleSheet.create({
   escondido: { opacity: 0 },
   oculto: { position: "absolute", left: 0, top: 0, opacity: 0 },
 });
+
+/** Un video en el editor: se reproduce con los controles del sistema; no se dibuja encima. */
+function VideoEnEditor({ uri, ancho, alto }: { uri: string; ancho: number; alto: number }) {
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = false;
+  });
+  return (
+    <VideoView
+      player={player}
+      style={[styles.video, { width: ancho, height: alto }]}
+      contentFit="contain"
+      nativeControls
+    />
+  );
+}
