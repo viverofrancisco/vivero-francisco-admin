@@ -719,7 +719,7 @@ const styles = StyleSheet.create({
   // padre, y con la raya sola no había cómo acertarle.
   asa: { alignSelf: "center", paddingVertical: 12, paddingHorizontal: 48 },
   asaRaya: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)" },
-  tomados: { flexDirection: "row", alignItems: "center", gap: 2, marginRight: 2 },
+  tomados: { flexDirection: "row", alignItems: "center", gap: 2 },
   tomado: { width: LADO_MINIATURA, height: LADO_MINIATURA },
   tomadoImagen: { width: LADO_MINIATURA, height: LADO_MINIATURA, borderWidth: 2, borderColor: "#fff" },
   // Adentro de la miniatura: con las miniaturas pegadas, afuera tapaba la de al lado.
@@ -736,7 +736,15 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#fff",
   },
-  separador: { width: 2, height: LADO_MINIATURA, backgroundColor: "rgba(255,255,255,0.6)" },
+  // Lo sacado y lo del teléfono, separados con aire y una raya más corta
+  // que las miniaturas: pegada y de su mismo alto no se distinguía.
+  separador: {
+    width: 2,
+    height: LADO_MINIATURA * 0.6,
+    marginHorizontal: 8,
+    borderRadius: 1,
+    backgroundColor: "rgba(255,255,255,0.8)",
+  },
   reciente: { width: LADO_MINIATURA, height: LADO_MINIATURA },
   recienteImagen: { width: LADO_MINIATURA, height: LADO_MINIATURA },
   recienteVideo: { position: "absolute", left: 4, bottom: 4 },
