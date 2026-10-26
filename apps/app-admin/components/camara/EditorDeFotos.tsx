@@ -5,6 +5,7 @@ import {
   Image,
   Modal,
   PixelRatio,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -347,7 +348,10 @@ export function EditorDeFotos({
   const dibujando = herramienta === "lapiz";
 
   return (
-    <Modal visible animationType="fade" onRequestClose={onCerrar} statusBarTranslucent>
+    // De borde a borde también abajo: la ventana llega al piso, así el alto del
+    // teclado (que en Android cuenta la barra de navegación) y `insets.bottom`
+    // se miden desde el mismo borde y nada queda levantado de más.
+    <Modal visible animationType="fade" onRequestClose={onCerrar} statusBarTranslucent navigationBarTranslucent>
       <GestureHandlerRootView style={styles.pantalla}>
         {/* Mientras se escribe, las barras del editor se esconden sin dejar
             su lugar, así la foto no se mueve. */}
@@ -475,7 +479,14 @@ export function EditorDeFotos({
         ) : null}
 
         {escribiendo ? (
-          <View style={[styles.escribir, { paddingBottom: altoDelTeclado }]}>
+          // Las letras van pegadas al teclado. En Android el alto que da el
+          // teclado no cuenta la barra de navegación, que también tapa.
+          <View
+            style={[
+              styles.escribir,
+              { paddingBottom: altoDelTeclado + (Platform.OS === "android" && altoDelTeclado > 0 ? insets.bottom : 0) },
+            ]}
+          >
             <View style={[styles.arriba, { paddingTop: insets.top + 8 }]}>
               <Pressable
                 onPress={terminarTexto}
@@ -568,6 +579,7 @@ export function EditorDeFotos({
               horizontal
               keyboardShouldPersistTaps="always"
               showsHorizontalScrollIndicator={false}
+              style={styles.filaDeFuentes}
               contentContainerStyle={styles.fuentes}
             >
               {FUENTES.map((f, i) => {
@@ -726,6 +738,9 @@ const styles = StyleSheet.create({
   medida: { position: "absolute", opacity: 0, left: 0, top: 0 },
   campo: { padding: 0, margin: 0, textAlignVertical: "center" },
   barraDelTexto: { position: "absolute", right: 8, top: 8 },
+  // Un ScrollView crece por defecto: sin esto se queda con la mitad del alto
+  // libre y las letras flotan lejos del teclado.
+  filaDeFuentes: { flexGrow: 0 },
   fuentes: { gap: 10, paddingHorizontal: 12, paddingVertical: 10 },
   fuente: {
     width: 44,
