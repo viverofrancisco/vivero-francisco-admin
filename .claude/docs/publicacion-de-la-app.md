@@ -429,6 +429,11 @@ una vez aprobadas las dos tiendas.
    trabajo con la cámara del teléfono. Al abrir la galería, la app le muestra
    arriba las sacadas entre su entrada y su salida de la visita para subirlas
    juntas; el selector del sistema no puede filtrar por ese horario.»
+   **26-oct: se envía con la galería propia.** No hace falta tocar el
+   `app.json`: la variable `GALERIA_PROPIA_EN_ANDROID=1` va en el entorno
+   **production** de EAS (`eas env:create --environment production`), y
+   `app.config.ts` saca los permisos de `blockedPermissions` en el build. Para
+   volver al selector del sistema basta con borrarla y hacer otro build.
    **Pendiente: recuperar la galería propia en Android.** El selector del
    sistema quita funcionalidad (lo ya elegido no vuelve a salir marcado, y no
    es la grilla de WhatsApp que tenemos en iOS). Caminos, de más a menos
