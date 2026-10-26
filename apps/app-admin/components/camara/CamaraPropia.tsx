@@ -322,6 +322,26 @@ export function CamaraPropia({
 
   const hayTira = recientes.length > 0 || tomados.length > 0;
   const mostrarTira = hayTira && !tiraEscondida && !grabando && !pellizcando;
+
+  /**
+   * El asa se toca (esconde o muestra) o se arrastra: hacia abajo esconde,
+   * hacia arriba muestra, como en WhatsApp. Lo que gane primero, el toque o el
+   * arrastre, decide.
+   */
+  const gestoDelAsa = Gesture.Race(
+    Gesture.Pan()
+      .runOnJS(true)
+      .activeOffsetY([-8, 8])
+      .onEnd((e) => {
+        if (e.translationY > 12 || e.velocityY > 300) setTiraEscondida(true);
+        else if (e.translationY < -12 || e.velocityY < -300) setTiraEscondida(false);
+      }),
+    Gesture.Tap()
+      .runOnJS(true)
+      .onEnd((_e, exito) => {
+        if (exito) setTiraEscondida((e) => !e);
+      })
+  );
   const mostrarBarra = grabando || pellizcando || (zoom > 0 && !mostrarTira);
 
   /** El aumento que se ve: el máximo de la cámara elevado a la posición de la barra. */
@@ -452,14 +472,16 @@ export function CamaraPropia({
           <View style={styles.zonaDeLaTira}>
             {mostrarBarra ? <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} /> : null}
             {hayTira && !grabando ? (
-              <Pressable
-                onPress={() => setTiraEscondida((e) => !e)}
-                style={styles.asa}
-                accessibilityRole="button"
-                accessibilityLabel={tiraEscondida ? "Mostrar las fotos" : "Esconder las fotos"}
-              >
-                <View style={styles.asaRaya} />
-              </Pressable>
+              <GestureDetector gesture={gestoDelAsa}>
+                <View
+                  style={styles.asa}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={tiraEscondida ? "Mostrar las fotos" : "Esconder las fotos"}
+                >
+                  <View style={styles.asaRaya} />
+                </View>
+              </GestureDetector>
             ) : null}
             {mostrarTira ? (
               <TiraDeLaCamara
@@ -651,10 +673,10 @@ const styles = StyleSheet.create({
   // Cuadradas y de borde a borde, como las de WhatsApp.
   recientes: { gap: 2 },
   zonaDeLaTira: { gap: 2 },
-  // El asa de WhatsApp: una raya blanca corta. El área que se toca es mucho
-  // más grande que la raya: en Android el `hitSlop` no pasa del padre, y con
-  // la raya sola no había cómo acertarle.
-  asa: { alignSelf: "center", paddingVertical: 10, paddingHorizontal: 40 },
+  // El asa de WhatsApp: una raya blanca corta. El área que se toca o arrastra
+  // es mucho más grande que la raya: en Android el `hitSlop` no pasa del
+  // padre, y con la raya sola no había cómo acertarle.
+  asa: { alignSelf: "center", paddingVertical: 12, paddingHorizontal: 48 },
   asaRaya: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)" },
   tomados: { flexDirection: "row", alignItems: "center", gap: 2, marginRight: 2 },
   tomado: { width: LADO_MINIATURA, height: LADO_MINIATURA },
