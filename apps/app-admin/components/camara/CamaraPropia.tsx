@@ -96,6 +96,8 @@ export function CamaraPropia({
   /** El zoom de la barra, de 0 (sin zoom) a 1 (el máximo del teléfono). */
   const [zoom, setZoom] = useState(0);
   const [pellizcando, setPellizcando] = useState(false);
+  /** La tira escondida con el asa: entonces no vuelve sola después del zoom. */
+  const [tiraEscondida, setTiraEscondida] = useState(false);
   const zoomAlEmpezar = useRef(0);
   /** El aumento máximo de la cámara, que en Android cuenta el pellizco nativo. */
   const [aumentoMaximo, setAumentoMaximo] = useState(AUMENTO_MAXIMO);
@@ -428,26 +430,35 @@ export function CamaraPropia({
         <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
 
-          {/* La barra de zoom va donde está la tira, pegada al disparador y a
-              la altura del pulgar, como en WhatsApp: encima de la tira quedaba
-              a media pantalla. Mientras se usa, la tira se aparta; con la
-              misma altura, el disparador no salta. */}
-          {grabando || (pellizcando && !hayTira) || (zoom > 0 && !hayTira) ? (
-            <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} />
-          ) : pellizcando ? (
-            <View style={styles.lugarDeLaTira}>
+          {/* Como en WhatsApp: la tira de miniaturas se esconde sola al hacer
+              zoom y la barra de zoom toma su lugar, pegada al asa; al soltar
+              la tira vuelve, salvo que se la haya escondido a mano con el asa.
+              El bloque crece hacia arriba desde el disparador, que no se mueve. */}
+          <View style={styles.zonaDeLaTira}>
+            {grabando || pellizcando || (zoom > 0 && (!hayTira || tiraEscondida)) ? (
               <BarraDeZoom zoom={zoom} onCambio={cambiarZoomConLaBarra} />
-            </View>
-          ) : hayTira ? (
-            <TiraDeLaCamara
-              recientes={recientes}
-              tomados={tomados}
-              marcados={marcados}
-              onTocarReciente={alternarReciente}
-              onEditar={setEditando}
-              onQuitar={quitar}
-            />
-          ) : null}
+            ) : hayTira && !tiraEscondida ? (
+              <TiraDeLaCamara
+                recientes={recientes}
+                tomados={tomados}
+                marcados={marcados}
+                onTocarReciente={alternarReciente}
+                onEditar={setEditando}
+                onQuitar={quitar}
+              />
+            ) : null}
+            {hayTira && !grabando ? (
+              <Pressable
+                onPress={() => setTiraEscondida((e) => !e)}
+                hitSlop={{ top: 10, bottom: 10, left: 30, right: 30 }}
+                style={styles.asa}
+                accessibilityRole="button"
+                accessibilityLabel={tiraEscondida ? "Mostrar las fotos" : "Esconder las fotos"}
+              >
+                <View style={styles.asaRaya} />
+              </Pressable>
+            ) : null}
+          </View>
 
           <View style={styles.controles}>
             {/* Lo sacado está en la tira de arriba; a la izquierda queda cambiar de cámara. */}
@@ -575,21 +586,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#d0103a",
   },
   escondido: { opacity: 0 },
+  // La barra de WhatsApp: una línea fina, − y + chicos y un anillo amarillo.
   zoom: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 24,
-    marginBottom: 12,
+    gap: 10,
+    paddingHorizontal: 20,
   },
-  zoomPista: { flex: 1, height: 32, justifyContent: "center" },
-  zoomLinea: { height: 2, borderRadius: 1, backgroundColor: "rgba(255,255,255,0.85)" },
+  zoomSigno: { color: "#fff", fontSize: 18, fontWeight: "300", width: 14, textAlign: "center" },
+  zoomPista: { flex: 1, height: 28, justifyContent: "center" },
+  zoomLinea: { height: StyleSheet.hairlineWidth * 2, backgroundColor: "rgba(255,255,255,0.9)" },
   zoomPunto: {
     position: "absolute",
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1.5,
     borderColor: "#ffd60a",
   },
   grabandoTexto: { color: "#fff", fontSize: 17, fontWeight: "500", fontVariant: ["tabular-nums"] },
@@ -605,8 +617,10 @@ const styles = StyleSheet.create({
   },
   // Aire arriba y a la derecha para la ✕ de lo sacado, que asoma del borde.
   recientes: { gap: 4, paddingHorizontal: 12, paddingTop: 8 },
-  // El alto de la tira (64 más su aire de arriba), para que la barra ocupe su lugar exacto.
-  lugarDeLaTira: { height: 72, justifyContent: "center" },
+  zonaDeLaTira: { gap: 6 },
+  // El asa de WhatsApp: una raya blanca corta sobre el disparador.
+  asa: { alignSelf: "center", paddingVertical: 4, paddingHorizontal: 12 },
+  asaRaya: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)" },
   tomados: { flexDirection: "row", alignItems: "center", gap: 8, marginRight: 4 },
   tomado: { width: 64, height: 64 },
   tomadoImagen: { width: 64, height: 64, borderRadius: 6, borderWidth: 2, borderColor: "#fff" },
@@ -819,17 +833,17 @@ function BarraDeZoom({ zoom, onCambio }: { zoom: number; onCambio: (z: number) =
     .onUpdate((e) => ancho > 0 && onCambio(Math.min(1, Math.max(0, e.x / ancho))));
   return (
     <View style={styles.zoom}>
-      <Pressable onPress={() => onCambio(Math.max(0, zoom - 0.1))} hitSlop={10} accessibilityLabel="Alejar">
-        <Ionicons name="remove" size={22} color="#fff" />
+      <Pressable onPress={() => onCambio(Math.max(0, zoom - 0.1))} hitSlop={12} accessibilityLabel="Alejar">
+        <Text style={styles.zoomSigno}>−</Text>
       </Pressable>
       <GestureDetector gesture={arrastre}>
         <View style={styles.zoomPista} onLayout={(e) => setAncho(e.nativeEvent.layout.width)}>
           <View style={styles.zoomLinea} />
-          <View style={[styles.zoomPunto, { left: zoom * ancho - 9 }]} />
+          <View style={[styles.zoomPunto, { left: zoom * ancho - 7 }]} />
         </View>
       </GestureDetector>
-      <Pressable onPress={() => onCambio(Math.min(1, zoom + 0.1))} hitSlop={10} accessibilityLabel="Acercar">
-        <Ionicons name="add" size={22} color="#fff" />
+      <Pressable onPress={() => onCambio(Math.min(1, zoom + 0.1))} hitSlop={12} accessibilityLabel="Acercar">
+        <Text style={styles.zoomSigno}>+</Text>
       </Pressable>
     </View>
   );
