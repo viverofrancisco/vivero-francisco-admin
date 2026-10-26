@@ -275,6 +275,8 @@ function Contenido({
             preseleccion={fotos.flatMap((f) => (f.assetId ? [f.assetId] : []))}
             onCerrar={() => setGaleria(false)}
             onConfirmar={alConfirmarGaleria}
+            // Las nuevas van al editor, que ya las deja en JPEG.
+            sinConvertir
           />
         ) : null}
 

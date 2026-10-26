@@ -26,6 +26,7 @@ import type { ArchivoLocal } from "@vivero/app-ui/lib/galeria";
 import { RecortarFoto, type EdicionDeFoto } from "@/components/informes/RecortarFoto";
 import { Lienzo, estiloDelTexto } from "@/components/camara/Lienzo";
 import { BarraDeColor } from "@/components/camara/BarraDeColor";
+import { MiniaturaDeVideo, cuadroDelVideo } from "@/components/MiniaturaDeVideo";
 import { useAltoDelTeclado } from "@vivero/app-ui/lib/use-teclado";
 import {
   FUENTES,
@@ -487,9 +488,7 @@ export function EditorDeFotos({
                   {f.archivo.tipo === "imagen" ? (
                     <Image source={{ uri: f.archivo.uri }} style={styles.miniaturaImagen} />
                   ) : (
-                    <View style={[styles.miniaturaImagen, styles.video]}>
-                      <Ionicons name="play" size={14} color="#fff" />
-                    </View>
+                    <MiniaturaDeVideo uri={f.archivo.uri} style={styles.miniaturaImagen} tamanoDelPlay={14} />
                   )}
                   {i === actual ? (
                     <Pressable onPress={quitarActual} style={styles.quitar} hitSlop={6} accessibilityLabel="Quitar esta foto">
@@ -833,6 +832,17 @@ function VideoEnEditor({ uri, ancho, alto }: { uri: string; ancho: number; alto:
     p.loop = false;
   });
   const { isPlaying } = useEvent(player, "playingChange", { isPlaying: player.playing });
+  // Hasta el primer play, el primer cuadro encima: la TextureView de Android
+  // no dibuja nada antes de reproducir y quedaba un cuadro negro.
+  const [cuadro, setCuadro] = useState<string | null>(null);
+  const [empezo, setEmpezo] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    void cuadroDelVideo(uri).then((c) => vivo && setCuadro(c));
+    return () => {
+      vivo = false;
+    };
+  }, [uri]);
 
   function alternar() {
     if (player.playing) {
@@ -841,6 +851,7 @@ function VideoEnEditor({ uri, ancho, alto }: { uri: string; ancho: number; alto:
     }
     // Terminado, vuelve a empezar.
     if (player.duration > 0 && player.currentTime >= player.duration - 0.1) player.currentTime = 0;
+    setEmpezo(true);
     player.play();
   }
 
@@ -853,6 +864,14 @@ function VideoEnEditor({ uri, ancho, alto }: { uri: string; ancho: number; alto:
         nativeControls={false}
         surfaceType="textureView"
       />
+      {cuadro && !empezo ? (
+        <Image
+          source={{ uri: cuadro }}
+          style={[StyleSheet.absoluteFill, { width: ancho, height: alto }]}
+          resizeMode="contain"
+          fadeDuration={0}
+        />
+      ) : null}
       {!isPlaying ? (
         <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.centroDelVideo]}>
           <View style={styles.playGrande}>

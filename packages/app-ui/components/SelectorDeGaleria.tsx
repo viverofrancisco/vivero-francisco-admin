@@ -79,6 +79,11 @@ interface Props {
    * la entrada de quien la abre—. La galería sigue mostrando todas debajo.
    */
   sugeridas?: VentanaDeFotos | null;
+  /**
+   * Devolver las fotos sin pasarlas a JPEG, para quien las manda después a
+   * un editor que ya lo hace (ver `archivoDeAssetDeGaleria`).
+   */
+  sinConvertir?: boolean;
 }
 
 /**
@@ -152,6 +157,7 @@ function GaleriaPropia({
   onCerrar,
   onConfirmar,
   sugeridas: ventana,
+  sinConvertir = false,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -283,7 +289,7 @@ function GaleriaPropia({
       for (const id of elegidas) {
         const asset =
           porId.current.get(id) ?? (await MediaLibrary.getAssetInfoAsync(id));
-        archivos.push(await archivoDeAssetDeGaleria(asset));
+        archivos.push(await archivoDeAssetDeGaleria(asset, { sinConvertir }));
       }
       onConfirmar(archivos);
     } catch {

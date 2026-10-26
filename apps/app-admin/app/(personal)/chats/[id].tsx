@@ -48,6 +48,7 @@ import type { ArchivoDeGaleria, ArchivoLocal } from "@vivero/app-ui/lib/galeria"
 import { CamaraPropia } from "@/components/camara/CamaraPropia";
 import { EditorDeFotos } from "@/components/camara/EditorDeFotos";
 import { VistaPreviaDeFicha } from "@/components/chats/VistaPreviaDeFicha";
+import { MiniaturaDeVideo } from "@/components/MiniaturaDeVideo";
 import {
   etiquetaDeAdjuntos,
   mismoDia,
@@ -847,9 +848,7 @@ export default function ChatScreen() {
             {pendientes.map((a, i) => (
               <View key={`${a.uri}-${i}`} style={styles.miniatura}>
                 {a.tipo === "video" ? (
-                  <View style={[styles.miniaturaFoto, styles.videoCaja]}>
-                    <Ionicons name="play" size={22} color="#fff" />
-                  </View>
+                  <MiniaturaDeVideo uri={a.uri} style={styles.miniaturaFoto} tamanoDelPlay={22} />
                 ) : a.tipo === "documento" ? (
                   <View style={[styles.miniaturaFoto, styles.documentoCaja]}>
                     <Ionicons name="document-text-outline" size={22} color={tema.texto2} />
@@ -1004,6 +1003,8 @@ export default function ChatScreen() {
           preseleccion={pendientes.flatMap((a) => (a.assetId ? [a.assetId] : []))}
           onCerrar={() => setGaleriaAbierta(false)}
           onConfirmar={alConfirmarGaleria}
+          // Las nuevas van al editor, que ya las deja en JPEG.
+          sinConvertir
         />
       ) : null}
 
@@ -1202,13 +1203,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  /* Un video no tiene imagen sin reproducirlo: un recuadro oscuro con el
-     triángulo es lo que todo el mundo lee como "esto se reproduce". */
-  videoCaja: {
-    backgroundColor: "rgba(20,40,25,0.85)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
   documentoCaja: { backgroundColor: tema.lienzo, alignItems: "center", justifyContent: "center" },
 
   aviso: {

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Linking,
   Modal,
   Platform,
@@ -11,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { Text } from "react-native-paper";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
@@ -29,6 +29,7 @@ import {
   type ArchivoLocal,
 } from "@vivero/app-ui/lib/galeria";
 import { EditorDeFotos } from "@/components/camara/EditorDeFotos";
+import { MiniaturaDeVideo } from "@/components/MiniaturaDeVideo";
 import type { FotoEnEdicion } from "@/lib/edicion-de-fotos";
 
 const FLASHES: FlashMode[] = ["off", "auto", "on"];
@@ -93,6 +94,16 @@ export function CamaraPropia({
   const [zoom, setZoom] = useState(0);
   const [pellizcando, setPellizcando] = useState(false);
   const zoomAlEmpezar = useRef(0);
+  /**
+   * Las de la tira que se tocaron y todavía se están abriendo: se ven
+   * marcadas al instante, y un segundo toque mientras tanto no las suma de
+   * nuevo (antes cada toque agregaba otra copia de la misma).
+   */
+  const [abriendo, setAbriendo] = useState<string[]>([]);
+  const elegidosRef = useRef(elegidos);
+  elegidosRef.current = elegidos;
+  const abriendoRef = useRef(abriendo);
+  abriendoRef.current = abriendo;
 
   useEffect(() => {
     if (permiso && !permiso.granted && permiso.canAskAgain) void pedirPermiso();
@@ -128,7 +139,10 @@ export function CamaraPropia({
 
   const lleno = elegidos.length >= maximo;
 
-  // Pellizcar acerca o aleja, también grabando, como en WhatsApp.
+  // Pellizcar acerca o aleja, también grabando, como en WhatsApp. La barra va
+  // en escala logarítmica (ver `zoomDeLaCamara`), así que abrir los dedos al
+  // doble duplica el aumento, empiece donde empiece: lo que estaba entre los
+  // dedos se queda entre los dedos.
   const pellizco = Gesture.Pinch()
     .runOnJS(true)
     .onBegin(() => {
@@ -136,13 +150,15 @@ export function CamaraPropia({
       setPellizcando(true);
     })
     .onUpdate((e) => {
-      setZoom(Math.min(1, Math.max(0, zoomAlEmpezar.current + (e.scale - 1) * 0.35)));
+      const z = zoomAlEmpezar.current + Math.log(e.scale) / Math.log(AUMENTO_MAXIMO);
+      setZoom(Math.min(1, Math.max(0, Math.round(z * 200) / 200)));
     })
     .onFinalize(() => setPellizcando(false));
 
   function sumar(archivo: ArchivoLocal) {
     setAviso(null);
     setElegidos((prev) => {
+      if (archivo.assetId && prev.some((e) => e.assetId === archivo.assetId)) return prev;
       if (prev.length >= maximo) {
         setAviso(`Hasta ${maximo} ${maximo === 1 ? "archivo" : "archivos"} por vez.`);
         return prev;
@@ -203,23 +219,49 @@ export function CamaraPropia({
     }
   }
 
-  async function alternarReciente(a: MediaLibrary.Asset) {
-    const ya = elegidos.find((e) => e.assetId === a.id);
-    if (ya) {
-      quitar(ya.uri);
-      return;
-    }
-    try {
-      sumar(await archivoDeAssetDeGaleria(a));
-    } catch {
-      setAviso("No pudimos abrir esa foto.");
-    }
-  }
+  // Estables (leen por ref), para que la tira no se vuelva a dibujar con
+  // cada cuadro del zoom o cada segundo del reloj.
+  const alternarReciente = useCallback(
+    async (a: MediaLibrary.Asset) => {
+      if (abriendoRef.current.includes(a.id)) return;
+      const ya = elegidosRef.current.find((e) => e.assetId === a.id);
+      if (ya) {
+        ediciones.delete(ya.uri);
+        setElegidos((prev) => prev.filter((e) => e.uri !== ya.uri));
+        return;
+      }
+      setAbriendo((prev) => [...prev, a.id]);
+      try {
+        // Sin pasar a JPEG: el editor ya lo hace al terminar.
+        sumar(await archivoDeAssetDeGaleria(a, { sinConvertir: true }));
+      } catch {
+        setAviso("No pudimos abrir esa foto.");
+      } finally {
+        setAbriendo((prev) => prev.filter((id) => id !== a.id));
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
-  function quitar(uri: string) {
-    ediciones.delete(uri);
-    setElegidos((prev) => prev.filter((e) => e.uri !== uri));
-  }
+  const quitar = useCallback(
+    (uri: string) => {
+      ediciones.delete(uri);
+      setElegidos((prev) => prev.filter((e) => e.uri !== uri));
+    },
+    [ediciones]
+  );
+
+  const marcados = useMemo(
+    () => new Set([...elegidos.flatMap((e) => (e.assetId ? [e.assetId] : [])), ...abriendo]),
+    [elegidos, abriendo]
+  );
+
+  // Lo sacado con esta cámara; lo elegido de la tira de recientes se ve marcado en ella.
+  const tomados = useMemo(
+    () => elegidos.flatMap((e, i) => (e.assetId ? [] : [{ e, i }])),
+    [elegidos]
+  );
 
   if (editando !== null) {
     return (
@@ -237,8 +279,6 @@ export function CamaraPropia({
     );
   }
 
-  // Lo sacado con esta cámara; lo elegido de la tira de recientes se ve marcado en ella.
-  const tomados = elegidos.flatMap((e, i) => (e.assetId ? [] : [{ e, i }]));
 
   return (
     <Modal visible animationType="slide" onRequestClose={onCerrar} statusBarTranslucent>
@@ -306,57 +346,13 @@ export function CamaraPropia({
           ) : null}
 
           {(recientes.length > 0 || tomados.length > 0) && !grabando ? (
-            <FlatList
-              horizontal
-              data={recientes}
-              keyExtractor={(a) => a.id}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.recientes}
-              // Primero lo sacado: tocarla la abre en el editor, la ✕ la quita.
-              ListHeaderComponent={
-                tomados.length > 0 ? (
-                  <View style={styles.tomados}>
-                    {tomados.map(({ e, i }) => (
-                      <Pressable
-                        key={e.uri}
-                        onPress={() => setEditando(i)}
-                        style={styles.tomado}
-                        accessibilityLabel={`Editar la foto ${i + 1}`}
-                      >
-                        {e.tipo === "imagen" ? (
-                          <Image source={{ uri: e.uri }} style={styles.tomadoImagen} />
-                        ) : (
-                          <View style={[styles.tomadoImagen, styles.tomadoVideo]}>
-                            <Ionicons name="videocam" size={18} color="#fff" />
-                          </View>
-                        )}
-                        <Pressable
-                          onPress={() => quitar(e.uri)}
-                          hitSlop={8}
-                          style={styles.tomadoQuitar}
-                          accessibilityLabel="Quitar"
-                        >
-                          <Ionicons name="close" size={12} color="#fff" />
-                        </Pressable>
-                      </Pressable>
-                    ))}
-                    {recientes.length > 0 ? <View style={styles.separador} /> : null}
-                  </View>
-                ) : null
-              }
-              renderItem={({ item: a }) => {
-                const marcado = elegidos.some((e) => e.assetId === a.id);
-                return (
-                  <Pressable onPress={() => void alternarReciente(a)} style={styles.reciente}>
-                    <Image source={{ uri: a.uri }} style={styles.recienteImagen} />
-                    {marcado ? (
-                      <View style={styles.recienteMarca}>
-                        <Ionicons name="checkmark" size={14} color="#fff" />
-                      </View>
-                    ) : null}
-                  </Pressable>
-                );
-              }}
+            <TiraDeLaCamara
+              recientes={recientes}
+              tomados={tomados}
+              marcados={marcados}
+              onTocarReciente={alternarReciente}
+              onEditar={setEditando}
+              onQuitar={quitar}
             />
           ) : null}
 
@@ -535,6 +531,7 @@ const styles = StyleSheet.create({
   separador: { width: 1, height: 44, marginLeft: 4, backgroundColor: "rgba(255,255,255,0.5)" },
   reciente: { width: 64, height: 64 },
   recienteImagen: { width: 64, height: 64, borderRadius: 4 },
+  recienteVideo: { position: "absolute", left: 4, bottom: 4 },
   recienteMarca: {
     position: "absolute",
     top: 4,
@@ -555,7 +552,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   lado: { width: 56, height: 56, alignItems: "center", justifyContent: "center" },
-  tomadoVideo: { alignItems: "center", justifyContent: "center", backgroundColor: "#333" },
   cuenta: {
     position: "absolute",
     top: -6,
@@ -595,15 +591,102 @@ const styles = StyleSheet.create({
 });
 
 /**
- * El zoom que se le pasa a la cámara. En Android expo-camera multiplica la
- * fracción por el zoom máximo y no baja de 1×, así que el primer décimo de la
- * barra no hacía nada (con un máximo de 10×, 0,1 ya es 1×): ahí la barra
- * empieza en ese décimo.
+ * Cuánto aumenta la barra entera: de 1× a 10×, el máximo digital habitual de
+ * un Android. La barra y el pellizco van en escala **logarítmica** —el medio
+ * es ~3×—, como en WhatsApp: en lineal el primer tramo saltaba de 1× a 2× en
+ * un pelo y el resto se arrastraba.
+ */
+const AUMENTO_MAXIMO = 10;
+
+/**
+ * El zoom que se le pasa a la cámara. En Android expo-camera lo toma lineal
+ * (`fracción × máximo`, nunca menos de 1×), así que se pasa el aumento
+ * buscado sobre `AUMENTO_MAXIMO`: 0 queda en 1×. En iOS expo-camera ya lo
+ * aplica exponencial (`mínimo × (máximo / mínimo) ^ zoom`) y se pasa tal cual.
  */
 function zoomDeLaCamara(z: number): number {
-  if (Platform.OS !== "android" || z === 0) return z;
-  return 0.1 + z * 0.9;
+  if (Platform.OS !== "android") return z;
+  return Math.pow(AUMENTO_MAXIMO, z) / AUMENTO_MAXIMO;
 }
+
+/**
+ * La tira de abajo: primero lo sacado (tocarla la abre en el editor, la ✕ la
+ * quita) y después las últimas del teléfono, que se marcan de un toque. Va
+ * aparte y memorizada porque la cámara se vuelve a dibujar con cada cuadro
+ * del pellizco: treinta fotos redibujándose ahí hacían que todo respondiera
+ * tarde. `expo-image` y no la `Image` de React Native, que decodifica cada
+ * una de 12 megapíxeles entera para mostrarla en 64 puntos.
+ */
+const TiraDeLaCamara = memo(function TiraDeLaCamara({
+  recientes,
+  tomados,
+  marcados,
+  onTocarReciente,
+  onEditar,
+  onQuitar,
+}: {
+  recientes: MediaLibrary.Asset[];
+  tomados: { e: ArchivoLocal; i: number }[];
+  marcados: Set<string>;
+  onTocarReciente: (a: MediaLibrary.Asset) => void;
+  onEditar: (i: number) => void;
+  onQuitar: (uri: string) => void;
+}) {
+  return (
+    <FlatList
+      horizontal
+      data={recientes}
+      extraData={marcados}
+      keyExtractor={(a) => a.id}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.recientes}
+      ListHeaderComponent={
+        tomados.length > 0 ? (
+          <View style={styles.tomados}>
+            {tomados.map(({ e, i }) => (
+              <Pressable
+                key={e.uri}
+                onPress={() => onEditar(i)}
+                style={styles.tomado}
+                accessibilityLabel={`Editar la foto ${i + 1}`}
+              >
+                {e.tipo === "imagen" ? (
+                  <Image source={{ uri: e.uri }} style={styles.tomadoImagen} />
+                ) : (
+                  <MiniaturaDeVideo uri={e.uri} style={styles.tomadoImagen} />
+                )}
+                <Pressable
+                  onPress={() => onQuitar(e.uri)}
+                  hitSlop={8}
+                  style={styles.tomadoQuitar}
+                  accessibilityLabel="Quitar"
+                >
+                  <Ionicons name="close" size={12} color="#fff" />
+                </Pressable>
+              </Pressable>
+            ))}
+            {recientes.length > 0 ? <View style={styles.separador} /> : null}
+          </View>
+        ) : null
+      }
+      renderItem={({ item: a }) => (
+        <Pressable onPress={() => onTocarReciente(a)} style={styles.reciente}>
+          <Image source={{ uri: a.uri }} style={styles.recienteImagen} recyclingKey={a.id} />
+          {a.mediaType === "video" ? (
+            <View style={styles.recienteVideo}>
+              <Ionicons name="play" size={12} color="#fff" />
+            </View>
+          ) : null}
+          {marcados.has(a.id) ? (
+            <View style={styles.recienteMarca}>
+              <Ionicons name="checkmark" size={14} color="#fff" />
+            </View>
+          ) : null}
+        </Pressable>
+      )}
+    />
+  );
+});
 
 /** La barra de WhatsApp: − y + a los lados, el punto donde está el zoom; se arrastra también. */
 function BarraDeZoom({ zoom, onCambio }: { zoom: number; onCambio: (z: number) => void }) {

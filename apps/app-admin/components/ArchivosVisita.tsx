@@ -14,6 +14,7 @@ import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import { SelectorDeGaleria } from "@vivero/app-ui/components/SelectorDeGaleria";
 import { CamaraPropia } from "@/components/camara/CamaraPropia";
 import { EditorDeFotos } from "@/components/camara/EditorDeFotos";
+import { MiniaturaDeVideo } from "@/components/MiniaturaDeVideo";
 import {
   fotosDeLaVentana,
   type ArchivoDeGaleria,
@@ -603,6 +604,8 @@ export function ArchivosVisita({
           )}
           onCerrar={() => setGaleria(false)}
           onConfirmar={alConfirmarGaleria}
+          // Las nuevas van al editor, que ya las deja en JPEG.
+          sinConvertir
           sugeridas={sugeridas}
         />
       ) : null}
@@ -689,9 +692,7 @@ export function ArchivosVisita({
             >
               <View style={styles.miniaturaCaja}>
                 {p.archivo.tipo === "video" ? (
-                  <View style={[styles.miniatura, styles.video]}>
-                    <Ionicons name="play" size={18} color="#fff" />
-                  </View>
+                  <MiniaturaDeVideo uri={p.archivo.uri} style={styles.miniatura} />
                 ) : (
                   <Image source={{ uri: p.archivo.uri }} style={styles.miniatura} />
                 )}
@@ -728,9 +729,7 @@ export function ArchivosVisita({
               >
                 <View style={styles.miniaturaCaja}>
                   {m.tipo === "video" ? (
-                    <View style={[styles.miniatura, styles.video]}>
-                      <Ionicons name="play" size={18} color="#fff" />
-                    </View>
+                    <MiniaturaDeVideo uri={m.url} style={styles.miniatura} />
                   ) : (
                     <Image source={{ uri: m.url }} style={styles.miniatura} />
                   )}
@@ -801,9 +800,7 @@ export function ArchivosVisita({
               {pendientes.map((p, i) => (
                 <View key={`${p.archivo.uri}-${i}`} style={styles.revision}>
                   {p.archivo.tipo === "video" ? (
-                    <View style={[styles.revisionFoto, styles.video]}>
-                      <Ionicons name="play" size={18} color="#fff" />
-                    </View>
+                    <MiniaturaDeVideo uri={p.archivo.uri} style={styles.revisionFoto} />
                   ) : (
                     <Image
                       source={{ uri: p.archivo.uri }}
@@ -983,9 +980,7 @@ function FotoEnHoja({
         }
       >
         {esVideo ? (
-          <View style={[styles.vistaPrevia, styles.video]}>
-            <Ionicons name="play" size={34} color="#fff" />
-          </View>
+          <MiniaturaDeVideo uri={uri} style={styles.vistaPrevia} tamanoDelPlay={34} />
         ) : (
           <Image
             source={{ uri }}
@@ -1096,11 +1091,6 @@ const styles = StyleSheet.create({
   faltaTarea: { color: tema.rojo, fontWeight: "600" },
   miniaturaCaja: { width: 52, height: 52, borderRadius: 8, overflow: "hidden" },
   miniatura: { width: "100%", height: "100%", backgroundColor: "#eee" },
-  video: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#444",
-  },
   marcaFuera: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",

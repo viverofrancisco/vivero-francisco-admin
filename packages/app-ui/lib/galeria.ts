@@ -72,9 +72,14 @@ function extensionDe(nombre: string): string {
  * original de la galería es el de 12 megapíxeles, que el selector del
  * sistema ya bajaba con `quality`. El resultado queda en la caché de la app,
  * como antes. Un video se manda tal cual: el servidor le hace el 720p.
+ *
+ * `sinConvertir` se salta el JPEG: es para quien pasa la foto después por
+ * un editor que ya la vuelve a codificar (la app del equipo), porque hacerlo
+ * dos veces con una de 12 megapíxeles son segundos de espera al tocarla.
  */
 export async function archivoDeAssetDeGaleria(
-  asset: MediaLibrary.Asset
+  asset: MediaLibrary.Asset,
+  { sinConvertir = false }: { sinConvertir?: boolean } = {}
 ): Promise<ArchivoLocal & { assetId: string }> {
   // En Android el `uri` del asset ya es el archivo (`file:///storage/…`), y
   // `getAssetInfoAsync` lee el EXIF, que pide ACCESS_MEDIA_LOCATION: un
@@ -94,6 +99,16 @@ export async function archivoDeAssetDeGaleria(
       contentType:
         CONTENT_TYPE_POR_EXTENSION[extensionDe(nombreOriginal)] ?? "video/mp4",
       tipo: "video",
+      assetId: asset.id,
+    };
+  }
+
+  if (sinConvertir) {
+    return {
+      uri: origen,
+      fileName: nombreOriginal,
+      contentType: CONTENT_TYPE_POR_EXTENSION[extensionDe(nombreOriginal)] ?? "image/jpeg",
+      tipo: "imagen",
       assetId: asset.id,
     };
   }
