@@ -113,6 +113,8 @@ export function coloresDelTexto(t: Pick<TextoEnFoto, "color" | "fondo">): {
 
 /** Una foto (o un video) en el editor, con lo que se le hizo. */
 export interface FotoEnEdicion {
+  /** La `uri` con la que llegó: la identifica aunque se recorte (la cámara guarda lo editado por ella). */
+  origen: string;
   /** El archivo tal como llegó, ya recortado si se recortó. */
   archivo: ArchivoLocal;
   ancho: number;
@@ -140,7 +142,7 @@ export function medidasDe(uri: string): Promise<{ ancho: number; alto: number }>
 export async function enEdicion(archivo: ArchivoLocal): Promise<FotoEnEdicion> {
   const { ancho, alto } =
     archivo.tipo === "imagen" ? await medidasDe(archivo.uri) : { ancho: 9, alto: 16 };
-  return { archivo, ancho, alto, trazos: [], textos: [] };
+  return { origen: archivo.uri, archivo, ancho, alto, trazos: [], textos: [] };
 }
 
 /**

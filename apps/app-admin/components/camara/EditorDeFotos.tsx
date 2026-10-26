@@ -66,8 +66,11 @@ type Herramienta = null | "lapiz";
  * Arriba, las herramientas: **descargar** al teléfono, **HD** (la foto entera
  * en vez de bajada a 2048 de lado), **recortar y rotar** (`RecortarFoto`, la
  * misma pantalla de los informes, aplicada acá en el teléfono), **texto** y
- * **lápiz**. Abajo, las miniaturas para pasar de una foto a otra y el botón
- * que termina. Un video pasa sin herramientas: no hay nada que dibujarle.
+ * **lápiz**. Abajo, las miniaturas para pasar de una foto a otra (la ✕ de la
+ * actual la quita) y el botón que termina; en el chat, además, el comentario,
+ * y el botón envía. Abierto desde la cámara, la flecha de arriba y el + de las
+ * miniaturas vuelven a ella sin perder lo editado. Un video pasa sin
+ * herramientas: no hay nada que dibujarle.
  *
  * Lo dibujado se guarda en fracciones de la foto y se **aplana** recién al
  * terminar (`Lienzo` a la resolución de la foto, fuera de la vista, y
@@ -79,17 +82,36 @@ type Herramienta = null | "lapiz";
 export function EditorDeFotos({
   archivos,
   textoDeListo = "Listo",
+  inicio = 0,
+  memoria,
+  conComentario = false,
+  onVolver,
+  onQuitar,
   onCerrar,
   onListo,
 }: {
   archivos: ArchivoLocal[];
   textoDeListo?: string;
+  /** La foto que se abre primero (la que se tocó en la cámara). */
+  inicio?: number;
+  /** Lo editado de cada foto, por su `origen`: sobrevive a volver a la cámara y regresar. */
+  memoria?: Map<string, FotoEnEdicion>;
+  /** En el chat, como en WhatsApp: un campo para el comentario y el botón de enviar, que manda. */
+  conComentario?: boolean;
+  /**
+   * Abierto desde la cámara: arriba una flecha que vuelve a ella sin perder
+   * nada, y un + al final de las miniaturas para sacar más.
+   */
+  onVolver?: () => void;
+  /** Se quitó una foto (por su `origen`): quien la eligió la saca de lo suyo. */
+  onQuitar?: (origen: string) => void;
   onCerrar: () => void;
-  onListo: (archivos: ArchivoLocal[]) => void;
+  onListo: (archivos: ArchivoLocal[], comentario?: string) => void;
 }) {
   const insets = useSafeAreaInsets();
   const [fotos, setFotos] = useState<FotoEnEdicion[] | null>(null);
-  const [actual, setActual] = useState(0);
+  const [actual, setActual] = useState(inicio);
+  const [comentario, setComentario] = useState("");
   const [hd, setHd] = useState(false);
   const [herramienta, setHerramienta] = useState<Herramienta>(null);
   const [color, setColor] = useState(() => colorEnLaBarra(POSICION_DEL_ROJO));
@@ -115,13 +137,20 @@ export function EditorDeFotos({
 
   useEffect(() => {
     let vivo = true;
-    void Promise.all(archivos.map(enEdicion)).then((f) => {
-      if (vivo) setFotos(f);
+    void Promise.all(archivos.map((a) => memoria?.get(a.uri) ?? enEdicion(a))).then((f) => {
+      if (!vivo) return;
+      setFotos(f);
+      setActual((i) => Math.max(0, Math.min(i, f.length - 1)));
     });
     return () => {
       vivo = false;
     };
-  }, [archivos]);
+  }, [archivos, memoria]);
+
+  // Lo editado queda guardado para cuando se vuelva de la cámara.
+  useEffect(() => {
+    for (const f of fotos ?? []) memoria?.set(f.origen, f);
+  }, [fotos, memoria]);
 
   const foto = fotos?.[actual] ?? null;
   const esFoto = foto?.archivo.tipo === "imagen";
@@ -281,7 +310,7 @@ export function EditorDeFotos({
     try {
       const salida: ArchivoLocal[] = [];
       for (const f of fotos) salida.push(await aplanar(f, hd));
-      onListo(salida);
+      onListo(salida, comentario.trim() || undefined);
     } catch {
       Alert.alert("No pudimos preparar las fotos", "Prueba otra vez.");
     } finally {
@@ -320,6 +349,7 @@ export function EditorDeFotos({
       const uri = await recortar(base.uri, edicion);
       const { ancho, alto } = await medidasDe(uri);
       cambiarFoto((f) => ({
+        origen: f.origen,
         archivo: { ...f.archivo, uri, contentType: "image/jpeg" },
         ancho,
         alto,
@@ -333,10 +363,16 @@ export function EditorDeFotos({
     }
   }
 
+  /** Quitar la foto actual. La última también: desde la cámara, se vuelve a ella sin esa foto. */
   function quitarActual() {
     if (!fotos) return;
+    const quitada = fotos[actual];
+    if (quitada) {
+      memoria?.delete(quitada.origen);
+      onQuitar?.(quitada.origen);
+    }
     if (fotos.length === 1) {
-      onCerrar();
+      (onVolver ?? onCerrar)();
       return;
     }
     setFotos(fotos.filter((_, i) => i !== actual));
@@ -346,12 +382,15 @@ export function EditorDeFotos({
   // ── Pantalla ───────────────────────────────────────────────────────────────
 
   const dibujando = herramienta === "lapiz";
+  // El teclado del comentario (no el del texto sobre la foto, que tiene su propia pantalla).
+  const tecladoDelComentario =
+    !escribiendo && altoDelTeclado > 0 ? altoDelTeclado + (Platform.OS === "android" ? insets.bottom : 0) : 0;
 
   return (
     // De borde a borde también abajo: la ventana llega al piso, así el alto del
     // teclado (que en Android cuenta la barra de navegación) y `insets.bottom`
     // se miden desde el mismo borde y nada queda levantado de más.
-    <Modal visible animationType="fade" onRequestClose={onCerrar} statusBarTranslucent navigationBarTranslucent>
+    <Modal visible animationType="fade" onRequestClose={onVolver ?? onCerrar} statusBarTranslucent navigationBarTranslucent>
       <GestureHandlerRootView style={styles.pantalla}>
         {/* Mientras se escribe, las barras del editor se esconden sin dejar
             su lugar, así la foto no se mueve. */}
@@ -369,7 +408,12 @@ export function EditorDeFotos({
             </>
           ) : (
             <>
-              <BotonDeEditor icono="close" etiqueta="Cerrar" onPress={onCerrar} />
+              {/* Desde la cámara se vuelve a ella (con todo lo sacado); si no, se cierra. */}
+              {onVolver ? (
+                <BotonDeEditor icono="arrow-back" etiqueta="Volver a la cámara" onPress={onVolver} />
+              ) : (
+                <BotonDeEditor icono="close" etiqueta="Cerrar" onPress={onCerrar} />
+              )}
               <View style={styles.flex} />
               {esFoto ? (
                 <>
@@ -430,45 +474,76 @@ export function EditorDeFotos({
           ) : null}
         </View>
 
+        {/* Abajo: el comentario (en el chat), las miniaturas y el botón que
+            termina. Con el teclado del comentario abierto, todo sube con él. */}
         <View
-          style={[styles.abajo, { paddingBottom: insets.bottom + 16 }, escribiendo && styles.escondido]}
+          style={[
+            styles.abajoTodo,
+            { paddingBottom: tecladoDelComentario ? tecladoDelComentario + 8 : insets.bottom + 16 },
+            escribiendo && styles.escondido,
+          ]}
           pointerEvents={escribiendo ? "none" : "auto"}
         >
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.miniaturas}>
-            {(fotos ?? []).map((f, i) => (
-              <Pressable
-                key={`${f.archivo.uri}-${i}`}
-                onPress={() => {
-                  setHerramienta(null);
-                  setActual(i);
-                }}
-                onLongPress={i === actual ? quitarActual : undefined}
-                style={[styles.miniatura, i === actual && styles.miniaturaActual]}
-              >
-                {f.archivo.tipo === "imagen" ? (
-                  <Image source={{ uri: f.archivo.uri }} style={styles.miniaturaImagen} />
-                ) : (
-                  <View style={[styles.miniaturaImagen, styles.video]}>
-                    <Ionicons name="play" size={14} color="#fff" />
-                  </View>
-                )}
-                {i === actual && (fotos?.length ?? 0) > 0 ? (
-                  <Pressable onPress={quitarActual} style={styles.quitar} hitSlop={6} accessibilityLabel="Quitar">
-                    <Ionicons name="close" size={12} color="#fff" />
-                  </Pressable>
-                ) : null}
-              </Pressable>
-            ))}
-          </ScrollView>
-          <Pressable
-            onPress={() => void terminar()}
-            disabled={!fotos || Boolean(trabajando)}
-            style={({ pressed }) => [styles.enviar, pressed && styles.tocado]}
-            accessibilityRole="button"
-            accessibilityLabel={textoDeListo}
-          >
-            <Ionicons name="checkmark" size={26} color="#fff" />
-          </Pressable>
+          {conComentario ? (
+            <TextInput
+              value={comentario}
+              onChangeText={setComentario}
+              placeholder="Añade un comentario…"
+              placeholderTextColor="rgba(255,255,255,0.55)"
+              selectionColor="#25d366"
+              multiline
+              style={styles.comentario}
+            />
+          ) : null}
+          <View style={styles.abajo}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.miniaturas}>
+              {(fotos ?? []).map((f, i) => (
+                <Pressable
+                  key={`${f.origen}-${i}`}
+                  onPress={() => {
+                    setHerramienta(null);
+                    setActual(i);
+                  }}
+                  onLongPress={i === actual ? quitarActual : undefined}
+                  style={[styles.miniatura, i === actual && styles.miniaturaActual]}
+                  accessibilityLabel={`Foto ${i + 1}`}
+                >
+                  {f.archivo.tipo === "imagen" ? (
+                    <Image source={{ uri: f.archivo.uri }} style={styles.miniaturaImagen} />
+                  ) : (
+                    <View style={[styles.miniaturaImagen, styles.video]}>
+                      <Ionicons name="play" size={14} color="#fff" />
+                    </View>
+                  )}
+                  {i === actual ? (
+                    <Pressable onPress={quitarActual} style={styles.quitar} hitSlop={6} accessibilityLabel="Quitar esta foto">
+                      <Ionicons name="close" size={12} color="#fff" />
+                    </Pressable>
+                  ) : null}
+                </Pressable>
+              ))}
+              {/* Desde la cámara: volver a ella para sacar más. */}
+              {onVolver ? (
+                <Pressable
+                  onPress={onVolver}
+                  style={[styles.miniatura, styles.mas]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Sacar más fotos"
+                >
+                  <Ionicons name="add" size={24} color="#fff" />
+                </Pressable>
+              ) : null}
+            </ScrollView>
+            <Pressable
+              onPress={() => void terminar()}
+              disabled={!fotos || Boolean(trabajando)}
+              style={({ pressed }) => [styles.enviar, pressed && styles.tocado]}
+              accessibilityRole="button"
+              accessibilityLabel={conComentario ? "Enviar" : textoDeListo}
+            >
+              <Ionicons name={conComentario ? "send" : "checkmark"} size={conComentario ? 22 : 26} color="#fff" />
+            </Pressable>
+          </View>
         </View>
 
         {trabajando ? (
@@ -689,17 +764,31 @@ const styles = StyleSheet.create({
   area: { flex: 1, alignItems: "center", justifyContent: "center" },
   video: { alignItems: "center", justifyContent: "center", backgroundColor: "#222" },
   paleta: { position: "absolute", right: 8, top: 12 },
+  abajoTodo: { paddingTop: 10, gap: 10 },
   abajo: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     paddingHorizontal: 12,
-    paddingTop: 10,
+  },
+  comentario: {
+    marginHorizontal: 12,
+    minHeight: 44,
+    maxHeight: 110,
+    paddingHorizontal: 16,
+    paddingTop: 11,
+    paddingBottom: 11,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.14)",
+    color: "#fff",
+    fontSize: 16,
   },
   // El ✕ de la miniatura asoma 6 por arriba y a la derecha: sin este aire,
   // el ScrollView lo corta.
   miniaturas: { gap: 10, alignItems: "center", paddingTop: 8, paddingRight: 8, paddingLeft: 2 },
-  miniatura: { width: 48, height: 48, borderRadius: 6, overflow: "visible" },
+  // Un borde tenue en todas: una foto oscura no se pierde contra el fondo negro.
+  miniatura: { width: 48, height: 48, borderRadius: 6, overflow: "visible", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" },
+  mas: { alignItems: "center", justifyContent: "center", borderStyle: "dashed", borderColor: "rgba(255,255,255,0.6)" },
   miniaturaActual: { borderWidth: 2, borderColor: "#fff" },
   miniaturaImagen: { width: "100%", height: "100%", borderRadius: 5 },
   quitar: {

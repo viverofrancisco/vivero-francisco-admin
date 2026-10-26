@@ -27,6 +27,7 @@ import {
   type ArchivoLocal,
 } from "@vivero/app-ui/lib/galeria";
 import { EditorDeFotos } from "@/components/camara/EditorDeFotos";
+import type { FotoEnEdicion } from "@/lib/edicion-de-fotos";
 
 const FLASHES: FlashMode[] = ["off", "auto", "on"];
 const ICONO_FLASH: Record<FlashMode, React.ComponentProps<typeof Ionicons>["name"]> = {
@@ -39,10 +40,12 @@ const RECIENTES = 30;
 
 /**
  * La cámara de la app, la de WhatsApp: se abre dentro de la app, saca varias
- * seguidas sin salir, y abajo muestra una tira con las últimas fotos del
- * teléfono para sumar alguna de un toque. Al terminar abre el editor
+ * seguidas sin salir, y abajo muestra una tira con lo ya sacado (cada una con
+ * su ✕ para quitarla; tocarla la abre en el editor) seguido de las últimas
+ * fotos del teléfono para sumar alguna de un toque. Al terminar abre el editor
  * (`EditorDeFotos`) con todo lo elegido, y lo que vuelve de ahí es lo que
- * recibe `onListo`.
+ * recibe `onListo`. Del editor se vuelve a la cámara (la flecha, o el + de las
+ * miniaturas) sin perder nada: lo editado queda guardado por foto.
  *
  * Reemplaza a la cámara del sistema (`launchCameraAsync`), que sacaba de a
  * una y devolvía la foto sin pasar por ningún editor. La tira de recientes
@@ -54,6 +57,7 @@ export function CamaraPropia({
   conVideos = false,
   maximo,
   textoDeListo,
+  conComentario = false,
   onCerrar,
   onListo,
 }: {
@@ -62,8 +66,10 @@ export function CamaraPropia({
   /** Cuántas caben todavía. */
   maximo: number;
   textoDeListo?: string;
+  /** En el chat: el editor pide un comentario y su botón envía. */
+  conComentario?: boolean;
   onCerrar: () => void;
-  onListo: (archivos: ArchivoLocal[]) => void;
+  onListo: (archivos: ArchivoLocal[], comentario?: string) => void;
 }) {
   const insets = useSafeAreaInsets();
   const camara = useRef<CameraView>(null);
@@ -77,7 +83,10 @@ export function CamaraPropia({
   const [lista, setLista] = useState(false);
   const [elegidos, setElegidos] = useState<ArchivoLocal[]>([]);
   const [recientes, setRecientes] = useState<MediaLibrary.Asset[]>([]);
-  const [editando, setEditando] = useState(false);
+  /** El editor abierto, en la foto que se tocó. */
+  const [editando, setEditando] = useState<number | null>(null);
+  /** Lo dibujado, escrito y recortado de cada foto, para volver al editor tal como se dejó. */
+  const ediciones = useRef(new Map<string, FotoEnEdicion>()).current;
   const [aviso, setAviso] = useState<string | null>(null);
 
   useEffect(() => {
@@ -172,7 +181,7 @@ export function CamaraPropia({
   async function alternarReciente(a: MediaLibrary.Asset) {
     const ya = elegidos.find((e) => e.assetId === a.id);
     if (ya) {
-      setElegidos((prev) => prev.filter((e) => e.assetId !== a.id));
+      quitar(ya.uri);
       return;
     }
     try {
@@ -182,17 +191,30 @@ export function CamaraPropia({
     }
   }
 
-  if (editando) {
+  function quitar(uri: string) {
+    ediciones.delete(uri);
+    setElegidos((prev) => prev.filter((e) => e.uri !== uri));
+  }
+
+  if (editando !== null) {
     return (
       <EditorDeFotos
         archivos={elegidos}
+        inicio={editando}
+        memoria={ediciones}
         textoDeListo={textoDeListo}
-        // Cerrar el editor vuelve a la cámara con lo sacado, no lo tira.
-        onCerrar={() => setEditando(false)}
+        conComentario={conComentario}
+        // Volver (la flecha, el + o quitar la última) es a la cámara con lo sacado, no tirarlo.
+        onVolver={() => setEditando(null)}
+        onQuitar={quitar}
+        onCerrar={() => setEditando(null)}
         onListo={onListo}
       />
     );
   }
+
+  // Lo sacado con esta cámara; lo elegido de la tira de recientes se ve marcado en ella.
+  const tomados = elegidos.flatMap((e, i) => (e.assetId ? [] : [{ e, i }]));
 
   return (
     <Modal visible animationType="slide" onRequestClose={onCerrar} statusBarTranslucent>
@@ -247,13 +269,45 @@ export function CamaraPropia({
         <View style={[styles.abajo, { paddingBottom: insets.bottom + 16 }]}>
           {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
 
-          {recientes.length > 0 && !grabando ? (
+          {(recientes.length > 0 || tomados.length > 0) && !grabando ? (
             <FlatList
               horizontal
               data={recientes}
               keyExtractor={(a) => a.id}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.recientes}
+              // Primero lo sacado: tocarla la abre en el editor, la ✕ la quita.
+              ListHeaderComponent={
+                tomados.length > 0 ? (
+                  <View style={styles.tomados}>
+                    {tomados.map(({ e, i }) => (
+                      <Pressable
+                        key={e.uri}
+                        onPress={() => setEditando(i)}
+                        style={styles.tomado}
+                        accessibilityLabel={`Editar la foto ${i + 1}`}
+                      >
+                        {e.tipo === "imagen" ? (
+                          <Image source={{ uri: e.uri }} style={styles.tomadoImagen} />
+                        ) : (
+                          <View style={[styles.tomadoImagen, styles.tomadoVideo]}>
+                            <Ionicons name="videocam" size={18} color="#fff" />
+                          </View>
+                        )}
+                        <Pressable
+                          onPress={() => quitar(e.uri)}
+                          hitSlop={8}
+                          style={styles.tomadoQuitar}
+                          accessibilityLabel="Quitar"
+                        >
+                          <Ionicons name="close" size={12} color="#fff" />
+                        </Pressable>
+                      </Pressable>
+                    ))}
+                    {recientes.length > 0 ? <View style={styles.separador} /> : null}
+                  </View>
+                ) : null
+              }
               renderItem={({ item: a }) => {
                 const marcado = elegidos.some((e) => e.assetId === a.id);
                 return (
@@ -271,28 +325,16 @@ export function CamaraPropia({
           ) : null}
 
           <View style={styles.controles}>
-            {/* A la izquierda, lo ya sacado: tocarlo es ir al editor. */}
-            <Pressable
-              onPress={() => elegidos.length > 0 && setEditando(true)}
-              style={styles.lado}
-              disabled={elegidos.length === 0}
-              accessibilityLabel="Ver lo sacado"
-            >
-              {elegidos.length > 0 ? (
-                <View>
-                  {elegidos[elegidos.length - 1].tipo === "imagen" ? (
-                    <Image source={{ uri: elegidos[elegidos.length - 1].uri }} style={styles.ultima} />
-                  ) : (
-                    <View style={[styles.ultima, styles.ultimaVideo]}>
-                      <Ionicons name="videocam" size={18} color="#fff" />
-                    </View>
-                  )}
-                  <View style={styles.cuenta}>
-                    <Text style={styles.cuentaTexto}>{elegidos.length}</Text>
-                  </View>
-                </View>
+            {/* Lo sacado está en la tira de arriba; a la izquierda queda cambiar de cámara. */}
+            <View style={styles.lado}>
+              {!grabando ? (
+                <Boton
+                  icono="camera-reverse-outline"
+                  etiqueta="Cambiar de cámara"
+                  onPress={() => setLado((l) => (l === "back" ? "front" : "back"))}
+                />
               ) : null}
-            </Pressable>
+            </View>
 
             <Pressable
               onPress={() => void disparar()}
@@ -313,19 +355,16 @@ export function CamaraPropia({
             <View style={styles.lado}>
               {elegidos.length > 0 && !grabando ? (
                 <Pressable
-                  onPress={() => setEditando(true)}
+                  onPress={() => setEditando(0)}
                   style={({ pressed }) => [styles.siguiente, pressed && styles.tocado]}
                   accessibilityRole="button"
                   accessibilityLabel="Siguiente"
                 >
                   <Ionicons name="arrow-forward" size={24} color="#fff" />
+                  <View style={styles.cuenta}>
+                    <Text style={styles.cuentaTexto}>{elegidos.length}</Text>
+                  </View>
                 </Pressable>
-              ) : !grabando ? (
-                <Boton
-                  icono="camera-reverse-outline"
-                  etiqueta="Cambiar de cámara"
-                  onPress={() => setLado((l) => (l === "back" ? "front" : "back"))}
-                />
               ) : null}
             </View>
           </View>
@@ -419,7 +458,25 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "rgba(0,0,0,0.55)",
   },
-  recientes: { gap: 4, paddingHorizontal: 12 },
+  // Aire arriba y a la derecha para la ✕ de lo sacado, que asoma del borde.
+  recientes: { gap: 4, paddingHorizontal: 12, paddingTop: 8 },
+  tomados: { flexDirection: "row", alignItems: "center", gap: 8, marginRight: 4 },
+  tomado: { width: 64, height: 64 },
+  tomadoImagen: { width: 64, height: 64, borderRadius: 6, borderWidth: 2, borderColor: "#fff" },
+  tomadoQuitar: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#c8393a",
+    borderWidth: 1.5,
+    borderColor: "#fff",
+  },
+  separador: { width: 1, height: 44, marginLeft: 4, backgroundColor: "rgba(255,255,255,0.5)" },
   reciente: { width: 64, height: 64 },
   recienteImagen: { width: 64, height: 64, borderRadius: 4 },
   recienteMarca: {
@@ -442,8 +499,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   lado: { width: 56, height: 56, alignItems: "center", justifyContent: "center" },
-  ultima: { width: 48, height: 48, borderRadius: 8, borderWidth: 2, borderColor: "#fff" },
-  ultimaVideo: { alignItems: "center", justifyContent: "center", backgroundColor: "#333" },
+  tomadoVideo: { alignItems: "center", justifyContent: "center", backgroundColor: "#333" },
   cuenta: {
     position: "absolute",
     top: -6,
@@ -454,9 +510,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#2d7b48",
+    backgroundColor: "#fff",
   },
-  cuentaTexto: { color: "#fff", fontSize: 12, fontWeight: "700" },
+  cuentaTexto: { color: "#2d7b48", fontSize: 12, fontWeight: "700" },
   disparador: {
     width: 76,
     height: 76,

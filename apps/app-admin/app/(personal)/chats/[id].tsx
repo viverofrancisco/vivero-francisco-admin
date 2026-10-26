@@ -407,11 +407,29 @@ export default function ChatScreen() {
   function enviar() {
     const cuerpo = texto.trim();
     if (!cuerpo && pendientes.length === 0 && !referencia) return;
+    mandar(cuerpo, pendientes, referencia);
+    setTexto("");
+    setReferencia(null);
+    setPendientes([]);
+  }
+
+  /**
+   * Desde el editor de la cámara, como en WhatsApp: sus fotos y su comentario
+   * salen en el acto, en un mensaje propio. Lo que esperaba en la bandeja y lo
+   * escrito en el campo se quedan ahí, para su propio mensaje.
+   */
+  function enviarDeLaCamara(archivos: ArchivoLocal[], comentario?: string) {
+    if (archivos.length === 0) return;
+    mandar(comentario ?? "", aCola(archivos), null);
+  }
+
+  /** Un mensaje a la cola (y a la pantalla); responde al que se estaba respondiendo. */
+  function mandar(cuerpo: string, fotos: FotoEnCola[], ref: ReferenciaEnMensaje | null) {
     const item: MensajeEnCola = {
       idCliente: nuevoIdCliente(),
       chatId: id,
       texto: cuerpo || null,
-      fotos: pendientes,
+      fotos,
       respondeA: respondiendo
         ? {
             id: respondiendo.id,
@@ -424,15 +442,12 @@ export default function ChatScreen() {
               : null,
           }
         : null,
-      referencia,
+      referencia: ref,
       creadoEl: new Date().toISOString(),
       estado: "pendiente",
     };
     encolar(item);
-    setTexto("");
     setRespondiendo(null);
-    setReferencia(null);
-    setPendientes([]);
     setAviso(null);
   }
 
@@ -461,7 +476,13 @@ export default function ChatScreen() {
   /** Elegir **no manda**: el archivo espera arriba del campo hasta que se envíe. */
   function agregar(archivos: ArchivoLocal[]) {
     if (archivos.length === 0) return;
-    const nuevos: FotoEnCola[] = archivos.map((a) => ({
+    const nuevos = aCola(archivos);
+    setPendientes((actuales) => [...actuales, ...nuevos].slice(0, 10));
+  }
+
+  /** Lo elegido, con la forma que la cola necesita. */
+  function aCola(archivos: ArchivoLocal[]): FotoEnCola[] {
+    return archivos.map((a) => ({
       uri: a.uri,
       // El nombre del archivo viaja porque es lo único por lo que después
       // se puede buscar una foto.
@@ -471,7 +492,6 @@ export default function ChatScreen() {
       tamano: null,
       assetId: a.assetId,
     }));
-    setPendientes((actuales) => [...actuales, ...nuevos].slice(0, 10));
   }
 
   /**
@@ -583,7 +603,7 @@ export default function ChatScreen() {
 
   /**
    * La cámara de la app (`CamaraPropia`): saca varias seguidas, fotos o
-   * videos, y pasa por el editor antes de llegar a la bandeja.
+   * videos, y pasa por el editor, que las envía con su comentario.
    */
   function sacarFoto() {
     setCamaraAbierta(true);
@@ -1010,11 +1030,13 @@ export default function ChatScreen() {
       {camaraAbierta ? (
         <CamaraPropia
           conVideos
-          maximo={Math.max(10 - pendientes.length, 0)}
+          conComentario
+          // Lo de la cámara sale en su propio mensaje: caben diez.
+          maximo={10}
           onCerrar={() => setCamaraAbierta(false)}
-          onListo={(archivos) => {
+          onListo={(archivos, comentario) => {
             setCamaraAbierta(false);
-            agregar(archivos);
+            enviarDeLaCamara(archivos, comentario);
           }}
         />
       ) : null}
