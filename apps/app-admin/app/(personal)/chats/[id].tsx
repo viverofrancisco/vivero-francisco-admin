@@ -743,11 +743,16 @@ export default function ChatScreen() {
             !anterior || !mismoDia(anterior.createdAt, item.createdAt);
           const mismoAutor =
             anterior && anterior.autorId === item.autorId && !cambiaElDia;
+          // Entre lo de otro y lo tuyo (o al revés) un poco de aire, como en
+          // WhatsApp: los dos pixeles de siempre pegaban la respuesta a lo
+          // que contestaba.
+          const cambiaDeLado =
+            anterior && anterior.mio !== item.mio && !cambiaElDia;
           const enCola =
             item.estado === "pendiente" || item.estado === "fallido";
           const seMueve = !item.borrado && !enCola;
           return (
-            <View>
+            <View style={cambiaDeLado ? styles.cambiaDeLado : undefined}>
               {/* El separador va **antes** de la burbuja: `inverted` da vuelta
                   el orden de las celdas, no lo que hay adentro de cada una. */}
               {cambiaElDia ? (
@@ -1188,6 +1193,7 @@ const styles = StyleSheet.create({
   /* Apretado como WhatsApp: los mensajes seguidos casi se tocan —dos píxeles—
      y lo que separa es el cambio de quién habla, no el aire. */
   lista: { paddingHorizontal: 10, paddingVertical: 8, gap: 2 },
+  cambiaDeLado: { paddingTop: 8 },
   cargandoMas: { paddingVertical: 16 },
   vacio: { paddingVertical: 40, alignItems: "center" },
   vacioTexto: { color: tema.texto3, textAlign: "center" },

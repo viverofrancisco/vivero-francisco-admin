@@ -654,8 +654,12 @@ export function Conversacion({
           // seis mensajes del mismo con su nombre seis veces es ruido.
           const mismoAutor =
             anterior && anterior.autorId === m.autorId && !cambiaElDia;
+          // Entre lo de otro y lo tuyo (o al revés) un poco de aire, como en
+          // WhatsApp: los dos pixeles de siempre pegaban la respuesta a lo
+          // que contestaba.
+          const cambiaDeLado = anterior && anterior.mio !== m.mio && !cambiaElDia;
           return (
-            <div key={m.id} id={`mensaje-${m.id}`}>
+            <div key={m.id} id={`mensaje-${m.id}`} className={cambiaDeLado ? "pt-2" : undefined}>
               {cambiaElDia ? (
                 <div className="flex justify-center py-3">
                   <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-semibold text-muted-foreground">
