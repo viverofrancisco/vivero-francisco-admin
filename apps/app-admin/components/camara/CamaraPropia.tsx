@@ -43,6 +43,8 @@ const ICONO_FLASH: Record<FlashMode, React.ComponentProps<typeof Ionicons>["name
 const RECIENTES = 30;
 /** El cuadrito amarillo que marca dónde se enfocó. */
 const LADO_DEL_ENFOQUE = 72;
+/** Las miniaturas de la tira: unas cinco a lo ancho, como en WhatsApp. */
+const LADO_MINIATURA = 78;
 
 /**
  * La cámara de la app, la de WhatsApp: se abre dentro de la app, saca varias
@@ -320,6 +322,16 @@ export function CamaraPropia({
 
   const hayTira = recientes.length > 0 || tomados.length > 0;
 
+  /** El aumento que se ve: el máximo de la cámara elevado a la posición de la barra. */
+  const aumentoActual = Math.pow(aumentoMaximo, zoom);
+
+  /** Del zoom que haya a 1×; desde 1×, a 2× (o al máximo si no llega). */
+  function alternarAumento() {
+    const a2 = Math.min(2, aumentoMaximo);
+    setZoom(aumentoActual > 1.05 ? 0 : Math.log(a2) / Math.log(aumentoMaximo));
+    mostrarZoom();
+  }
+
   function cambiarZoomConLaBarra(z: number) {
     setZoom(z);
     mostrarZoom();
@@ -471,6 +483,8 @@ export function CamaraPropia({
                 />
               ) : null}
             </View>
+            {/* Del ancho del aumento, para que el disparador quede al centro. */}
+            {GESTOS_NATIVOS ? <View style={styles.ladoChico} /> : null}
 
             <Pressable
               onPress={() => void disparar()}
@@ -487,6 +501,23 @@ export function CamaraPropia({
                 ]}
               />
             </Pressable>
+
+            {/* El aumento, como el «1.5×» de WhatsApp: tocarlo salta entre 1× y 2×.
+                Solo en Android, donde se sabe el máximo real de la cámara: en
+                iOS expo-camera no lo dice y el número sería inventado. */}
+            {GESTOS_NATIVOS ? (
+              <View style={styles.ladoChico}>
+                <Pressable
+                  onPress={alternarAumento}
+                  hitSlop={8}
+                  style={({ pressed }) => [styles.aumento, pressed && styles.tocado]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Zoom ${textoDelAumento(aumentoActual)}`}
+                >
+                  <Text style={styles.aumentoTexto}>{textoDelAumento(aumentoActual)}</Text>
+                </Pressable>
+              </View>
+            ) : null}
 
             <View style={styles.lado}>
               {grabando && CAMBIA_GRABANDO ? (
@@ -616,18 +647,20 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
   },
   // Aire arriba y a la derecha para la ✕ de lo sacado, que asoma del borde.
-  recientes: { gap: 4, paddingHorizontal: 12, paddingTop: 8 },
+  // Cuadradas y de borde a borde, como las de WhatsApp.
+  recientes: { gap: 2 },
   zonaDeLaTira: { gap: 6 },
   // El asa de WhatsApp: una raya blanca corta sobre el disparador.
   asa: { alignSelf: "center", paddingVertical: 4, paddingHorizontal: 12 },
   asaRaya: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)" },
-  tomados: { flexDirection: "row", alignItems: "center", gap: 8, marginRight: 4 },
-  tomado: { width: 64, height: 64 },
-  tomadoImagen: { width: 64, height: 64, borderRadius: 6, borderWidth: 2, borderColor: "#fff" },
+  tomados: { flexDirection: "row", alignItems: "center", gap: 2, marginRight: 2 },
+  tomado: { width: LADO_MINIATURA, height: LADO_MINIATURA },
+  tomadoImagen: { width: LADO_MINIATURA, height: LADO_MINIATURA, borderWidth: 2, borderColor: "#fff" },
+  // Adentro de la miniatura: con las miniaturas pegadas, afuera tapaba la de al lado.
   tomadoQuitar: {
     position: "absolute",
-    top: -6,
-    right: -6,
+    top: 4,
+    right: 4,
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -637,9 +670,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#fff",
   },
-  separador: { width: 1, height: 44, marginLeft: 4, backgroundColor: "rgba(255,255,255,0.5)" },
-  reciente: { width: 64, height: 64 },
-  recienteImagen: { width: 64, height: 64, borderRadius: 4 },
+  separador: { width: 2, height: LADO_MINIATURA, backgroundColor: "rgba(255,255,255,0.6)" },
+  reciente: { width: LADO_MINIATURA, height: LADO_MINIATURA },
+  recienteImagen: { width: LADO_MINIATURA, height: LADO_MINIATURA },
   recienteVideo: { position: "absolute", left: 4, bottom: 4 },
   recienteMarca: {
     position: "absolute",
@@ -661,6 +694,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   lado: { width: 56, height: 56, alignItems: "center", justifyContent: "center" },
+  ladoChico: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  aumento: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+  aumentoTexto: { color: "#ffd60a", fontSize: 13, fontWeight: "600", fontVariant: ["tabular-nums"] },
   cuenta: {
     position: "absolute",
     top: -6,
@@ -862,4 +905,10 @@ function reloj(segundos: number): string {
   const m = Math.floor(segundos / 60);
   const s = segundos % 60;
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+/** "1×", "1.5×", "2×": un decimal hasta 10×, sin el ".0". */
+function textoDelAumento(a: number): string {
+  const redondo = a < 10 ? Math.round(a * 10) / 10 : Math.round(a);
+  return `${redondo}×`;
 }
