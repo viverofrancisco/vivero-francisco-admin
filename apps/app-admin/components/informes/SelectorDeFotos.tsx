@@ -166,6 +166,7 @@ const MARGEN = 12;
 export function SelectorDeFotos({
   pool,
   enLaSeccion,
+  enOtrasSecciones,
   soloBiblioteca = false,
   unaSola = false,
   onCerrar,
@@ -175,6 +176,12 @@ export function SelectorDeFotos({
   pool: MediaPoolItem[];
   /** Las fotos que la sección ya tiene, en su orden. */
   enLaSeccion: SeccionFotoDraft[];
+  /**
+   * Las `uid` de las fotos que ya están en otra sección del informe: una foto
+   * va en una sola, así que no se ofrecen. (Las de las visitas ya venían
+   * fuera del `pool`; esto cubre las de la biblioteca.)
+   */
+  enOtrasSecciones?: Set<string>;
   /**
    * Solo la biblioteca, sin el filtro de origen: es lo que usa la ficha del
    * producto, que no tiene visitas de dónde sacar fotos.
@@ -239,13 +246,15 @@ export function SelectorDeFotos({
     origen: "visita",
     draft: fotoDeVisita(m),
   }));
-  const deBiblioteca: FotoElegible[] = (biblioteca ?? []).map((m) => ({
-    clave: `media-${m.id}`,
-    url: m.url,
-    nombre: m.nombre,
-    origen: "biblioteca",
-    draft: fotoDeBiblioteca(m),
-  }));
+  const deBiblioteca: FotoElegible[] = (biblioteca ?? [])
+    .filter((m) => !enOtrasSecciones?.has(`media-${m.id}`))
+    .map((m) => ({
+      clave: `media-${m.id}`,
+      url: m.url,
+      nombre: m.nombre,
+      origen: "biblioteca",
+      draft: fotoDeBiblioteca(m),
+    }));
   const todas = [...deVisitas, ...deBiblioteca];
   // La biblioteca ya viene buscada del servidor; las de las visitas se
   // filtran acá por su fecha, que es lo que se sabe de ellas.

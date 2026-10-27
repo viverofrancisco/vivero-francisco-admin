@@ -646,6 +646,14 @@ export default function NuevoInformeScreen() {
             secciones.find((s) => s.tempId === photoPickerForSection)?.fotos ??
             []
           }
+          // Una foto va en una sola sección.
+          enOtrasSecciones={
+            new Set(
+              secciones
+                .filter((s) => s.tempId !== photoPickerForSection)
+                .flatMap((s) => s.fotos.map((f) => f.uid))
+            )
+          }
           onCerrar={() => setPhotoPickerForSection(null)}
           onConfirmar={(fotos) => {
             setSecciones((prev) =>

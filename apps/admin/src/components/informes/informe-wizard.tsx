@@ -2412,10 +2412,25 @@ function Step3Secciones({
     return [...allPool.filter((m) => propias.has(m.id)), ...pool];
   }
 
+  /**
+   * Las fotos que ya están en **otra** sección: una foto va en una sola, sea
+   * de una visita o de la biblioteca. Las de las visitas ya no se ofrecían
+   * (`poolParaElegir`); las de la biblioteca sí, y la misma imagen podía
+   * salir impresa en dos secciones.
+   */
+  function fotosDeOtrasSecciones(tempId: string): Set<string> {
+    return new Set(
+      secciones.filter((s) => s.tempId !== tempId).flatMap((s) => s.fotos.map((f) => f.uid)),
+    );
+  }
+
   function addFotosToSeccion(tempId: string, nuevas: SeccionFotoDraft[]) {
     const seccion = secciones.find((s) => s.tempId === tempId);
     if (!seccion) return;
-    const existing = new Set(seccion.fotos.map((f) => f.uid));
+    const existing = new Set([
+      ...seccion.fotos.map((f) => f.uid),
+      ...fotosDeOtrasSecciones(tempId),
+    ]);
     const additions = nuevas.filter((f) => !existing.has(f.uid));
     if (additions.length === 0) return;
     updateSeccion(tempId, { fotos: [...seccion.fotos, ...additions] });
@@ -3109,6 +3124,7 @@ function Step3Secciones({
           enLaSeccion={
             secciones.find((sec) => sec.tempId === addPhotosFor)?.fotos ?? []
           }
+          enOtrasSecciones={fotosDeOtrasSecciones(addPhotosFor)}
           onClose={() => setAddPhotosFor(null)}
           onConfirm={(fotos) => {
             updateSeccion(addPhotosFor, { fotos });
@@ -3282,6 +3298,7 @@ function PhotoPickerModal({
   pool,
   clienteId,
   enLaSeccion,
+  enOtrasSecciones,
   onClose,
   onConfirm,
 }: {
@@ -3289,6 +3306,8 @@ function PhotoPickerModal({
   clienteId: string | null;
   /** Las fotos que la sección ya tiene, en su orden. */
   enLaSeccion: SeccionFotoDraft[];
+  /** Las `uid` de las que ya están en otra sección: no se ofrecen. */
+  enOtrasSecciones: Set<string>;
   onClose: () => void;
   onConfirm: (fotos: SeccionFotoDraft[]) => void;
 }) {
@@ -3337,14 +3356,17 @@ function PhotoPickerModal({
     origen: "visita",
     draft: fotoDeVisita(m),
   }));
-  const deBiblioteca: FotoElegible[] = (biblioteca ?? []).map((m) => ({
-    clave: `media-${m.id}`,
-    url: m.url,
-    nombre: m.nombre,
-    detalle: extensionDe(m.nombre),
-    origen: "biblioteca",
-    draft: fotoDeBiblioteca(m),
-  }));
+  // Una foto va en una sola sección: la que ya está en otra no se ofrece.
+  const deBiblioteca: FotoElegible[] = (biblioteca ?? [])
+    .filter((m) => !enOtrasSecciones.has(`media-${m.id}`))
+    .map((m) => ({
+      clave: `media-${m.id}`,
+      url: m.url,
+      nombre: m.nombre,
+      detalle: extensionDe(m.nombre),
+      origen: "biblioteca",
+      draft: fotoDeBiblioteca(m),
+    }));
   const todas = [...deVisitas, ...deBiblioteca];
   // La biblioteca ya viene buscada por nombre del servidor; las de las
   // visitas se filtran acá por su fecha, que es lo que se ve de ellas.
