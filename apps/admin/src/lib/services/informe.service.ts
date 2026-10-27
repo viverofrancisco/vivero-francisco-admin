@@ -133,7 +133,7 @@ export async function listInformes(
           },
         },
       },
-      orderBy: { generatedAt: "desc" },
+      orderBy: [{ generatedAt: "desc" }, { id: "desc" }],
       skip: offset,
       take: limit,
     }),

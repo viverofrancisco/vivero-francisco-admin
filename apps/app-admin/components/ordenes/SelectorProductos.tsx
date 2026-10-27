@@ -4,6 +4,7 @@ import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, View } from 
 import { ActivityIndicator, Searchbar, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest } from "@vivero/app-ui/lib/api";
+import { sumarSinRepetir } from "@/lib/listas";
 import { conCopia } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { PieDeLista } from "@vivero/app-ui/components/ui/PantallaLista";
@@ -79,7 +80,7 @@ export function SelectorProductos({
       // muestra al instante mientras llega la de ahora.
       const deSiempre = desde === 0 && !q.trim();
       const poner = (r: { items: ProductoVendible[]; hayMas: boolean }) => {
-        setItems((antes) => (desde ? [...antes, ...r.items] : r.items));
+        setItems((antes) => (desde ? sumarSinRepetir(antes, r.items) : r.items));
         setHayMas(r.hayMas);
         setConocidos((prev) => {
           const m = new Map(prev);

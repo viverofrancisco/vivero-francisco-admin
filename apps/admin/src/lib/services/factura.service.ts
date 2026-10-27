@@ -242,7 +242,9 @@ export async function listarFacturas(
           },
         },
       },
-      orderBy: { fechaEmision: "desc" },
+      // Con desempate: la fecha de emisión es un día que comparten varias, y
+      // de a páginas sin orden total una fila se repetía o se perdía.
+      orderBy: [{ fechaEmision: "desc" }, { id: "desc" }],
       skip: offset,
       take: limit,
     }),

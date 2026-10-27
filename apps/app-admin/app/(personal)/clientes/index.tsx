@@ -5,6 +5,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { nombreCliente, resumenDeCliente } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { sumarSinRepetir } from "@/lib/listas";
 import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import { MenuDeEncabezado } from "@vivero/app-ui/components/ui/MenuDeEncabezado";
@@ -90,7 +91,7 @@ export default function ClientesListScreen() {
         );
         copia.alResponder(res, !desde && !q && !estadoRef.current);
         if (mio !== pedido.current) return;
-        setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
+        setItems((antes) => (desde ? sumarSinRepetir(antes, res.items) : res.items));
         setCursor(res.nextCursor);
         setError(null);
       } catch (e) {

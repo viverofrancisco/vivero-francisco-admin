@@ -285,7 +285,7 @@ export async function productosParaElegir(
         ? { nombre: { contains: search.trim(), mode: "insensitive" } }
         : {}),
     },
-    orderBy: { nombre: "asc" },
+    orderBy: [{ nombre: "asc" }, { id: "asc" }],
     skip: offset,
     take: limit + 1,
     select: {

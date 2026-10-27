@@ -45,7 +45,7 @@ export async function productosVendibles(
       // entren en la primera tanda, o la línea se quedaría sin su producto.
       ...(opciones.ids?.length ? { id: { in: opciones.ids } } : {}),
     },
-    orderBy: { nombre: "asc" },
+    orderBy: [{ nombre: "asc" }, { id: "asc" }],
     ...(opciones.ids?.length ? {} : { skip: offset, take: limit + 1 }),
     select: {
       id: true,

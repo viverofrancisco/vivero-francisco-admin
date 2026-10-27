@@ -1255,7 +1255,10 @@ export async function listarOrdenes(
           take: 1,
         },
       },
-      orderBy: { fecha: "desc" },
+      // Con desempate: `fecha` es un día y varias órdenes lo comparten, y sin
+      // un orden total la página 2 repetía filas de la 1 (la app lo vio como
+      // claves duplicadas) y se salteaba otras.
+      orderBy: [{ fecha: "desc" }, { numero: "desc" }],
       skip: offset,
       take: limit,
     }),

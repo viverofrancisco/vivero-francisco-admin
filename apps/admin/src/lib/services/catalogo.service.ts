@@ -170,7 +170,9 @@ export async function listarCatalogo(
           }
         : {}),
     },
-    orderBy: { nombre: "asc" },
+    // Con desempate: dos productos pueden llamarse igual, y de a páginas sin
+    // orden total uno se repetía o se perdía.
+    orderBy: [{ nombre: "asc" }, { id: "asc" }],
     skip: offset,
     take: limit + 1,
     select: SELECT,

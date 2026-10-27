@@ -11,6 +11,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { apiRequest } from "@vivero/app-ui/lib/api";
+import { sumarSinRepetir } from "@/lib/listas";
 import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { FILA_LISTA, PantallaLista } from "@vivero/app-ui/components/ui/PantallaLista";
 import { useInformesFilters } from "@/lib/informes-filters-store";
@@ -129,7 +130,7 @@ export default function InformesListScreen() {
           ...(to ? { to } : {}),
         },
       });
-      setItems((prev) => [...prev, ...res.items]);
+      setItems((prev) => sumarSinRepetir(prev, res.items));
       setTotal(res.total);
     } catch {
       // ignore

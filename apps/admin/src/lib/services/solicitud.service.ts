@@ -387,7 +387,7 @@ export async function listarSolicitudes(
   const [items, total, pendientes] = await Promise.all([
     prisma.solicitudCliente.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       skip: offset,
       take: limit,
       select: SELECT,

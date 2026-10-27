@@ -4,6 +4,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@vivero/app-ui/lib/api";
+import { sumarSinRepetir } from "@/lib/listas";
 import { useCopiaDePantalla } from "@/lib/cache-de-pantallas";
 import { PressableScale } from "@vivero/app-ui/components/ui/PressableScale";
 import {
@@ -120,7 +121,7 @@ export default function ProductosListScreen() {
           !desde && !q && codificarOrden(o) === codificarOrden(ORDEN_PRODUCTOS_POR_DEFECTO)
         );
         if (mio !== pedido.current) return;
-        setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
+        setItems((antes) => (desde ? sumarSinRepetir(antes, res.items) : res.items));
         setCursor(res.nextCursor);
         setError(null);
       } catch (e) {
