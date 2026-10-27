@@ -6,6 +6,7 @@ import {
   TextStyle,
 } from "@tiptap/extension-text-style";
 import { TextAlign } from "@tiptap/extension-text-align";
+import { Extension, type Editor as EditorTiptap } from "@tiptap/core";
 
 /**
  * Los puentes que le faltan al editor de fábrica para escribir lo mismo que
@@ -34,6 +35,8 @@ export interface EstadoDeFormato {
    * omisión no es la del resto.
    */
   activeEnPrimerBloque: boolean;
+  /** Si el cursor está en el título de la sección (el `<h2>` del principio). */
+  activeTitulo: boolean;
 }
 
 export interface InstanciaDeFormato {
@@ -45,6 +48,7 @@ export interface InstanciaDeFormato {
   unsetBackgroundColor: () => void;
   setTextAlign: (alineacion: string) => void;
   unsetTextAlign: () => void;
+  alternarTitulo: () => void;
 }
 
 type Mensaje =
@@ -55,7 +59,8 @@ type Mensaje =
   | { type: "set-background-color"; payload: string }
   | { type: "unset-background-color"; payload: undefined }
   | { type: "set-text-align"; payload: string }
-  | { type: "unset-text-align"; payload: undefined };
+  | { type: "unset-text-align"; payload: undefined }
+  | { type: "alternar-titulo"; payload: undefined };
 
 export const FontSizeBridge = new BridgeExtension<
   Pick<EstadoDeFormato, "activeFontSize">,
@@ -128,7 +133,7 @@ export const TextAlignBridge = new BridgeExtension<
   Mensaje
 >({
   tiptapExtension: TextAlign.configure({
-    types: ["paragraph"],
+    types: ["paragraph", "heading"],
     // Ver arriba: sin alineación por omisión, o nada vuelve a ser plano.
     defaultAlignment: null as unknown as string,
   }),
@@ -142,16 +147,109 @@ export const TextAlignBridge = new BridgeExtension<
     unsetTextAlign: () => enviar({ type: "unset-text-align", payload: undefined }),
   }),
   extendEditorState: (editor) => ({
-    activeTextAlign: editor.getAttributes("paragraph").textAlign,
+    activeTextAlign:
+      editor.getAttributes("paragraph").textAlign ?? editor.getAttributes("heading").textAlign,
     // `index(0)`: en qué hijo del documento cae la posición.
     activeEnPrimerBloque: editor.state.selection.$from.index(0) === 0,
   }),
 });
 
-/** Los cuatro, en el orden en que se registran. */
+/**
+ * El título de una sección como un bloque propio (`<h2>`) y no "la primera
+ * línea": una sección puede no tenerlo, el botón *Título* lo pone o lo quita,
+ * y un retroceso al principio del título lo vuelve texto normal, a la
+ * izquierda y sin las marcas pegadas al cursor. Es la extensión
+ * `TituloDeSeccion` del portal
+ * (`apps/admin/src/components/informes/titulo-de-seccion.ts`): un cambio
+ * aquí va allá.
+ */
+const TituloDeSeccion = Extension.create({
+  name: "tituloDeSeccion",
+  // Antes que el retroceso de Tiptap, que con el título vacío ya lo volvería
+  // párrafo pero dejándole las marcas guardadas.
+  priority: 1000,
+  addKeyboardShortcuts() {
+    return {
+      Backspace: ({ editor }) => {
+        const { empty, $from } = editor.state.selection;
+        if (
+          !empty ||
+          $from.parent.type.name !== "heading" ||
+          $from.index(0) !== 0 ||
+          $from.parentOffset !== 0
+        ) {
+          return false;
+        }
+        return editor
+          .chain()
+          .setNode("paragraph")
+          .command(({ tr }) => {
+            tr.setStoredMarks([]);
+            return true;
+          })
+          .run();
+      },
+    };
+  },
+});
+
+/** Poner o quitar el título: el primer bloque pasa de párrafo a título o al revés. */
+function alternarTitulo(editor: EditorTiptap) {
+  const { state } = editor;
+  const primero = state.doc.firstChild;
+  if (!primero || state.selection.$from.index(0) !== 0) return;
+  if (primero.type.name === "heading") {
+    editor
+      .chain()
+      .focus()
+      .setNode("paragraph")
+      .command(({ tr }) => {
+        tr.setStoredMarks([]);
+        return true;
+      })
+      .run();
+    return;
+  }
+  // Con la negrita y el subrayado que el título lleva por omisión.
+  const { bold, underline } = state.schema.marks;
+  const fin = 1 + primero.content.size;
+  editor
+    .chain()
+    .focus()
+    .setHeading({ level: 2 })
+    .command(({ tr }) => {
+      const marcas = [bold?.create(), underline?.create()].filter((m) => !!m);
+      if (fin > 1) marcas.forEach((m) => tr.addMark(1, fin, m));
+      else tr.setStoredMarks(marcas);
+      return true;
+    })
+    .run();
+}
+
+export const TituloBridge = new BridgeExtension<
+  Pick<EstadoDeFormato, "activeTitulo">,
+  Pick<InstanciaDeFormato, "alternarTitulo">,
+  Mensaje
+>({
+  tiptapExtension: TituloDeSeccion,
+  onBridgeMessage: (editor, { type }) => {
+    if (type === "alternar-titulo") alternarTitulo(editor);
+    return false;
+  },
+  extendEditorInstance: (enviar) => ({
+    alternarTitulo: () => enviar({ type: "alternar-titulo", payload: undefined }),
+  }),
+  extendEditorState: (editor) => ({
+    activeTitulo:
+      editor.isActive("heading") && editor.state.selection.$from.index(0) === 0,
+  }),
+});
+
+/** Los cinco, en el orden en que se registran. */
 export const PUENTES_DEL_INFORME = [
   FontSizeBridge,
   FontFamilyBridge,
   BackgroundColorBridge,
   TextAlignBridge,
+  TituloBridge,
 ];

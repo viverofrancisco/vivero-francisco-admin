@@ -11,12 +11,10 @@ import { Text } from "react-native-paper";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  aHtml,
-  partirPrimerBloque,
+  htmlDelEditorDeSeccion,
+  partirSeccion,
   simplificarHtml,
   simplificarTitulo,
-  textoPlanoDeHtml,
-  tituloDeSeccionEnHtml,
 } from "@vivero/shared";
 import {
   EditorDeTextoRico,
@@ -94,18 +92,17 @@ export function FichaDeSeccion({
   const [aviso, setAviso] = useState<string | null>(null);
   const editor = useRef<EditorDeTextoRicoHandle>(null);
 
-  /** Lo escrito, a la sección. Falso si no hay título, que es lo único que se exige. */
+  /**
+   * Lo escrito, a la sección: el título, si tiene —el bloque que pone el botón
+   * *Título*—, y la descripción. Ya no se exige título: una sección
+   * personalizada puede no llevarlo.
+   */
   async function guardarTexto(): Promise<boolean> {
     if (!editor.current) return true;
     const html = await editor.current.obtener();
-    const { primero, resto } = partirPrimerBloque(html);
-    const titulo = simplificarTitulo(primero);
-    if (!textoPlanoDeHtml(titulo)) {
-      setAviso("Escribe el título en la primera línea.");
-      return false;
-    }
+    const { titulo, descripcion } = partirSeccion(html);
     setAviso(null);
-    onCambiar({ titulo, descripcion: simplificarHtml(resto) });
+    onCambiar({ titulo: simplificarTitulo(titulo), descripcion: simplificarHtml(descripcion) });
     return true;
   }
   async function cambiarPestana(p: Pestana) {
@@ -199,7 +196,7 @@ export function FichaDeSeccion({
           <EditorDeTextoRico
             key={seccion.tempId}
             ref={editor}
-            html={tituloDeSeccionEnHtml(seccion.titulo) + aHtml(seccion.descripcion)}
+            html={htmlDelEditorDeSeccion(seccion.titulo, seccion.descripcion)}
             primeraLineaComoTitulo
           />
         ) : (

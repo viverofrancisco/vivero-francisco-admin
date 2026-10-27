@@ -24,7 +24,7 @@ import {
 } from "./encabezado";
 import { esHtml } from "./encabezado-texto";
 import { FUENTES_EMBARCADAS, fuenteRegistrada, registrarFuentes } from "./fuentes";
-import { fechaSola, tituloDeSeccionEnHtml } from "@vivero/shared";
+import { fechaSola, textoPlanoDeHtml, tituloDeSeccionEnHtml } from "@vivero/shared";
 
 /**
  * Un estilo de react-pdf, el mismo tipo que `StyleSheet.create` recibe. Sacado
@@ -590,6 +590,21 @@ function Section({
             : [],
         }));
   const primeraLinea = lineasDeTitulo?.[0];
+  // Una sección puede no tener título: entonces no se imprime una línea en
+  // blanco, sino el aire que el título dejaba arriba —y el salto de página,
+  // si lo pidió—, y la sección empieza por su texto o sus fotos.
+  const sinTitulo = !textoPlanoDeHtml(seccion.titulo).trim();
+  if (sinTitulo) {
+    return (
+      <>
+        <View
+          style={{ marginTop: styles.sectionTitle.marginTop }}
+          break={seccion.saltoDePagina}
+        />
+        <CuerpoDeSeccion seccion={seccion} medida={medida} lineasDeDescripcion={lineasDeDescripcion} />
+      </>
+    );
+  }
   return (
     <>
       <Text
@@ -622,6 +637,23 @@ function Section({
           mayusculas
         />
       ))}
+      <CuerpoDeSeccion seccion={seccion} medida={medida} lineasDeDescripcion={lineasDeDescripcion} />
+    </>
+  );
+}
+
+/** Lo que va después del título: la descripción y las fotos, fila por fila. */
+function CuerpoDeSeccion({
+  seccion,
+  medida,
+  lineasDeDescripcion,
+}: {
+  seccion: InformeRenderSeccion;
+  medida: (typeof MEDIDA_FOTO)[FotosPorFila];
+  lineasDeDescripcion: LineaEncabezado[] | null;
+}) {
+  return (
+    <>
       {lineasDeDescripcion ? (
         <View style={styles.bloqueDescripcion}>
           {lineasDeDescripcion.map((linea, i) => {

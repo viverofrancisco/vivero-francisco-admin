@@ -38,7 +38,8 @@ export const informeSeccionSchema = z.object({
    * topes son para un texto escrito con el editor, no para el título de una
    * línea.
    */
-  titulo: z.string().min(1).max(4000),
+  // Vacío = la sección no tiene título: el editor deja ponerlo o no.
+  titulo: z.string().max(4000),
   descripcion: z.string().max(20000).nullable().optional(),
   fotos: z.array(informeSeccionFotoSchema).default([]),
   /** Cómo se imprime. Los defaults son lo que se venía imprimiendo. */

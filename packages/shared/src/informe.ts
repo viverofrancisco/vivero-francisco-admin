@@ -197,6 +197,49 @@ export function partirPrimerBloque(html: string | null | undefined): {
   return { primero: html, resto: "" };
 }
 
+/**
+ * El texto de una sección como lo abre el editor: el título, **si hay**, como
+ * un `<h2>` —un bloque propio, como el encabezado de un documento—, y la
+ * descripción debajo. Antes la primera línea era el título siempre, así que
+ * una sección personalizada no podía no tenerlo, y vaciarlo dejaba la línea
+ * vestida de título sin forma de volverla texto. Con un bloque propio, el
+ * editor lo pone o lo quita (el botón *Título*, o un retroceso al principio
+ * de él), y lo que se guarda sigue siendo lo de siempre: `titulo` (vacío =
+ * sin título) y `descripcion`.
+ */
+export function htmlDelEditorDeSeccion(
+  titulo: string | null | undefined,
+  descripcion: string | null | undefined
+): string {
+  const t = tituloDeSeccionEnHtml(titulo).trim();
+  const comoBloque = t ? t.replace(/^<p\b/, "<h2").replace(/<\/p>$/, "</h2>") : "";
+  return comoBloque + aHtml(descripcion);
+}
+
+/**
+ * Lo que devuelve el editor de una sección, partido en título y descripción:
+ * el título es el `<h2>` del principio, si lo hay —vuelto `<p>`, que es como
+ * se guarda— y todo lo demás es la descripción. Un `<h2>` que no esté al
+ * principio (Enter en medio del título lo parte en dos) es descripción, y
+ * sale como párrafo. Quien llama simplifica cada parte
+ * (`simplificarTitulo`, `simplificarHtml`).
+ */
+export function partirSeccion(html: string | null | undefined): {
+  titulo: string;
+  descripcion: string;
+} {
+  const limpio = (html ?? "").trim();
+  const aParrafos = (h: string) => h.replace(/<h2\b/g, "<p").replace(/<\/h2>/g, "</p>");
+  if (!limpio.startsWith("<h2")) return { titulo: "", descripcion: aParrafos(limpio) };
+  const fin = limpio.indexOf("</h2>");
+  if (fin < 0) return { titulo: "", descripcion: aParrafos(limpio) };
+  const corte = fin + "</h2>".length;
+  return {
+    titulo: aParrafos(limpio.slice(0, corte)),
+    descripcion: aParrafos(limpio.slice(corte)),
+  };
+}
+
 // ───────── Lo que los editores ofrecen ─────────
 //
 // Las fuentes, los tamaños y los colores que el PDF sabe imprimir, para el

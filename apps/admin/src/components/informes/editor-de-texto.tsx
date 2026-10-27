@@ -20,6 +20,7 @@ import {
   ChevronDown,
   Italic,
   List,
+  Heading,
   ListOrdered,
   Underline as UnderlineIcon,
 } from "lucide-react";
@@ -43,6 +44,7 @@ import {
   fuenteDesdeCss,
   type FuenteDelInforme,
 } from "@/lib/informes/encabezado";
+import { TituloDeSeccion } from "./titulo-de-seccion";
 
 /**
  * Los tamaños de siempre, en puntos —el PDF mide así—, como atajo. No son un
@@ -121,10 +123,11 @@ export function EditorDeTextoRico({
    */
   marcas?: Marca[];
   /**
-   * La primera línea se ve como el título de una sección —centrada, en
-   * negrita, subrayada, verde y en mayúsculas—, que es como la imprime el
-   * PDF: así se ve en el editor lo que el campo es, un título y su
-   * descripción, sin un segundo campo.
+   * El texto de una sección: el primer bloque puede ser **título** —un
+   * `<h2>`, que se ve como lo imprime el PDF: centrado, verde y en
+   * mayúsculas— o no haber título. Lo pone y lo quita el botón *Título*, y
+   * un retroceso al principio del título lo vuelve texto (`TituloDeSeccion`).
+   * Antes la primera línea era título siempre, quisieras o no.
    */
   primeraLineaComoTitulo?: boolean;
   /**
@@ -153,8 +156,8 @@ export function EditorDeTextoRico({
       StarterKit.configure({
         // Son líneas sueltas: no hay jerarquía que marcar, y el tamaño se
         // elige a mano. Todo lo demás sobra y sería una etiqueta más que
-        // traducir al PDF.
-        heading: false,
+        // traducir al PDF. El único encabezado es el título de una sección.
+        heading: primeraLineaComoTitulo ? { levels: [2] } : false,
         codeBlock: false,
         blockquote: false,
         horizontalRule: false,
@@ -179,9 +182,10 @@ export function EditorDeTextoRico({
       // cuando alguien eligió una alineación; la de omisión la pone el CSS de
       // abajo, y en el PDF la del lugar.
       TextAlign.configure({
-        types: ["paragraph"],
+        types: ["paragraph", "heading"],
         defaultAlignment: null,
       }),
+      ...(primeraLineaComoTitulo ? [TituloDeSeccion] : []),
       ...(placeholder ? [Placeholder.configure({ placeholder })] : []),
     ],
     content: value,
@@ -200,7 +204,7 @@ export function EditorDeTextoRico({
           // es lo que se está eligiendo.
           "[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_li>p]:mt-0 [&_li+li]:mt-1 [&_li>ul]:mt-1 [&_li>ol]:mt-1",
           primeraLineaComoTitulo
-            ? "[&>p:first-child]:text-center [&>p:first-child]:uppercase [&>p:first-child]:text-[#226633] [&>p:first-child]:mb-1"
+            ? "[&>h2]:text-center [&>h2]:uppercase [&>h2]:text-[#226633] [&>h2]:mb-1 [&>h2]:text-base [&>h2]:font-normal [&>h2]:min-h-[1em]"
             : "",
         ].join(" "),
       },
@@ -226,6 +230,8 @@ export function EditorDeTextoRico({
       subrayado: editor?.isActive("underline") ?? false,
       vinetas: editor?.isActive("bulletList") ?? false,
       numerada: editor?.isActive("orderedList") ?? false,
+      titulo: editor?.isActive("heading") ?? false,
+      enPrimerBloque: editor ? editor.state.selection.$from.index(0) === 0 : false,
       tamano:
         (editor?.getAttributes("textStyle").fontSize as string | undefined) ??
         null,
@@ -242,7 +248,7 @@ export function EditorDeTextoRico({
       alineacion:
         (["left", "center", "right"] as const).find((a) =>
           editor?.isActive({ textAlign: a })
-        ) ?? alineacion,
+        ) ?? (editor?.isActive("heading") ? "center" : alineacion),
     }),
   });
 
@@ -412,6 +418,32 @@ export function EditorDeTextoRico({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {primeraLineaComoTitulo && (
+          <>
+            <span className="mx-1 h-4 w-px bg-border" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-pressed={estado.titulo}
+              // Solo el primer bloque puede ser título.
+              disabled={!estado.titulo && !estado.enPrimerBloque}
+              title={
+                estado.titulo
+                  ? "Quitar el título"
+                  : estado.enPrimerBloque
+                    ? "Hacer de esta línea el título"
+                    : "El título va en la primera línea"
+              }
+              className={`h-7 gap-1 px-2 ${estado.titulo ? "bg-muted text-foreground" : ""}`}
+              onClick={() => editor.chain().focus().alternarTitulo().run()}
+            >
+              <Heading className="size-4" />
+              Título
+            </Button>
+          </>
+        )}
 
         {marcas.length > 0 && <span className="mx-1 h-4 w-px bg-border" />}
 

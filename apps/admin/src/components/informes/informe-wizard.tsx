@@ -49,14 +49,12 @@ import {
 import { EditorImagen } from "@/components/servicios/editor-imagen";
 import { EncabezadoEditor } from "@/components/informes/encabezado-editor";
 import {
-  aHtml,
   encabezadoPorDefecto,
-  partirPrimerBloque,
   primeraLineaPlana,
   simplificarHtml,
   textoPlanoDeHtml,
 } from "@/lib/informes/encabezado-texto";
-import { simplificarTitulo, tituloDeSeccionEnHtml } from "@vivero/shared";
+import { htmlDelEditorDeSeccion, partirSeccion, simplificarTitulo } from "@vivero/shared";
 import { EditorDeTextoRico } from "./editor-de-texto";
 import {
   FOTOS_POR_FILA,
@@ -671,8 +669,16 @@ export function InformeWizard({
     if (!titulo.trim()) return toast.error("El título es obligatorio");
     if (secciones.length === 0)
       return toast.error("Agrega al menos una sección");
-    if (secciones.some((s) => !textoPlanoDeHtml(s.titulo)))
-      return toast.error("Hay una sección sin título");
+    // El título es opcional; lo que no tiene sentido es una sección sin nada.
+    if (
+      secciones.some(
+        (s) =>
+          !textoPlanoDeHtml(s.titulo) &&
+          !textoPlanoDeHtml(s.descripcion) &&
+          s.fotos.length === 0
+      )
+    )
+      return toast.error("Hay una sección vacía: escribe algo, agrégale fotos o bórrala");
     setStep(3);
   }
 
@@ -2530,9 +2536,10 @@ function Step3Secciones({
    */
   /**
    * El texto de una sección, en su pestaña: un solo campo, con el editor del
-   * encabezado. La primera línea es el título y lo que sigue, la descripción
-   * — el editor la viste como título para que se vea que lo es. Al guardar
-   * se parte en las dos columnas de siempre, cada una en lo más simple que
+   * encabezado. Arriba va el título, **si tiene** —un bloque propio que el
+   * botón *Título* pone o quita (`htmlDelEditorDeSeccion` / `partirSeccion`)—
+   * y lo demás es la descripción. Al guardar se parte en las dos columnas de
+   * siempre, cada una en lo más simple que
    * la represente —texto plano mientras no haya formato—, así un informe
    * viejo reabierto sin tocar no cambia. Solo, sin las fotos debajo, así que
    * tiene la pantalla para él; pasado el tope, el texto scrollea adentro.
@@ -2540,12 +2547,12 @@ function Step3Secciones({
   const textoDeSeccion = (s: SeccionDraft) => (
     <EditorDeTextoRico
       key={s.tempId}
-      value={tituloDeSeccionEnHtml(s.titulo) + aHtml(s.descripcion)}
+      value={htmlDelEditorDeSeccion(s.titulo, s.descripcion)}
       onChange={(html) => {
-        const { primero, resto } = partirPrimerBloque(html);
+        const { titulo, descripcion } = partirSeccion(html);
         updateSeccion(s.tempId, {
-          titulo: simplificarTitulo(primero),
-          descripcion: simplificarHtml(resto),
+          titulo: simplificarTitulo(titulo),
+          descripcion: simplificarHtml(descripcion),
         });
       }}
       llenar

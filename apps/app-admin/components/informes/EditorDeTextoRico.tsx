@@ -74,7 +74,7 @@ function css({
   .ProseMirror { outline: none; min-height: 60vh; padding: 18px 16px 56px; ${centrado ? "text-align: center;" : ""} }
   ${
     primeraLineaComoTitulo
-      ? `.ProseMirror > p:first-child { text-align: center; text-transform: uppercase; color: ${VERDE_INFORME}; margin-bottom: 12px; }`
+      ? `.ProseMirror > h2 { font-size: 16px; font-weight: 400; line-height: 1.5; text-align: center; text-transform: uppercase; color: ${VERDE_INFORME}; margin: 0 0 12px; min-height: 1em; }`
       : ""
   }
   .ProseMirror p { margin: 0 0 8px; }
@@ -247,9 +247,9 @@ type Alineacion = (typeof ALINEACIONES)[number]["valor"];
 
 /**
  * La alineación que el lugar ya tiene sin que nadie la elija: el centro en
- * el encabezado —centrado por CSS, como en el portal— y en la primera línea
- * de una sección, que es el título y se imprime centrado; la izquierda en
- * todo lo demás. Elegirla es **quitar** la marca, y elegir otra es
+ * el encabezado —centrado por CSS, como en el portal— y en el título de una
+ * sección (el `<h2>` del principio, si hay), que se imprime centrado; la
+ * izquierda en todo lo demás. Elegirla es **quitar** la marca, y elegir otra es
  * escribirla —también la izquierda donde el centro es lo de omisión, que sin
  * la marca seguiría centrado—.
  */
@@ -258,9 +258,7 @@ function alineacionPorDefecto(
   centrado: boolean,
   primeraLineaComoTitulo: boolean
 ): Alineacion {
-  return centrado || (primeraLineaComoTitulo && estado.activeEnPrimerBloque)
-    ? "center"
-    : "left";
+  return centrado || (primeraLineaComoTitulo && estado.activeTitulo) ? "center" : "left";
 }
 
 const LISTAS = [
@@ -321,6 +319,29 @@ function BarraDeFormato({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.barraContenido}
       >
+        {primeraLineaComoTitulo ? (
+          <>
+            {/* El título es un bloque propio: este botón hace de la primera
+                línea el título o la vuelve texto. En otra línea no hace nada,
+                así que se ve apagado. */}
+            <BotonDeBarra
+              activo={estado.activeTitulo}
+              onPress={() => editor.alternarTitulo()}
+              ancho
+              nombre={estado.activeTitulo ? "Quitar el título" : "Hacer de esta línea el título"}
+            >
+              <Text
+                style={[
+                  styles.botonTexto,
+                  !estado.activeTitulo && !estado.activeEnPrimerBloque && styles.botonApagado,
+                ]}
+              >
+                Título
+              </Text>
+            </BotonDeBarra>
+            <View style={styles.separador} />
+          </>
+        ) : null}
         <BotonDeBarra onPress={() => onAbrir("tamano")} ancho nombre="Tamaño">
           <Text style={styles.botonTexto}>{tamano} pt</Text>
         </BotonDeBarra>
@@ -967,6 +988,7 @@ const styles = StyleSheet.create({
     borderColor: "#e3e3e3",
   },
   botonTocado: { opacity: 0.6 },
+  botonApagado: { opacity: 0.35 },
   botonTexto: { fontSize: 13, fontWeight: "600", color: ICONO },
   chevron: { marginLeft: 2 },
   sobreLaBarra: { paddingTop: ALTO_DEL_MENU },

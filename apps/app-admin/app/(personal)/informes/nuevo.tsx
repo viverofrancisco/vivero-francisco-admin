@@ -411,7 +411,14 @@ export default function NuevoInformeScreen() {
         return (
           !!primeraLineaPlana(encabezado) &&
           secciones.length > 0 &&
-          secciones.every((s) => textoPlanoDeHtml(s.titulo).length > 0)
+          // El título es opcional; una sección sin nada —ni título, ni
+          // texto, ni fotos— es la que no tiene sentido.
+          secciones.every(
+            (s) =>
+              textoPlanoDeHtml(s.titulo).length > 0 ||
+              textoPlanoDeHtml(s.descripcion).length > 0 ||
+              s.fotos.length > 0
+          )
         );
       case 3: {
         const valid = firmantes.filter((f) => f.nombre.trim().length > 0);
