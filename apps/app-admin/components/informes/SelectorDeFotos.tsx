@@ -132,6 +132,8 @@ interface FotoElegible {
   nombre: string;
   origen: "visita" | "biblioteca";
   draft: SeccionFotoDraft;
+  /** El número de la otra sección que ya la tiene: entonces no se puede marcar. */
+  enSeccion?: number;
 }
 
 
@@ -177,11 +179,11 @@ export function SelectorDeFotos({
   /** Las fotos que la sección ya tiene, en su orden. */
   enLaSeccion: SeccionFotoDraft[];
   /**
-   * Las `uid` de las fotos que ya están en otra sección del informe: una foto
-   * va en una sola, así que no se ofrecen. (Las de las visitas ya venían
-   * fuera del `pool`; esto cubre las de la biblioteca.)
+   * Las fotos que ya están en otra sección del informe, con el número de esa
+   * sección: una foto va en una sola, así que se ven en gris, sin poder
+   * marcarlas y diciendo dónde están.
    */
-  enOtrasSecciones?: Set<string>;
+  enOtrasSecciones?: Map<string, number>;
   /**
    * Solo la biblioteca, sin el filtro de origen: es lo que usa la ficha del
    * producto, que no tiene visitas de dónde sacar fotos.
@@ -245,16 +247,16 @@ export function SelectorDeFotos({
     })}`,
     origen: "visita",
     draft: fotoDeVisita(m),
+    enSeccion: enOtrasSecciones?.get(`visita-${m.id}`),
   }));
-  const deBiblioteca: FotoElegible[] = (biblioteca ?? [])
-    .filter((m) => !enOtrasSecciones?.has(`media-${m.id}`))
-    .map((m) => ({
-      clave: `media-${m.id}`,
-      url: m.url,
-      nombre: m.nombre,
-      origen: "biblioteca",
-      draft: fotoDeBiblioteca(m),
-    }));
+  const deBiblioteca: FotoElegible[] = (biblioteca ?? []).map((m) => ({
+    clave: `media-${m.id}`,
+    url: m.url,
+    nombre: m.nombre,
+    origen: "biblioteca",
+    draft: fotoDeBiblioteca(m),
+    enSeccion: enOtrasSecciones?.get(`media-${m.id}`),
+  }));
   const todas = [...deVisitas, ...deBiblioteca];
   // La biblioteca ya viene buscada del servidor; las de las visitas se
   // filtran acá por su fecha, que es lo que se sabe de ellas.
@@ -488,24 +490,38 @@ export function SelectorDeFotos({
             }
             renderItem={({ item: f }) => {
               const marcada = elegidas.has(f.clave);
+              // Ya está en otra sección: en gris, sin casilla y diciendo dónde.
+              const ocupada = f.enSeccion !== undefined;
               return (
                 <Pressable
                   onPress={() => alternar(f.clave)}
+                  disabled={ocupada}
                   style={[
                     styles.celda,
                     { width: lado, height: lado },
                     marcada && styles.celdaMarcada,
                   ]}
                   accessibilityRole="checkbox"
-                  accessibilityState={{ checked: marcada }}
-                  accessibilityLabel={f.nombre}
+                  accessibilityState={{ checked: marcada, disabled: ocupada }}
+                  accessibilityLabel={ocupada ? `${f.nombre}, en la sección ${f.enSeccion}` : f.nombre}
                 >
-                  <Image source={{ uri: f.url }} style={styles.imagen} />
-                  <View style={[styles.casilla, marcada && styles.casillaMarcada]}>
-                    {marcada ? (
-                      <Ionicons name="checkmark" size={15} color="#fff" />
-                    ) : null}
-                  </View>
+                  <Image
+                    source={{ uri: f.url }}
+                    style={[styles.imagen, ocupada && styles.imagenOcupada]}
+                  />
+                  {ocupada ? (
+                    <View style={styles.enOtraSeccion}>
+                      <Text style={styles.enOtraSeccionTexto} numberOfLines={1}>
+                        En la sección {f.enSeccion}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.casilla, marcada && styles.casillaMarcada]}>
+                      {marcada ? (
+                        <Ionicons name="checkmark" size={15} color="#fff" />
+                      ) : null}
+                    </View>
+                  )}
                 </Pressable>
               );
             }}
@@ -652,6 +668,17 @@ const styles = StyleSheet.create({
   },
   celdaMarcada: { borderColor: tema.verde },
   imagen: { width: "100%", height: "100%" },
+  imagenOcupada: { opacity: 0.35 },
+  enOtraSeccion: {
+    position: "absolute",
+    left: 3,
+    right: 3,
+    bottom: 3,
+    borderRadius: 4,
+    paddingVertical: 2,
+    backgroundColor: "rgba(0,0,0,0.65)",
+  },
+  enOtraSeccionTexto: { color: "#fff", fontSize: 10, fontWeight: "600", textAlign: "center" },
   casilla: {
     position: "absolute",
     top: 5,

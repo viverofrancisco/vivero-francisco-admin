@@ -390,7 +390,14 @@ export default function NuevoInformeScreen() {
     const propias = new Set(
       (seccion?.fotos ?? []).map((f) => f.visitaMediaId).filter(Boolean)
     );
-    return [...pool.filter((m) => propias.has(m.id)), ...unassignedPool];
+    // Las de esta sección primero, después las libres, y al final las que
+    // tiene otra: esas se ven en gris, con la sección que las tiene.
+    const libres = new Set(unassignedPool.map((m) => m.id));
+    return [
+      ...pool.filter((m) => propias.has(m.id)),
+      ...unassignedPool,
+      ...pool.filter((m) => !propias.has(m.id) && !libres.has(m.id)),
+    ];
   }
 
   const canContinue = (): boolean => {
@@ -646,12 +653,14 @@ export default function NuevoInformeScreen() {
             secciones.find((s) => s.tempId === photoPickerForSection)?.fotos ??
             []
           }
-          // Una foto va en una sola sección.
+          // Una foto va en una sola sección: las de otra se ven en gris.
           enOtrasSecciones={
-            new Set(
-              secciones
-                .filter((s) => s.tempId !== photoPickerForSection)
-                .flatMap((s) => s.fotos.map((f) => f.uid))
+            new Map(
+              secciones.flatMap((s, i) =>
+                s.tempId === photoPickerForSection
+                  ? []
+                  : s.fotos.map((f) => [f.uid, i + 1] as const)
+              )
             )
           }
           onCerrar={() => setPhotoPickerForSection(null)}

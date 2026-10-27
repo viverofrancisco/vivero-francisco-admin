@@ -2409,19 +2409,29 @@ function Step3Secciones({
     const propias = new Set(
       (seccion?.fotos ?? []).map((f) => f.visitaMediaId).filter(Boolean),
     );
-    return [...allPool.filter((m) => propias.has(m.id)), ...pool];
+    // Las de esta sección primero, después las libres, y al final las que
+    // tiene otra: esas se ven en gris, con la sección que las tiene.
+    const libres = new Set(pool.map((m) => m.id));
+    return [
+      ...allPool.filter((m) => propias.has(m.id)),
+      ...pool,
+      ...allPool.filter((m) => !propias.has(m.id) && !libres.has(m.id)),
+    ];
   }
 
   /**
-   * Las fotos que ya están en **otra** sección: una foto va en una sola, sea
-   * de una visita o de la biblioteca. Las de las visitas ya no se ofrecían
-   * (`poolParaElegir`); las de la biblioteca sí, y la misma imagen podía
-   * salir impresa en dos secciones.
+   * Las fotos que ya están en **otra** sección, con el número de esa sección:
+   * una foto va en una sola, sea de una visita o de la biblioteca. El
+   * selector las muestra en gris y sin poder marcarlas, diciendo dónde están
+   * —desaparecer no explicaba nada—; antes las de la biblioteca se ofrecían
+   * igual y la misma imagen salía impresa en dos secciones.
    */
-  function fotosDeOtrasSecciones(tempId: string): Set<string> {
-    return new Set(
-      secciones.filter((s) => s.tempId !== tempId).flatMap((s) => s.fotos.map((f) => f.uid)),
-    );
+  function fotosDeOtrasSecciones(tempId: string): Map<string, number> {
+    const m = new Map<string, number>();
+    secciones.forEach((s, i) => {
+      if (s.tempId !== tempId) s.fotos.forEach((f) => m.set(f.uid, i + 1));
+    });
+    return m;
   }
 
   function addFotosToSeccion(tempId: string, nuevas: SeccionFotoDraft[]) {
@@ -2429,7 +2439,7 @@ function Step3Secciones({
     if (!seccion) return;
     const existing = new Set([
       ...seccion.fotos.map((f) => f.uid),
-      ...fotosDeOtrasSecciones(tempId),
+      ...fotosDeOtrasSecciones(tempId).keys(),
     ]);
     const additions = nuevas.filter((f) => !existing.has(f.uid));
     if (additions.length === 0) return;
@@ -3251,6 +3261,15 @@ function OpcionesDeSeccion({
 }
 
 /** Una foto que se puede elegir: de las visitas o de la biblioteca. */
+/** La etiqueta de una foto que ya tiene otra sección: dónde está. */
+function EnOtraSeccion({ numero }: { numero: number }) {
+  return (
+    <span className="absolute inset-x-1 bottom-1 truncate rounded bg-black/65 px-1 py-0.5 text-center text-[10px] font-medium text-white">
+      En la sección {numero}
+    </span>
+  );
+}
+
 interface FotoElegible {
   clave: string;
   url: string;
@@ -3259,6 +3278,8 @@ interface FotoElegible {
   detalle: string;
   origen: "visita" | "biblioteca";
   draft: SeccionFotoDraft;
+  /** El número de la otra sección que ya la tiene: entonces no se puede marcar. */
+  enSeccion?: number;
 }
 
 function extensionDe(nombre: string): string {
@@ -3306,8 +3327,8 @@ function PhotoPickerModal({
   clienteId: string | null;
   /** Las fotos que la sección ya tiene, en su orden. */
   enLaSeccion: SeccionFotoDraft[];
-  /** Las `uid` de las que ya están en otra sección: no se ofrecen. */
-  enOtrasSecciones: Set<string>;
+  /** Las que ya están en otra sección, con su número: se ven en gris. */
+  enOtrasSecciones: Map<string, number>;
   onClose: () => void;
   onConfirm: (fotos: SeccionFotoDraft[]) => void;
 }) {
@@ -3355,18 +3376,18 @@ function PhotoPickerModal({
     detalle: "De la visita",
     origen: "visita",
     draft: fotoDeVisita(m),
+    enSeccion: enOtrasSecciones.get(`visita-${m.id}`),
   }));
-  // Una foto va en una sola sección: la que ya está en otra no se ofrece.
-  const deBiblioteca: FotoElegible[] = (biblioteca ?? [])
-    .filter((m) => !enOtrasSecciones.has(`media-${m.id}`))
-    .map((m) => ({
-      clave: `media-${m.id}`,
-      url: m.url,
-      nombre: m.nombre,
-      detalle: extensionDe(m.nombre),
-      origen: "biblioteca",
-      draft: fotoDeBiblioteca(m),
-    }));
+  // Una foto va en una sola sección: la que ya está en otra se ve en gris.
+  const deBiblioteca: FotoElegible[] = (biblioteca ?? []).map((m) => ({
+    clave: `media-${m.id}`,
+    url: m.url,
+    nombre: m.nombre,
+    detalle: extensionDe(m.nombre),
+    origen: "biblioteca",
+    draft: fotoDeBiblioteca(m),
+    enSeccion: enOtrasSecciones.get(`media-${m.id}`),
+  }));
   const todas = [...deVisitas, ...deBiblioteca];
   // La biblioteca ya viene buscada por nombre del servidor; las de las
   // visitas se filtran acá por su fecha, que es lo que se ve de ellas.
@@ -3660,6 +3681,7 @@ function PhotoPickerModal({
                   {visibles.map((f) => {
                     const marcada = elegidas.has(f.clave);
                     const enVista = vista?.clave === f.clave;
+                    const ocupada = f.enSeccion !== undefined;
                     if (esMovil) {
                       // Cuatro por fila: la foto con su casilla encima y nada
                       // más —el nombre no entra en 80 px y no es lo que se
@@ -3670,7 +3692,8 @@ function PhotoPickerModal({
                           type="button"
                           role="checkbox"
                           aria-checked={marcada}
-                          aria-label={f.nombre}
+                          aria-label={ocupada ? `${f.nombre}, en la sección ${f.enSeccion}` : f.nombre}
+                          disabled={ocupada}
                           onClick={() => alternar(f.clave)}
                           className={`relative aspect-square overflow-hidden rounded-lg border-2 bg-muted ${
                             marcada ? "border-primary" : "border-transparent"
@@ -3680,17 +3703,20 @@ function PhotoPickerModal({
                           <img
                             src={f.url}
                             alt=""
-                            className="h-full w-full object-cover"
+                            className={`h-full w-full object-cover ${ocupada ? "opacity-40 grayscale" : ""}`}
                           />
-                          <span
-                            className={`absolute top-1 right-1 flex h-5.5 w-5.5 items-center justify-center rounded-[5px] border-[1.5px] ${
-                              marcada
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-neutral-400 bg-white/95"
-                            }`}
-                          >
-                            {marcada ? <Check className="h-3.5 w-3.5" /> : null}
-                          </span>
+                          {ocupada ? <EnOtraSeccion numero={f.enSeccion!} /> : null}
+                          {!ocupada ? (
+                            <span
+                              className={`absolute top-1 right-1 flex h-5.5 w-5.5 items-center justify-center rounded-[5px] border-[1.5px] ${
+                                marcada
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-neutral-400 bg-white/95"
+                              }`}
+                            >
+                              {marcada ? <Check className="h-3.5 w-3.5" /> : null}
+                            </span>
+                          ) : null}
                         </button>
                       );
                     }
@@ -3708,24 +3734,34 @@ function PhotoPickerModal({
                         <button
                           type="button"
                           onClick={() => alternar(f.clave)}
-                          className="block aspect-square w-full overflow-hidden rounded-md border bg-muted"
-                          title={marcada ? "Desmarcar" : "Marcar"}
+                          disabled={ocupada}
+                          className="relative block aspect-square w-full overflow-hidden rounded-md border bg-muted disabled:cursor-not-allowed"
+                          title={
+                            ocupada
+                              ? `Ya está en la sección ${f.enSeccion}: una foto va en una sola`
+                              : marcada
+                                ? "Desmarcar"
+                                : "Marcar"
+                          }
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={f.url}
                             alt=""
-                            className="h-full w-full object-cover"
+                            className={`h-full w-full object-cover ${ocupada ? "opacity-40 grayscale" : ""}`}
                           />
+                          {ocupada ? <EnOtraSeccion numero={f.enSeccion!} /> : null}
                         </button>
-                        <span className="absolute top-3.5 left-3.5">
-                          <Checkbox
-                            checked={marcada}
-                            onCheckedChange={() => alternar(f.clave)}
-                            className="bg-card"
-                            aria-label={marcada ? "Desmarcar" : "Marcar"}
-                          />
-                        </span>
+                        {!ocupada ? (
+                          <span className="absolute top-3.5 left-3.5">
+                            <Checkbox
+                              checked={marcada}
+                              onCheckedChange={() => alternar(f.clave)}
+                              className="bg-card"
+                              aria-label={marcada ? "Desmarcar" : "Marcar"}
+                            />
+                          </span>
+                        ) : null}
                         <button
                           type="button"
                           onClick={() => {
