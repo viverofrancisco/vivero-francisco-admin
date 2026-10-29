@@ -792,6 +792,44 @@ orden de las tareas también usa).
 El buscador de productos del chat (`compartibles`) sigue alfabético a
 propósito: ahí se elige de una lista corta buscando por nombre.
 
+## El catálogo de Contífico
+
+El catálogo se cargó una sola vez, el 27-oct-2026, del listado de productos
+de Contífico (Código, Categoría, Nombre, Tipo, PVP), con un script de un solo
+uso que no quedó en el repo. Lo que no es obvio:
+
+- **La columna Tipo de Contífico no sirve**: tiene plantas marcadas como
+  servicio. El tipo sale de la categoría — Obra de jardín, Servicio de
+  mantenimiento, Servicios de logística, Sistema de riego y "Siembra de Árbol"
+  son servicios, el resto bienes.
+- El código entra **tal cual** como SKU, espacios incluidos (`PV- 000130`):
+  sin el espacio choca con otro producto, y es lo que la factura imprime.
+- IVA 0% para todos, y ninguno lleva inventario: el listado no trae stock y en
+  cero la app mostraría todo agotado. Se activa al contar.
+- Lo que no tiene PVP entra en `BORRADOR`, bien o servicio (en $0 la app
+  diría "Gratis"): no sale en los selectores hasta que alguien le ponga precio
+  y lo active.
+- **Lo que ya estaba en el portal no se duplicó ni se pisó.** Doce bienes se
+  habían cargado a mano el 23-oct sin código ni categoría; se enlazaron a su
+  fila de Contífico: conservan nombre, precio e IVA y
+  solo reciben el código y la categoría que les faltaban. Las dos filas que
+  Contífico tenía repetidas de esos mismos (`TI-000012`, `PV-000100`) no se
+  crearon. Contífico traía además siete nombres repetidos con códigos
+  distintos; de los cuatro que eran el mismo producto (misma categoría) se
+  archivó el de código más bajo, que es el más viejo — el listado no trae
+  fechas y los códigos son correlativos: `AF-000017`, `FL-0000032`,
+  `PV-000021`, `PV-000162`. Los otros tres eran el mismo producto en otro
+  tamaño y se fusionaron en uno con variantes (opción *Tamaño*), cada
+  variante con su código y su precio de Contífico: Caucho y Ave del paraíso
+  (*Planta* / *Árbol*, en las dos categorías) y Cascarilla de café
+  (*Pequeño* $2 / *Grande* $20). Se movió la variante en vez de pasar por
+  `guardarOpciones`, que borra la variante única y crea otras: así cada una
+  conserva su id y su SKU.
+- Se cargó en producción el 27-oct-2026: 618 productos nuevos, 12 enlazados y
+  20 categorías.
+- Contra Neon, una sola transacción con 632 productos tardó más de cuatro
+  minutos: si hay que repetir algo así, en lotes de 50.
+
 ## Lo que falta
 
 - **Una pantalla de inventario.** Hoy el stock se mira y se mueve desde la
